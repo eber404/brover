@@ -113,6 +113,7 @@ Keep Keychain access isolated to service layer.
 
 Responsible for:
 
+- apps allowlist workspace;
 - env list;
 - visual CRUD;
 - profiles;
@@ -127,10 +128,13 @@ UI talks to typed service interfaces/protocols.
 - Native app scaffold exists with SwiftUI navigation and baseline screens.
 - Keychain service exists in service layer using `Security.framework`.
 - JSON metadata store exists for non-sensitive profile/env data.
+- JSON allowlist store exists for authorized apps data.
 - Auth gate abstraction exists for sensitive actions (reveal/copy/edit/delete).
 - Root app wiring uses JSON store at `~/Library/Application Support/brover/config.json`.
+- Root app wiring uses apps allowlist store at `~/Library/Application Support/brover/apps.json`.
 - Local auth gate uses macOS authentication for sensitive operations.
 - Env manager flow is connected for create/edit/reveal/delete.
+- Sidebar IA is fixed to `Apps`, `Profiles`, `Secrets/Envs`.
 
 ### Future CLI `brover` (next step)
 
@@ -205,6 +209,7 @@ Reject:
 ### Minimum screens
 
 - Onboarding;
+- Apps;
 - Profiles;
 - Env List;
 - Create/Edit Env;

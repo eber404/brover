@@ -15,8 +15,11 @@ Current phase: **SwiftUI + AppKit GUI-first MVP**.
 - JSON-backed profile/env metadata store implemented;
 - env manager service wired to create/edit/reveal/delete flows;
 - real app uses JSON config at `~/Library/Application Support/brover/config.json`;
+- apps allowlist uses JSON config at `~/Library/Application Support/brover/apps.json`;
 - real auth gate uses macOS local authentication (Touch ID/password);
-- initial screens: Env List, Profiles, Diagnostics;
+- sidebar IA now fixed to `Apps`, `Profiles`, `Secrets/Envs`;
+- `Apps` workspace supports manual allowlist (`displayName`, `bundleID`, `enabled`);
+- bundle ID validation added for app authorization workflow;
 - tests cover validation, stores, auth gate checks, and env manager flows.
 
 ---
@@ -38,6 +41,7 @@ Native macOS App
   ├── SwiftUI screens
   ├── AppKit visual effect bridge
   ├── App service layer
+  ├── Apps authorization service/store
   ├── Profile/env metadata store
   └── Validation and auth gates
 
@@ -45,7 +49,8 @@ macOS Keychain
   └── sensitive values (implemented service layer)
 
 Local config
-  └── non-sensitive metadata (implemented JSON store)
+  ├── non-sensitive profile/env metadata (implemented JSON store)
+  └── app authorization allowlist metadata (implemented JSON store)
 ```
 
 ---

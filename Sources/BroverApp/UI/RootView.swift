@@ -3,7 +3,9 @@ import Foundation
 import SwiftUI
 
 struct RootView: View {
+    @State private var selectedRoute: RootRoute? = .secrets
     @StateObject private var envListViewModel: EnvListViewModel
+    @StateObject private var appsViewModel: AppsViewModel
 
     init() {
         let configURL = FileManager.default
@@ -14,35 +16,31 @@ struct RootView: View {
             keychainService: NativeKeychainService(),
             authGate: MacOSAuthGate()
         )
+        let appsURL = FileManager.default
+            .homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Application Support/brover/apps.json")
         _envListViewModel = StateObject(wrappedValue: EnvListViewModel(manager: manager))
+        _appsViewModel = StateObject(wrappedValue: AppsViewModel(service: JSONAppAuthorizationStore(fileURL: appsURL)))
     }
 
     var body: some View {
         NavigationSplitView {
-            List {
-                NavigationLink("Env List") {
-                    EnvListView(viewModel: envListViewModel)
-                }
-                NavigationLink("Profiles") {
-                    ProfilesView(profiles: envListViewModel.profiles)
-                }
-                NavigationLink("Diagnostics") {
-                    DiagnosticsView()
-                }
+            List(RootRoute.allCases, selection: $selectedRoute) { route in
+                Text(route.title)
+                    .tag(route)
             }
             .navigationTitle("brover")
         } detail: {
-            ZStack {
-                VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("brover")
-                        .font(.largeTitle.bold())
-                    Text("Native macOS env manager")
-                        .foregroundStyle(.secondary)
-                    Text("Select an item from sidebar.")
+            switch selectedRoute ?? .secrets {
+            case .apps:
+                AppsView(viewModel: appsViewModel)
+            case .profiles:
+                ProfilesView(profiles: envListViewModel.profiles)
+            case .secrets:
+                ZStack {
+                    VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
+                    EnvListView(viewModel: envListViewModel)
                 }
-                .padding(24)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
         }
     }
