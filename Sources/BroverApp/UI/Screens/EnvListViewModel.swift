@@ -7,7 +7,7 @@ import AppKit
 @MainActor
 final class EnvListViewModel: ObservableObject {
     private enum RevealState {
-        static let autoHideDuration: TimeInterval = 10
+        static let autoHideDuration: TimeInterval = 15
     }
 
     @Published var profiles: [Profile] = []
@@ -23,10 +23,12 @@ final class EnvListViewModel: ObservableObject {
     @Published var revealedValue: String?
     @Published var copiedName: String?
     @Published var revealCountdownLabel: String?
+    @Published var revealProgress: Double?
 
     private let manager: EnvManager
     private var revealExpiryDate: Date?
     private var revealTimer: Timer?
+    private var revealedEnvKey: String?
 
     init(manager: EnvManager) {
         self.manager = manager
@@ -101,11 +103,12 @@ final class EnvListViewModel: ObservableObject {
         do {
             revealTimer?.invalidate()
             revealedValue = try manager.revealEnv(profile: env.profile, name: env.name)
+            revealedEnvKey = envKey(for: env)
             revealExpiryDate = Date().addingTimeInterval(RevealState.autoHideDuration)
-            updateRevealCountdownLabel()
-            revealTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            updateRevealState(now: Date())
+            revealTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
                 guard let self else { return }
-                self.tickRevealCountdown()
+                self.updateRevealState(now: Date())
             }
         } catch {
             message = "Reveal denied or failed: \(error)"
@@ -118,11 +121,18 @@ final class EnvListViewModel: ObservableObject {
         revealExpiryDate = nil
         revealedValue = nil
         revealCountdownLabel = nil
+        revealProgress = nil
+        revealedEnvKey = nil
     }
 
     func copy(_ env: EnvMetadata) {
         do {
-            let secret = try manager.copyEnv(profile: env.profile, name: env.name)
+            let secret: String
+            if revealedEnvKey == envKey(for: env), let revealedValue {
+                secret = revealedValue
+            } else {
+                secret = try manager.copyEnv(profile: env.profile, name: env.name)
+            }
             #if canImport(AppKit)
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
@@ -163,27 +173,34 @@ final class EnvListViewModel: ObservableObject {
         }
     }
 
-    private func tickRevealCountdown() {
+    func updateRevealState(now: Date) {
         guard let revealExpiryDate else {
             hideReveal()
             return
         }
 
-        if revealExpiryDate <= Date() {
+        if revealExpiryDate <= now {
             hideReveal()
             return
         }
 
-        updateRevealCountdownLabel()
+        updateRevealCountdownLabel(now: now)
     }
 
-    private func updateRevealCountdownLabel() {
+    private func updateRevealCountdownLabel(now: Date) {
         guard let revealExpiryDate else {
             revealCountdownLabel = nil
+            revealProgress = nil
             return
         }
 
-        let remaining = max(1, Int(ceil(revealExpiryDate.timeIntervalSinceNow)))
+        let remainingInterval = max(0, revealExpiryDate.timeIntervalSince(now))
+        let remaining = max(1, Int(ceil(remainingInterval)))
         revealCountdownLabel = "Auto-hide in \(remaining)s"
+        revealProgress = remainingInterval / RevealState.autoHideDuration
+    }
+
+    private func envKey(for env: EnvMetadata) -> String {
+        "\(env.profile):\(env.name)"
     }
 }

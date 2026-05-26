@@ -23,7 +23,7 @@ final class EnvListViewModelTests: XCTestCase {
         let store = InMemoryProfileStore()
         try store.createProfile(name: "default")
         store.createEnv(.init(name: "OPENAI_API_KEY", profile: "default", enabled: true))
-        let keychain = MemoryKeychain(secret: "secret")
+        let keychain = CountingKeychain(secret: "secret")
 
         let manager = EnvManager(envService: store, keychainService: keychain, authGate: AllowAllAuthGate())
         let vm = EnvListViewModel(manager: manager)
@@ -31,6 +31,7 @@ final class EnvListViewModelTests: XCTestCase {
         vm.copy(.init(name: "OPENAI_API_KEY", profile: "default", enabled: true))
 
         XCTAssertEqual(vm.message, "Copied OPENAI_API_KEY to clipboard.")
+        XCTAssertEqual(keychain.loadCount, 1)
     }
 
     func testNormalizeEnvNameInputForcesUppercaseUnderscoreAndNoHyphen() {
@@ -55,12 +56,38 @@ final class EnvListViewModelTests: XCTestCase {
         vm.reveal(env)
 
         XCTAssertEqual(vm.revealedValue, "sk_live_123")
+        XCTAssertEqual(vm.revealCountdownLabel, "Auto-hide in 15s")
+        XCTAssertEqual(vm.revealProgress ?? 0, 1, accuracy: 0.01)
+
+        vm.updateRevealState(now: Date().addingTimeInterval(5.25))
+
         XCTAssertEqual(vm.revealCountdownLabel, "Auto-hide in 10s")
+        XCTAssertEqual(vm.revealProgress ?? 0, 9.75 / 15.0, accuracy: 0.001)
 
         vm.hideReveal()
 
         XCTAssertNil(vm.revealedValue)
         XCTAssertNil(vm.revealCountdownLabel)
+        XCTAssertNil(vm.revealProgress)
+    }
+
+    func testCopyWhileRevealedDoesNotHitKeychainAgain() throws {
+        let store = InMemoryProfileStore()
+        try store.createProfile(name: "default")
+        store.createEnv(.init(name: "OPENAI_API_KEY", profile: "default", enabled: true))
+        let keychain = CountingKeychain(secret: "sk_live_123")
+
+        let manager = EnvManager(envService: store, keychainService: keychain, authGate: AllowAllAuthGate())
+        let vm = EnvListViewModel(manager: manager)
+        let env = EnvMetadata(name: "OPENAI_API_KEY", profile: "default", enabled: true)
+
+        vm.reveal(env)
+        XCTAssertEqual(keychain.loadCount, 1)
+
+        vm.copy(env)
+
+        XCTAssertEqual(vm.message, "Copied OPENAI_API_KEY to clipboard.")
+        XCTAssertEqual(keychain.loadCount, 1)
     }
 }
 
@@ -79,5 +106,23 @@ private final class MemoryKeychain: KeychainService, @unchecked Sendable {
 
     func saveSecret(profile: String, name: String, value: String) throws {}
     func loadSecret(profile: String, name: String) throws -> String { secret }
+    func deleteSecret(profile: String, name: String) throws {}
+}
+
+private final class CountingKeychain: KeychainService, @unchecked Sendable {
+    private let secret: String
+    private(set) var loadCount = 0
+
+    init(secret: String) {
+        self.secret = secret
+    }
+
+    func saveSecret(profile: String, name: String, value: String) throws {}
+
+    func loadSecret(profile: String, name: String) throws -> String {
+        loadCount += 1
+        return secret
+    }
+
     func deleteSecret(profile: String, name: String) throws {}
 }

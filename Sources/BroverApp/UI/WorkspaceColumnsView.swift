@@ -397,8 +397,15 @@ struct SecretsDetailView: View {
                                 }
 
                                 Rectangle()
-                                    .fill(viewModel.revealedValue == nil ? Color.white.opacity(0.06) : Color.green.opacity(0.90))
+                                    .fill(Color.white.opacity(0.08))
                                     .frame(height: 3)
+                                    .overlay(alignment: .leading) {
+                                        GeometryReader { proxy in
+                                            Capsule()
+                                                .fill(Color.green.opacity(0.90))
+                                                .frame(width: proxy.size.width * (viewModel.revealProgress ?? 0), height: 3)
+                                        }
+                                    }
                                     .clipShape(Capsule())
                             }
                             .padding(16)
@@ -411,14 +418,14 @@ struct SecretsDetailView: View {
                         }
 
                         HStack(spacing: 10) {
-                            detailActionButton(title: "Edit", systemImage: "pencil", style: .accent) { viewModel.updateValue(env) }
+                            detailActionButton(title: "Edit", systemImage: "pencil", style: .accent, disabled: viewModel.editedValue.isEmpty) { viewModel.updateValue(env) }
                             if viewModel.revealedValue == nil {
-                                detailActionButton(title: "Reveal", systemImage: "eye", style: .neutral) { viewModel.reveal(env) }
+                                detailActionButton(title: "Reveal", systemImage: "eye", style: .neutral, disabled: false) { viewModel.reveal(env) }
                             } else {
-                                detailActionButton(title: "Hide", systemImage: "eye.slash", style: .neutral) { viewModel.hideReveal() }
+                                detailActionButton(title: "Hide", systemImage: "eye.slash", style: .neutral, disabled: false) { viewModel.hideReveal() }
                             }
-                            detailActionButton(title: "Copy", systemImage: "doc.on.doc", style: .neutral) { viewModel.copy(env) }
-                            detailActionButton(title: "Delete", systemImage: "trash", style: .danger) { viewModel.delete(env) }
+                            detailActionButton(title: "Copy", systemImage: "doc.on.doc", style: .neutral, disabled: false) { viewModel.copy(env) }
+                            detailActionButton(title: "Delete", systemImage: "trash", style: .danger, disabled: false) { viewModel.delete(env) }
                         }
 
                         VStack(alignment: .leading, spacing: 12) {
@@ -516,26 +523,27 @@ struct SecretsDetailView: View {
         return formatter.string(from: date)
     }
 
-    private func detailActionButton(title: String, systemImage: String, style: DetailActionButtonStyle, action: @escaping () -> Void) -> some View {
+    private func detailActionButton(title: String, systemImage: String, style: DetailActionButtonStyle, disabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Image(systemName: systemImage)
                 Text(title)
             }
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(.white)
+            .foregroundStyle(disabled ? Color.white.opacity(0.45) : .white)
             .padding(.horizontal, 18)
             .frame(height: 44)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(style.fill)
+                    .fill(disabled ? Color.white.opacity(0.04) : style.fill)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(style.stroke, lineWidth: 0.8)
+                    .strokeBorder(disabled ? Color.white.opacity(0.08) : style.stroke, lineWidth: 0.8)
             )
         }
         .buttonStyle(.plain)
+        .disabled(disabled)
     }
 }
 
