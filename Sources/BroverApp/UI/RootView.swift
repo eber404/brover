@@ -79,40 +79,6 @@ struct RootView: View {
                     .padding(.horizontal, 12)
 
                     Spacer()
-
-                    HStack(spacing: 12) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(Color.white.opacity(0.06))
-                                .frame(width: 34, height: 34)
-                            Image(systemName: "lock.fill")
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(.yellow)
-                        }
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Local Keychain")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.white)
-                            Text("Unlocked")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(.green)
-                        }
-
-                        Spacer()
-
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.65))
-                    }
-                    .padding(14)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 0.8)
-                    )
-                    .padding(.horizontal, 18)
-                    .padding(.bottom, 18)
                 }
             }
             .navigationTitle("")
@@ -198,10 +164,10 @@ struct RootView: View {
 
             Spacer()
         }
-        .frame(minHeight: 44)
+        .frame(minHeight: 38)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
-        .padding(.vertical, 2)
+        .padding(.vertical, 0)
         .contentShape(Rectangle())
         .background(sidebarBackground(selected: isSelected))
         .overlay(sidebarBorder(selected: isSelected))
@@ -220,12 +186,12 @@ struct RootView: View {
 
     private func sidebarBackground(selected: Bool) -> some View {
         RoundedRectangle(cornerRadius: 14, style: .continuous)
-            .fill(selected ? Color.orange.opacity(0.88) : Color.white.opacity(0.05))
+            .fill(selected ? Color.orange.opacity(0.88) : .clear)
     }
 
     private func sidebarBorder(selected: Bool) -> some View {
         RoundedRectangle(cornerRadius: 14, style: .continuous)
-            .strokeBorder(selected ? Color.orange.opacity(0.95) : Color.white.opacity(0.08), lineWidth: 0.8)
+            .strokeBorder(selected ? Color.orange.opacity(0.95) : .clear, lineWidth: 0.8)
     }
 }
 

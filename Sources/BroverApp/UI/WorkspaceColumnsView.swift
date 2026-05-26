@@ -169,99 +169,11 @@ struct SecretsCenterListView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Secrets")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(.white)
-                    Text("\(filteredEnvs.count) item\(filteredEnvs.count == 1 ? "" : "s")")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.55))
-                }
-                Spacer()
-                HStack(spacing: 10) {
-                    glassToolbarButton(title: "Add Secret", systemImage: "plus", prominent: true) {
-                        showCreateModal = true
-                    }
-                    glassToolbarButton(title: "Refresh", systemImage: "arrow.clockwise", prominent: false) {
-                        viewModel.refresh()
-                    }
-                }
-            }
+            headerSection
             if filteredEnvs.isEmpty {
-                VStack(spacing: 8) {
-                    ContentUnavailableView(
-                        searchText.isEmpty ? "No secrets yet" : "No matching secrets",
-                        systemImage: "key",
-                        description: Text(searchText.isEmpty ? "Create your first environment variable to start managing secrets." : "Try another search term.")
-                    )
-                    if searchText.isEmpty {
-                        Button("Add first env") {
-                            showCreateModal = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .padding(.top, 4)
-                    }
-                }
-                .liquidGlassCard()
+                emptyStateSection
             } else {
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 10) {
-                        ForEach(filteredEnvs) { env in
-                            HStack(spacing: 14) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(Color.white.opacity(0.05))
-                                        .frame(width: 52, height: 52)
-                                    Image(systemName: "key.fill")
-                                        .font(.system(size: 20, weight: .semibold))
-                                        .foregroundStyle(viewModel.selectedEnvName == env.name ? Color.orange : Color.white.opacity(0.8))
-                                }
-
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(env.name)
-                                        .font(.system(size: 18, weight: .bold))
-                                        .foregroundStyle(.white)
-                                    Text(relativeUpdatedText(for: env.updatedAt))
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundStyle(Color.white.opacity(0.58))
-                                }
-
-                                Spacer()
-
-                                Text("Keychain")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(viewModel.selectedEnvName == env.name ? Color.orange : Color.white.opacity(0.72))
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                            .fill(Color.white.opacity(0.04))
-                                    )
-
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(Color.white.opacity(0.60))
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 14)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(viewModel.selectedEnvName == env.name ? Color.orange.opacity(0.18) : Color.white.opacity(0.03))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .stroke(viewModel.selectedEnvName == env.name ? Color.orange.opacity(0.9) : Color.white.opacity(0.10), lineWidth: 1.0)
-                            )
-                            .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                            .onTapGesture {
-                                viewModel.selectedEnvName = env.name
-                            }
-                        }
-                    }
-                    .padding(.vertical, 2)
-                }
+                secretsListSection
             }
         }
         .padding(20)
@@ -304,6 +216,120 @@ struct SecretsCenterListView: View {
                 .navigationTitle("Add Secret")
             }
             .frame(minWidth: 460, minHeight: 260)
+        }
+    }
+
+    private var headerSection: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Secrets")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(.white)
+                Text("\(filteredEnvs.count) item\(filteredEnvs.count == 1 ? "" : "s")")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color.white.opacity(0.55))
+            }
+            Spacer()
+            HStack(spacing: 10) {
+                glassToolbarButton(title: "Add Secret", systemImage: "plus", prominent: true) {
+                    showCreateModal = true
+                }
+            }
+        }
+    }
+
+    private var emptyStateSection: some View {
+        VStack(spacing: 8) {
+            ContentUnavailableView(
+                searchText.isEmpty ? "No secrets yet" : "No matching secrets",
+                systemImage: "key",
+                description: Text(searchText.isEmpty ? "Create your first environment variable to start managing secrets." : "Try another search term.")
+            )
+            if searchText.isEmpty {
+                Button("Add first env") {
+                    showCreateModal = true
+                }
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 4)
+            }
+        }
+        .liquidGlassCard()
+    }
+
+    private var secretsListSection: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 10) {
+                    Color.clear
+                        .frame(height: 0)
+                        .id("secrets-top")
+
+                    ForEach(filteredEnvs) { env in
+                        secretRow(env)
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+            .onChange(of: searchText) { _, newValue in
+                if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    proxy.scrollTo("secrets-top", anchor: .top)
+                }
+            }
+        }
+    }
+
+    private func secretRow(_ env: EnvMetadata) -> some View {
+        let isSelected = viewModel.selectedEnvName == env.name
+
+        return HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.white.opacity(0.05))
+                    .frame(width: 52, height: 52)
+                Image(systemName: "key.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(isSelected ? Color.orange : Color.white.opacity(0.8))
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(env.name)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(.white)
+                Text(relativeUpdatedText(for: env.updatedAt))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color.white.opacity(0.58))
+            }
+
+            Spacer()
+
+            Text("Keychain")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(isSelected ? Color.orange : Color.white.opacity(0.72))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.white.opacity(0.04))
+                )
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.white.opacity(0.60))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(isSelected ? Color.orange.opacity(0.18) : Color.white.opacity(0.03))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(isSelected ? Color.orange.opacity(0.9) : Color.white.opacity(0.10), lineWidth: 1.0)
+        )
+        .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .onTapGesture {
+            viewModel.selectedEnvName = env.name
         }
     }
 
@@ -368,45 +394,58 @@ struct SecretsDetailView: View {
 
                         VStack(alignment: .leading, spacing: 12) {
                             sectionTitle("SECRET VALUE")
-                            HStack(spacing: 10) {
-                                if let revealCountdownLabel = viewModel.revealCountdownLabel {
-                                    Label(revealCountdownLabel, systemImage: "clock")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(Color.white.opacity(0.78))
-                                        .padding(.horizontal, 14)
-                                        .frame(height: 38)
-                                        .background(.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                .strokeBorder(Color.white.opacity(0.10), lineWidth: 0.8)
-                                        )
-                                }
-                                Spacer()
-                            }
-
                             VStack(alignment: .leading, spacing: 16) {
-                                if let revealedValue = viewModel.revealedValue {
-                                    Text(revealedValue)
-                                        .font(.system(size: 18, weight: .medium, design: .monospaced))
-                                        .foregroundStyle(.white)
-                                } else {
-                                    TextField("New secret value", text: $viewModel.editedValue)
-                                        .textFieldStyle(.plain)
-                                        .font(.system(size: 18, weight: .regular))
-                                        .foregroundStyle(.white)
-                                }
-
-                                Rectangle()
-                                    .fill(Color.white.opacity(0.08))
-                                    .frame(height: 3)
-                                    .overlay(alignment: .leading) {
-                                        GeometryReader { proxy in
-                                            Capsule()
-                                                .fill(Color.green.opacity(0.90))
-                                                .frame(width: proxy.size.width * (viewModel.revealProgress ?? 0), height: 3)
+                                HStack(alignment: .top, spacing: 12) {
+                                    Group {
+                                        if let revealedValue = viewModel.revealedValue {
+                                            Text(revealedValue)
+                                                .font(.system(size: 18, weight: .medium, design: .monospaced))
+                                                .foregroundStyle(.white)
+                                        } else {
+                                            TextField("New secret value", text: $viewModel.editedValue)
+                                                .textFieldStyle(.plain)
+                                                .font(.system(size: 18, weight: .regular))
+                                                .foregroundStyle(.white)
                                         }
                                     }
-                                    .clipShape(Capsule())
+
+                                    Spacer(minLength: 12)
+
+                                    Button {
+                                        viewModel.copy(env)
+                                    } label: {
+                                        Image(systemName: "doc.on.doc")
+                                            .font(.system(size: 24, weight: .medium))
+                                            .foregroundStyle(Color.white.opacity(0.92))
+                                            .frame(width: 34, height: 34)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+
+                                if let revealProgress = viewModel.revealProgress {
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        Rectangle()
+                                            .fill(Color.white.opacity(0.08))
+                                            .frame(height: 3)
+                                            .overlay(alignment: .leading) {
+                                                GeometryReader { proxy in
+                                                    Capsule()
+                                                        .fill(Color.green.opacity(0.90))
+                                                        .frame(width: proxy.size.width * revealProgress, height: 3)
+                                                }
+                                            }
+                                            .clipShape(Capsule())
+
+                                        HStack {
+                                            Spacer()
+                                            if let revealCountdownLabel = viewModel.revealCountdownLabel {
+                                                Text(revealCountdownLabel)
+                                                    .font(.system(size: 14, weight: .medium))
+                                                    .foregroundStyle(Color.white.opacity(0.82))
+                                            }
+                                        }
+                                    }
+                                }
                             }
                             .padding(16)
                             .frame(maxWidth: .infinity, minHeight: 108, alignment: .topLeading)
@@ -424,7 +463,6 @@ struct SecretsDetailView: View {
                             } else {
                                 detailActionButton(title: "Hide", systemImage: "eye.slash", style: .neutral, disabled: false) { viewModel.hideReveal() }
                             }
-                            detailActionButton(title: "Copy", systemImage: "doc.on.doc", style: .neutral, disabled: false) { viewModel.copy(env) }
                             detailActionButton(title: "Delete", systemImage: "trash", style: .danger, disabled: false) { viewModel.delete(env) }
                         }
 
