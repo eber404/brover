@@ -4,22 +4,22 @@
 
 **brover**
 
-Desktop app for macOS, built with **Electron**, to manage local environment variables with secure storage in **macOS Keychain** and controlled injection into shells like `zsh`.
+Native macOS desktop app, built with **SwiftUI + AppKit**, to manage local environment variables with secure storage in **macOS Keychain**.
 
-The MVP is **macOS-only**.
+MVP is **macOS-only** and **GUI-first**. CLI comes in next roadmap step.
 
 ---
 
-## Main goal
+## Main goal (current phase)
 
-Create a local UI to:
+Build local UI to:
 
 - register environment variables;
 - organize by profiles;
 - enable/disable envs;
 - store sensitive values in macOS Keychain;
-- generate integration with `~/.zshrc`;
-- inject envs at runtime via authorized CLI.
+- reveal/copy/edit/delete with auth gates;
+- persist non-sensitive metadata locally.
 
 ---
 
@@ -27,9 +27,9 @@ Create a local UI to:
 
 ### Main auth
 
-Use **macOS Keychain** as the primary authentication/authorization mechanism.
+Use **macOS Keychain** as primary auth/authz mechanism.
 
-Do not implement a custom master password in the MVP.
+Do not implement custom master password in MVP.
 
 ### Operations that must require authentication
 
@@ -37,17 +37,16 @@ Do not implement a custom master password in the MVP.
 - copy value;
 - edit value;
 - delete env;
-- export envs to shell, if user enables secure mode;
 - change sensitive settings.
 
-### Operations that do not need to reveal secrets
+### Operations that do not need secret reveal
 
 - list env names;
 - list profiles;
 - view enabled/disabled status;
 - view metadata;
 - search by name;
-- switch active profile, as long as values are not exported immediately.
+- switch active profile.
 
 ---
 
@@ -57,22 +56,14 @@ Do not implement a custom master password in the MVP.
 
 - secrets at rest on disk;
 - secrets in simple backups;
-- secrets exposed in `.zshrc`, `.zshenv`, `.bashrc`, `.profile`;
 - casual editing without authentication;
 - reading by apps not authorized in Keychain.
 
 ### Not protected
 
-Do not promise that a user can use an env without being able to see it.
+If secret is exported to shell/process in future CLI phase, process can read it.
 
-After an env is exported to a shell/process, that process can read it:
-
-```sh
-echo "$OPENAI_API_KEY"
-env | grep OPENAI
-```
-
-Correct product message:
+Correct message:
 
 > Secrets stay protected in Keychain until loaded at runtime.
 
@@ -82,24 +73,15 @@ Incorrect message:
 
 ---
 
-## Architecture
+## Architecture (current phase)
 
 ```txt
-Electron App
-  ├── Renderer UI
-  ├── Main Process
+Native macOS App
+  ├── SwiftUI Screens
+  ├── AppKit Visual Effects / Window Layer
   ├── Keychain Adapter
   ├── Profile Store
-  └── Installer / Shell Integration
-
-CLI: brover
-  ├── export
-  ├── list
-  ├── get
-  ├── set
-  ├── enable
-  ├── disable
-  └── doctor
+  └── App Services (validation, auth gates)
 
 macOS Keychain
   └── sensitive values
@@ -107,31 +89,27 @@ macOS Keychain
 Local config
   └── non-sensitive metadata
 
-~/.zshrc
-  └── source ~/.config/brover/loader.zsh
-
-loader.zsh
-  └── eval "$(brover export --profile default)"
+Future CLI (`brover`)
+  └── roadmap phase for export/list/get/set/enable/disable/doctor
 ```
 
 ---
 
 ## Components
 
-### Electron Main Process
+### Native App Services
 
 Responsible for:
 
 - filesystem access;
 - Keychain communication;
-- loader install/removal;
-- secure CLI spawn;
-- IPC with renderer;
+- metadata read/write;
+- auth-gated secret actions;
 - validation of sensitive commands.
 
-Never expose direct Keychain access in renderer.
+Keep Keychain access isolated to service layer.
 
-### Renderer
+### SwiftUI/AppKit UI
 
 Responsible for:
 
@@ -139,17 +117,24 @@ Responsible for:
 - visual CRUD;
 - profiles;
 - enabled/disabled toggles;
-- shell integration install screen;
 - visual auth state;
 - onboarding.
 
-Renderer must talk to Main Process through typed IPC.
+UI talks to typed service interfaces/protocols.
 
-### CLI `brover`
+### Current implementation status
 
-Used by shell and optionally by UI.
+- Native app scaffold exists with SwiftUI navigation and baseline screens.
+- Keychain service exists in service layer using `Security.framework`.
+- JSON metadata store exists for non-sensitive profile/env data.
+- Auth gate abstraction exists for sensitive actions (reveal/copy/edit/delete).
+- Root app wiring uses JSON store at `~/Library/Application Support/brover/config.json`.
+- Local auth gate uses macOS authentication for sensitive operations.
+- Env manager flow is connected for create/edit/reveal/delete.
 
-Minimum commands:
+### Future CLI `brover` (next step)
+
+Planned commands:
 
 ```sh
 brover export --profile default
@@ -160,59 +145,6 @@ brover enable NAME --profile default
 brover disable NAME --profile default
 brover doctor
 ```
-
-Most important command:
-
-```sh
-brover export --profile default
-```
-
-It must print only safe exports:
-
-```sh
-export OPENAI_API_KEY='escaped_value'
-export DATABASE_URL='escaped_value'
-```
-
----
-
-## Shell integration
-
-### Loader file
-
-Recommended location:
-
-```txt
-~/.config/brover/loader.zsh
-```
-
-Conceptual content:
-
-```sh
-# brover loader
-if command -v brover >/dev/null 2>&1; then
-  eval "$(brover export --profile default)"
-fi
-```
-
-### Insert into `.zshrc`
-
-Add delimited block:
-
-```sh
-# >>> brover initialize >>>
-[ -f "$HOME/.config/brover/loader.zsh" ] && source "$HOME/.config/brover/loader.zsh"
-# <<< brover initialize <<<
-```
-
-Rules:
-
-- never overwrite full `.zshrc`;
-- always create backup before changing;
-- do not duplicate block;
-- allow clean uninstall;
-- detect missing `.zshrc` and create if needed;
-- in MVP, support only `zsh`.
 
 ---
 
@@ -234,44 +166,12 @@ Account format:
 profile:name
 ```
 
-Example:
-
-```txt
-default:OPENAI_API_KEY
-work:DATABASE_URL
-```
-
 ### Non-sensitive
 
 Metadata can stay in local JSON:
 
 ```txt
 ~/Library/Application Support/brover/config.json
-```
-
-Example:
-
-```json
-{
-  "version": 1,
-  "activeProfile": "default",
-  "profiles": {
-    "default": {
-      "envs": {
-        "OPENAI_API_KEY": {
-          "enabled": true,
-          "description": "OpenAI local dev key",
-          "createdAt": "2026-05-26T00:00:00.000Z",
-          "updatedAt": "2026-05-26T00:00:00.000Z"
-        }
-      }
-    }
-  },
-  "shell": {
-    "zshIntegrationInstalled": true,
-    "loaderPath": "~/.config/brover/loader.zsh"
-  }
-}
 ```
 
 Never store sensitive values in this JSON.
@@ -300,46 +200,19 @@ Reject:
 
 ---
 
-## Value escaping
-
-CLI must escape values for shell with safe single-quote strategy.
-
-Example:
-
-Value:
-
-```txt
-abc'def
-```
-
-Generated export:
-
-```sh
-export NAME='abc'"'"'def'
-```
-
-Never generate exports with unsafe concatenation.
-
-Never accept content that injects commands.
-
----
-
 ## MVP UX
 
 ### Minimum screens
 
 - Onboarding;
-- Shell Integration Status;
 - Profiles;
 - Env List;
 - Create/Edit Env;
 - Reveal Secret;
 - Settings;
-- Doctor / Diagnostics.
+- Diagnostics.
 
-### Env List
-
-Fields:
+### Env List fields
 
 - name;
 - profile;
@@ -349,9 +222,7 @@ Fields:
 - Keychain item status;
 - actions: reveal, copy, edit, disable, delete.
 
-### Create/Edit
-
-Fields:
+### Create/Edit fields
 
 - name;
 - value;
@@ -374,117 +245,17 @@ Editing value must require authentication.
 
 ### Required in MVP
 
-- Electron;
-- TypeScript;
-- macOS Keychain;
-- zsh integration.
+- Swift;
+- SwiftUI;
+- AppKit (Liquid Glass / visual effects integration);
+- macOS Keychain.
 
 ### Recommended
 
-- Electron Forge or electron-builder;
-- React;
-- Vite;
-- Zustand or TanStack Query;
-- Zod for validation;
-- Vitest;
-- Playwright for e2e;
-- keytar or custom native Keychain bridge.
-
-### Note on `keytar`
-
-`keytar` can be used in MVP if compatible with current Electron version.
-
-If it causes native build issues, replace with native wrapper/CLI using macOS APIs or `security` command.
-
----
-
-## IPC
-
-Define explicit API, without exposing Node in renderer.
-
-Example:
-
-```ts
-window.shEnvs = {
-  listProfiles(): Promise<Profile[]>;
-  listEnvs(profile: string): Promise<EnvMetadata[]>;
-  createEnv(input: CreateEnvInput): Promise<void>;
-  updateEnv(input: UpdateEnvInput): Promise<void>;
-  deleteEnv(profile: string, name: string): Promise<void>;
-  revealEnv(profile: string, name: string): Promise<string>;
-  installZshIntegration(): Promise<void>;
-  uninstallZshIntegration(): Promise<void>;
-  runDoctor(): Promise<DoctorResult>;
-};
-```
-
-Rules:
-
-- `contextIsolation: true`;
-- `nodeIntegration: false`;
-- preload with limited API;
-- validate input in main process;
-- never pass arbitrary objects to shell.
-
----
-
-## CLI
-
-### `export`
-
-```sh
-brover export --profile default
-```
-
-Behavior:
-
-- read local metadata;
-- filter enabled envs;
-- fetch values from Keychain;
-- generate `export` lines;
-- do not print logs to stdout;
-- send errors to stderr;
-- non-zero exit code on fatal error.
-
-### `doctor`
-
-Checks:
-
-- macOS;
-- zsh;
-- loader exists;
-- block in `.zshrc`;
-- CLI in PATH;
-- valid config JSON;
-- accessible Keychain items;
-- permissions.
-
----
-
-## Installation
-
-MVP must offer:
-
-- `.dmg` app;
-- CLI binary installed in detectable location;
-- guided `.zshrc` setup;
-- automatic `.zshrc` backup.
-
-Possible CLI locations:
-
-```txt
-/usr/local/bin/brover
-/opt/homebrew/bin/brover
-~/.local/bin/brover
-```
-
-Prefer no-sudo option in MVP:
-
-```txt
-~/.local/bin/brover
-```
-
-App must warn if directory is not in PATH.
+- Swift Package Manager;
+- Swift Testing/XCTest;
+- Keychain Services APIs (`Security.framework`);
+- strict model validation for env names and profile data.
 
 ---
 
@@ -508,70 +279,63 @@ Allowed to log:
 ### Unit
 
 - name validation;
-- shell escaping;
 - config parsing;
 - enable/disable;
-- profile selection.
+- profile selection;
+- auth gate checks.
 
 ### Integration
 
 - save secret in Keychain;
 - retrieve secret;
 - delete secret;
-- export envs;
-- install loader;
-- remove loader.
+- persist local metadata;
+- auth-gated reveal flow.
 
 ### Security
 
 - ensure config JSON has no values;
-- ensure `export` stdout contains only exports;
 - ensure errors do not print secret;
 - ensure invalid names are rejected.
 
 ---
 
-## MVP acceptance criteria
+## MVP acceptance criteria (current phase)
 
 - user installs app on macOS;
 - creates env through UI;
 - value stays in Keychain;
-- `.zshrc` receives safe block;
-- new terminal loads enabled env;
-- disabled env is not exported;
 - user can reveal value through authentication;
 - user can edit/delete env through UI;
-- `brover doctor` diagnoses basic issues;
 - no secret appears in config JSON or logs.
 
 ---
 
-## Out of scope for MVP
+## Out of scope for current phase
 
 - Linux;
 - Windows;
+- shell integration install;
+- CLI export pipeline;
 - bash/fish;
 - cloud sync;
 - teams/collaboration;
 - custom master password;
 - mobile;
-- plugins;
-- aggressive automatic `.zshrc` import;
-- automatic edits to `.bashrc`, `.profile`, `.zprofile`;
-- promises of "invisible secret after export".
+- plugins.
 
 ---
 
-## Post-MVP roadmap
+## Next roadmap step
 
-- bash/fish support;
-- `.env` import/export;
-- profile per directory/project;
-- folder-based auto-switch;
-- direnv integration;
-- 1Password/Bitwarden integration;
-- high-security mode with auth on every export;
-- session expiration;
-- stack-based templates;
-- local audit;
-- optional encrypted sync.
+- CLI (`brover`) with `export/list/get/set/enable/disable/doctor`;
+- zsh loader generation and `.zshrc` block install/uninstall;
+- safe export escaping;
+- shell diagnostics;
+- then bash/fish support.
+
+---
+
+## Documentation sync rule
+
+When scope, architecture, or roadmap changes, update both `AGENTS.md` and `README.md` in the same change set.

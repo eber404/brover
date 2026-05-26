@@ -1,255 +1,133 @@
 # brover
 
-macOS desktop app that manages local environment variables through a UI, stores sensitive values in the macOS Keychain, and injects envs into `zsh` shells at runtime.
+Native macOS app to manage local environment variables with secure secret storage in macOS Keychain.
 
-MVP: **Electron + macOS + zsh**.
-
----
-
-## Problem
-
-Managing local envs usually requires editing files like:
-
-```txt
-~/.zshrc
-~/.zshenv
-~/.env
-.profile
-```
-
-This creates problems:
-
-- secrets remain in plain text;
-- shell files are easy to break;
-- no UI exists to enable/disable envs;
-- values end up in backups, history, or repositories;
-- switching profiles is manual.
+Current phase: **SwiftUI + AppKit GUI-first MVP**.
 
 ---
 
-## Solution
+## Current status
 
-`brover` separates responsibilities:
+- native project bootstrapped with Swift Package Manager;
+- app target (`BroverApp`) with SwiftUI entrypoint;
+- core target (`BroverCore`) for models, validation, and service contracts;
+- native Keychain service implemented with `Security.framework`;
+- JSON-backed profile/env metadata store implemented;
+- env manager service wired to create/edit/reveal/delete flows;
+- real app uses JSON config at `~/Library/Application Support/brover/config.json`;
+- real auth gate uses macOS local authentication (Touch ID/password);
+- initial screens: Env List, Profiles, Diagnostics;
+- tests cover validation, stores, auth gate checks, and env manager flows.
+
+---
+
+## Why native
+
+brover prioritizes macOS visual fidelity and platform integration:
+
+- SwiftUI + AppKit for native look and Liquid Glass style effects;
+- direct Keychain integration through Apple frameworks;
+- lower overhead than web-runtime UI stack.
+
+---
+
+## Architecture (current phase)
 
 ```txt
+Native macOS App
+  ├── SwiftUI screens
+  ├── AppKit visual effect bridge
+  ├── App service layer
+  ├── Profile/env metadata store
+  └── Validation and auth gates
+
 macOS Keychain
-  └── stores sensitive values
+  └── sensitive values (implemented service layer)
 
 Local config
-  └── stores non-sensitive metadata
-
-Electron App
-  └── UI to create, edit, enable, and disable envs
-
-brover CLI
-  └── injects envs into the shell
-
-~/.zshrc
-  └── loads the loader
+  └── non-sensitive metadata (implemented JSON store)
 ```
 
 ---
 
-## How it works
-
-The app installs a block in `~/.zshrc`:
-
-```sh
-# >>> brover initialize >>>
-[ -f "$HOME/.config/brover/loader.zsh" ] && source "$HOME/.config/brover/loader.zsh"
-# <<< brover initialize <<<
-```
-
-The loader calls the CLI:
-
-```sh
-eval "$(brover export --profile default)"
-```
-
-The CLI reads enabled envs, fetches values from the Keychain, and prints safe exports:
-
-```sh
-export OPENAI_API_KEY='...'
-export DATABASE_URL='...'
-```
-
----
-
-## Security
-
-The project uses **macOS Keychain** as the main auth mechanism.
-
-No custom master password in the MVP.
-
-### What is protected
-
-- sensitive values at rest;
-- secrets kept out of `.zshrc`;
-- secrets kept out of config JSON;
-- read/edit operations through app with macOS authentication;
-- direct access constrained by Keychain.
-
-### Important limit
-
-After an env is exported into a shell, that shell/process can read it:
-
-```sh
-echo "$OPENAI_API_KEY"
-```
-
-Goal: protect secrets **before injection**, not make an exported variable invisible.
-
----
-
-## MVP features
-
-- create env;
-- edit env;
-- delete env;
-- enable/disable env;
-- reveal value with authentication;
-- copy value with authentication;
-- organize by profile;
-- install `zsh` integration;
-- remove `zsh` integration;
-- diagnose setup with `brover doctor`.
-
----
-
-## Platform
-
-MVP supports only:
-
-- macOS;
-- zsh;
-- Electron desktop app.
-
-Out of initial scope:
-
-- Linux;
-- Windows;
-- bash;
-- fish;
-- cloud sync;
-- team collaboration;
-- custom master password.
-
----
-
-## Expected structure
+## Repository structure
 
 ```txt
 brover/
-  apps/
-    desktop/
-      src/
-        main/
-        renderer/
-        preload/
-  packages/
-    cli/
-    core/
-    keychain/
-    shell/
+  Sources/
+    BroverApp/
+    BroverCore/
+  Tests/
+    BroverAppTests/
+    BroverCoreTests/
+  docs/
+    plans/
   AGENTS.md
+  Package.swift
   README.md
 ```
 
 ---
 
-## Local config
-
-Non-sensitive metadata lives in:
-
-```txt
-~/Library/Application Support/brover/config.json
-```
-
-Example:
-
-```json
-{
-  "version": 1,
-  "activeProfile": "default",
-  "profiles": {
-    "default": {
-      "envs": {
-        "OPENAI_API_KEY": {
-          "enabled": true,
-          "description": "OpenAI local dev key"
-        }
-      }
-    }
-  }
-}
-```
-
-Real values stay in Keychain, not in this file.
-
----
-
-## CLI
-
-Planned commands:
+## Build and test
 
 ```sh
-brover export --profile default
-brover list --profile default
-brover get OPENAI_API_KEY --profile default
-brover set OPENAI_API_KEY --profile default
-brover enable OPENAI_API_KEY --profile default
-brover disable OPENAI_API_KEY --profile default
-brover doctor
+swift build
+swift test
+```
+
+Run app from package:
+
+```sh
+swift run BroverApp
+```
+
+Makefile shortcuts:
+
+```sh
+make build
+make test
+make run
+make run-release
+make open
+```
+
+Run focused test groups:
+
+```sh
+swift test --filter KeychainServiceTests
+swift test --filter JSONProfileStoreTests
+swift test --filter AuthGateTests
 ```
 
 ---
 
-## Security rules
+## Security model
 
-- never log secrets;
-- never store values in local JSON;
-- never expose Node.js in renderer;
-- validate all env names;
-- escape all values before generating `export`;
-- back up `.zshrc` before modifying;
-- never overwrite full `.zshrc`;
-- never duplicate integration block.
+- use macOS Keychain as primary auth/authz mechanism;
+- never store secret values in local JSON;
+- auth required for reveal/copy/edit/delete secret actions;
+- never log secret values.
 
----
-
-## Valid env name
+Env name validation rule:
 
 ```regex
 ^[A-Za-z_][A-Za-z0-9_]*$
-```
-
-Valid examples:
-
-```txt
-OPENAI_API_KEY
-DATABASE_URL
-AWS_PROFILE
-```
-
-Invalid examples:
-
-```txt
-1TOKEN
-MY KEY
-API-KEY
-TOKEN=value
 ```
 
 ---
 
 ## Roadmap
 
-- import/export `.env`;
-- project-based profiles;
-- directory auto-switch;
-- direnv integration;
-- bash/fish support;
-- Linux support;
-- high-security mode;
-- 1Password/Bitwarden integration;
-- optional encrypted sync.
+Next step after app MVP:
+
+- implement CLI `brover` (`export/list/get/set/enable/disable/doctor`);
+- add zsh loader generation and `.zshrc` block management;
+- add safe export escaping and shell diagnostics;
+- then expand shell support (bash/fish).
+
+---
+
+## Maintenance rule
+
+When architecture/scope changes, update both `AGENTS.md` and `README.md` in same change set.
