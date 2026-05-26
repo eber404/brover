@@ -1,10 +1,13 @@
 import { useState } from 'react'
+import { KeyRound, Plus } from 'lucide-react'
 import type { EnvMetadata, Profile } from '../../../../shared/models'
 import { UNSUPPORTED_SECRET_BACKEND } from '../../../../shared/models'
+import { useI18n } from '../../i18n'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog'
 import { Input } from '../../components/ui/input'
+import { useToast } from '../../components/ui/toaster'
 
 interface SecretsPanelProps {
   profiles: Profile[]
@@ -15,11 +18,11 @@ interface SecretsPanelProps {
   setSelectedEnvId: (value: string) => void
   setProfiles: (items: Profile[]) => void
   setEnvs: (items: EnvMetadata[]) => void
-  setMessage: (value: string) => void
   setRevealValue: (value: string) => void
 }
 
 export function useSecretsPanel(props: SecretsPanelProps) {
+  const { t } = useI18n()
   const {
     profiles,
     selectedProfile,
@@ -29,16 +32,16 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     setSelectedEnvId,
     setProfiles,
     setEnvs,
-    setMessage,
     setRevealValue
   } = props
+
+  const { toast } = useToast()
 
   const [open, setOpen] = useState(false)
   const [newProfileName, setNewProfileName] = useState('')
   const [newEnvName, setNewEnvName] = useState('')
   const [newEnvValue, setNewEnvValue] = useState('')
   const [newEnvDescription, setNewEnvDescription] = useState('')
-  const [editedValue, setEditedValue] = useState('')
 
   const selectedEnv = envs.find((item) => item.id === selectedEnvId) ?? null
 
@@ -57,7 +60,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       description: newEnvDescription
     })
     if (!result.ok) {
-      setMessage(result.error === UNSUPPORTED_SECRET_BACKEND ? 'Secure storage not implemented for this OS yet.' : result.error ?? 'Failed to create secret')
+      toast(result.error === UNSUPPORTED_SECRET_BACKEND ? t('common.unsupportedBackend') : result.error ?? 'Failed to create secret', 'error')
       return
     }
     setOpen(false)
@@ -65,14 +68,14 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     setNewEnvValue('')
     setNewEnvDescription('')
     setEnvs(await window.brover.listEnvs())
-    setMessage('Secret created')
+    toast(t('common.secretCreated'))
   }
 
   async function revealEnv() {
     if (!selectedEnv) return
     const result = await window.brover.revealEnv({ profile: selectedEnv.profile, name: selectedEnv.name })
     if (!result.ok) {
-      setMessage(result.error === UNSUPPORTED_SECRET_BACKEND ? 'Secure storage not implemented for this OS yet.' : result.error ?? 'Failed to reveal secret')
+      toast(result.error === UNSUPPORTED_SECRET_BACKEND ? t('common.unsupportedBackend') : result.error ?? 'Failed to reveal secret', 'error')
       setRevealValue('')
       return
     }
@@ -83,15 +86,15 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     if (!selectedEnv) return
     const result = await window.brover.revealEnv({ profile: selectedEnv.profile, name: selectedEnv.name })
     if (!result.ok) {
-      setMessage(result.error === UNSUPPORTED_SECRET_BACKEND ? 'Secure storage not implemented for this OS yet.' : result.error ?? 'Failed to copy secret')
+      toast(result.error === UNSUPPORTED_SECRET_BACKEND ? t('common.unsupportedBackend') : result.error ?? 'Failed to copy secret', 'error')
       return
     }
     const value = result.value ?? ''
     await navigator.clipboard.writeText(value)
-    setMessage('Secret copied')
+    toast(t('common.secretCopied'))
   }
 
-  async function updateEnvValue() {
+  async function updateEnvValue(editedValue: string) {
     if (!selectedEnv) return
     const result = await window.brover.updateEnv({
       id: selectedEnv.id,
@@ -102,22 +105,22 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       enabled: selectedEnv.enabled
     })
     if (!result.ok) {
-      setMessage(result.error === UNSUPPORTED_SECRET_BACKEND ? 'Secure storage not implemented for this OS yet.' : result.error ?? 'Failed to update secret')
+      toast(result.error === UNSUPPORTED_SECRET_BACKEND ? t('common.unsupportedBackend') : result.error ?? 'Failed to update secret', 'error')
       return
     }
-    setEditedValue('')
-    setMessage('Secret updated')
+    toast(t('common.secretUpdated'))
   }
 
   async function deleteEnv() {
     if (!selectedEnv) return
     const result = await window.brover.deleteEnv({ id: selectedEnv.id, profile: selectedEnv.profile, name: selectedEnv.name })
     if (!result.ok) {
-      setMessage(result.error === UNSUPPORTED_SECRET_BACKEND ? 'Secure storage not implemented for this OS yet.' : result.error ?? 'Failed to delete secret')
+      toast(result.error === UNSUPPORTED_SECRET_BACKEND ? t('common.unsupportedBackend') : result.error ?? 'Failed to delete secret', 'error')
       return
     }
     setEnvs(await window.brover.listEnvs())
     setSelectedEnvId('')
+    toast(t('common.secretDeleted'))
   }
 
   return {
@@ -130,46 +133,63 @@ export function useSecretsPanel(props: SecretsPanelProps) {
                 <option key={profile.id} value={profile.id}>{profile.name}</option>
               ))}
             </select>
-            <Input className="w-full" placeholder="New profile" value={newProfileName} onChange={(event) => setNewProfileName(event.target.value)} />
-            <Button variant="outline" onClick={() => void createProfile()}>Create</Button>
+            <Input className="w-full" placeholder={t('secrets.newProfile')} value={newProfileName} onChange={(event) => setNewProfileName(event.target.value)} />
+            <Button variant="outline" onClick={() => void createProfile()}>{t('secrets.createProfile')}</Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button>Add Secret</Button>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('secrets.addSecret')}
+                </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add Secret</DialogTitle>
-                  <DialogDescription>Create metadata + store secret value in secure backend.</DialogDescription>
+                  <DialogTitle>{t('secrets.dialogTitle')}</DialogTitle>
+                  <DialogDescription>{t('secrets.dialogDescription')}</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-2">
-                  <Input placeholder="Env name (OPENAI_API_KEY)" value={newEnvName} onChange={(event) => setNewEnvName(event.target.value)} />
-                  <Input placeholder="Secret value" value={newEnvValue} onChange={(event) => setNewEnvValue(event.target.value)} />
-                  <Input placeholder="Description (optional)" value={newEnvDescription} onChange={(event) => setNewEnvDescription(event.target.value)} />
+                  <Input placeholder={t('secrets.envName')} value={newEnvName} onChange={(event) => setNewEnvName(event.target.value)} />
+                  <Input placeholder={t('secrets.secretValue')} value={newEnvValue} onChange={(event) => setNewEnvValue(event.target.value)} />
+                  <Input placeholder={t('secrets.description')} value={newEnvDescription} onChange={(event) => setNewEnvDescription(event.target.value)} />
                 </div>
                 <div className="mt-4 flex justify-end gap-2">
                   <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
+                    <Button variant="outline">{t('secrets.cancel')}</Button>
                   </DialogClose>
-                  <Button onClick={() => void createEnv()}>Create</Button>
+                  <Button onClick={() => void createEnv()}>{t('secrets.create')}</Button>
                 </div>
               </DialogContent>
             </Dialog>
           </div>
         </Card>
 
-        <div className="grid gap-2">
-          {filteredEnvs.map((item) => (
-            <button key={item.id} className={`rounded-xl border p-3 text-left ${selectedEnvId === item.id ? 'border-accent bg-slate-900' : 'border-edge bg-slate-950/30'}`} onClick={() => setSelectedEnvId(item.id)}>
-              <div className="font-semibold">{item.name}</div>
-              <div className="text-xs text-slate-400">{item.description || 'No description'}</div>
-            </button>
-          ))}
-        </div>
+        {filteredEnvs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-edge bg-slate-950/30 p-8 text-center">
+            <KeyRound className="h-10 w-10 text-slate-500" />
+            <div className="text-sm font-medium text-slate-300">{t('secrets.noSecrets')}</div>
+            <div className="text-xs text-slate-500">{t('secrets.noSecretsDescription')}</div>
+          </div>
+        ) : (
+          <div className="grid gap-2">
+            {filteredEnvs.map((item) => (
+              <button key={item.id} className={`flex items-center gap-3 rounded-xl border p-3 text-left ${selectedEnvId === item.id ? 'border-accent bg-slate-900' : 'border-edge bg-slate-950/30'}`} onClick={() => setSelectedEnvId(item.id)}>
+                <KeyRound className="h-5 w-5 shrink-0 text-slate-400" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-semibold">{item.name}</span>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${item.enabled ? 'bg-emerald-950/50 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}>
+                      {item.enabled ? t('secrets.enabled') : t('secrets.disabled')}
+                    </span>
+                  </div>
+                  <div className="truncate text-xs text-slate-400">{item.description || 'No description'}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </>
     ),
     selectedEnv,
-    editedValue,
-    setEditedValue,
     revealEnv,
     copyEnv,
     updateEnvValue,

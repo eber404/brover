@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { AppAuthorization, EnvMetadata, Profile, RootWorkspace } from '../../shared/models'
 import { Button } from './components/ui/button'
-import { Input } from './components/ui/input'
+import { ToastProvider } from './components/ui/toaster'
+import { I18nProvider, useI18n } from './i18n'
+import { SecretsDetail } from './features/secrets/SecretsDetail'
 import { useSecretsPanel } from './features/secrets/SecretsPanel'
+import { AppsDetail } from './features/apps/AppsDetail'
 import { useAppsPanel } from './features/apps/AppsPanel'
 
-function App() {
+function AppShell() {
+  const { t, locale, setLocale } = useI18n()
   const [workspace, setWorkspace] = useState<RootWorkspace>('secrets')
   const [searchText, setSearchText] = useState('')
   const [apps, setApps] = useState<AppAuthorization[]>([])
@@ -13,7 +17,6 @@ function App() {
   const [envs, setEnvs] = useState<EnvMetadata[]>([])
   const [selectedAppId, setSelectedAppId] = useState<string>('')
   const [selectedEnvId, setSelectedEnvId] = useState<string>('')
-  const [message, setMessage] = useState('')
   const [revealValue, setRevealValue] = useState('')
 
   const [newAppName, setNewAppName] = useState('')
@@ -62,25 +65,32 @@ function App() {
     setSelectedEnvId,
     setProfiles,
     setEnvs,
-    setMessage,
     setRevealValue
   })
 
   return (
     <div className="grid h-screen grid-cols-[240px_1fr_1fr] gap-3 p-3 text-sm">
       <aside className="rounded-2xl border border-edge bg-panel/90 p-4">
-        <h1 className="text-xl font-semibold tracking-tight">Brover</h1>
-        <p className="mt-1 text-xs text-slate-400">Desktop secrets control plane</p>
+        <h1 className="text-xl font-semibold tracking-tight">{t('app.title')}</h1>
+        <p className="mt-1 text-xs text-slate-400">{t('app.subtitle')}</p>
         <div className="mt-8 grid gap-2">
-          <button className={`rounded-xl px-3 py-2 text-left ${workspace === 'apps' ? 'bg-accent text-slate-950' : 'bg-slate-900 text-slate-300'}`} onClick={() => setWorkspace('apps')}>Apps</button>
-          <button className={`rounded-xl px-3 py-2 text-left ${workspace === 'secrets' ? 'bg-accent text-slate-950' : 'bg-slate-900 text-slate-300'}`} onClick={() => setWorkspace('secrets')}>Secrets</button>
+          <button className={`rounded-xl px-3 py-2 text-left ${workspace === 'apps' ? 'bg-accent text-slate-950' : 'bg-slate-900 text-slate-300'}`} onClick={() => setWorkspace('apps')}>{t('workspaces.apps')}</button>
+          <button className={`rounded-xl px-3 py-2 text-left ${workspace === 'secrets' ? 'bg-accent text-slate-950' : 'bg-slate-900 text-slate-300'}`} onClick={() => setWorkspace('secrets')}>{t('workspaces.secrets')}</button>
+        </div>
+
+        <div className="mt-auto pt-8">
+          <select className="w-full rounded-lg border border-edge bg-slate-900 px-2 py-1 text-xs" value={locale} onChange={(e) => setLocale(e.target.value as 'en' | 'es' | 'pt')}>
+            <option value="en">English</option>
+            <option value="es">Espanol</option>
+            <option value="pt">Portugues</option>
+          </select>
         </div>
       </aside>
 
       <section className="rounded-2xl border border-edge bg-panel/85 p-4">
         <div className="mb-3 flex items-center gap-2 rounded-xl border border-edge bg-slate-950/50 px-3 py-2">
-          <span className="text-slate-400">Search</span>
-          <input className="w-full bg-transparent outline-none" placeholder={workspace === 'apps' ? 'Search apps...' : 'Search secrets...'} value={searchText} onChange={(event) => setSearchText(event.target.value)} />
+          <span className="text-slate-400">{t('search.placeholder')}</span>
+          <input className="w-full bg-transparent outline-none" placeholder={workspace === 'apps' ? t('search.appsPlaceholder') : t('search.secretsPlaceholder')} value={searchText} onChange={(event) => setSearchText(event.target.value)} />
         </div>
 
         {workspace === 'apps' ? (
@@ -93,45 +103,39 @@ function App() {
       </section>
 
       <section className="rounded-2xl border border-edge bg-panel/80 p-4">
-        <div className="mb-2 text-xs uppercase tracking-widest text-slate-400">Details</div>
+        <div className="mb-2 text-xs uppercase tracking-widest text-slate-400">{t('common.details')}</div>
         {workspace === 'apps' ? (
-          appsPanel.selectedApp ? (
-            <div className="grid gap-3">
-              <div>
-                <div className="text-lg font-semibold">{appsPanel.selectedApp.displayName}</div>
-                <div className="text-xs text-slate-400">{appsPanel.selectedApp.bundleID}</div>
-              </div>
-              <Button variant="outline" onClick={() => void window.brover.toggleApp(appsPanel.selectedApp.id).then(setApps)}>Toggle Enabled</Button>
-              <Button variant="destructive" onClick={() => void window.brover.deleteApp(appsPanel.selectedApp.id).then(setApps)}>Delete App</Button>
-            </div>
-          ) : (
-            <p className="text-slate-400">Select an app.</p>
-          )
-        ) : secretsPanel.selectedEnv ? (
-          <div className="grid gap-3">
-            <div>
-              <div className="text-lg font-semibold">{secretsPanel.selectedEnv.name}</div>
-              <div className="text-xs text-slate-400">Profile: {secretsPanel.selectedEnv.profile}</div>
-            </div>
-            <Button variant="outline" onClick={() => void secretsPanel.revealEnv()}>Reveal Secret</Button>
-            <Button variant="outline" onClick={() => void secretsPanel.copyEnv()}>Copy Secret</Button>
-            <div className="grid gap-2">
-              <Input placeholder="New secret value" value={secretsPanel.editedValue} onChange={(event) => secretsPanel.setEditedValue(event.target.value)} />
-              <Button variant="outline" onClick={() => void secretsPanel.updateEnvValue()}>Update Secret Value</Button>
-            </div>
-            <Button variant="outline" onClick={() => void window.brover.toggleEnvEnabled(secretsPanel.selectedEnv.id).then(setEnvs)}>Enable/Disable</Button>
-            <Button variant="destructive" onClick={() => void secretsPanel.deleteEnv()}>Delete Secret</Button>
-            {revealValue && <div className="rounded-lg border border-edge bg-slate-950/60 p-3 font-mono text-xs">{revealValue}</div>}
-          </div>
+          <AppsDetail
+            app={appsPanel.selectedApp}
+            enabled={appsPanel.selectedApp?.enabled ?? false}
+            onToggleEnabled={() => void window.brover.toggleApp(appsPanel.selectedApp!.id).then(setApps)}
+            onDelete={() => void window.brover.deleteApp(appsPanel.selectedApp!.id).then(setApps)}
+          />
         ) : (
-          <p className="text-slate-400">Select a secret.</p>
+          <SecretsDetail
+            env={secretsPanel.selectedEnv}
+            enabled={secretsPanel.selectedEnv?.enabled ?? false}
+            revealValue={revealValue}
+            onReveal={() => void secretsPanel.revealEnv()}
+            onCopy={() => void secretsPanel.copyEnv()}
+            onToggleEnabled={() => void window.brover.toggleEnvEnabled(secretsPanel.selectedEnv!.id).then(setEnvs)}
+            onDelete={() => void secretsPanel.deleteEnv()}
+            onUpdateValue={(value) => void secretsPanel.updateEnvValue(value)}
+          />
         )}
 
-        <Button className="mt-8" variant="outline" onClick={() => void refreshAll()}>Refresh</Button>
-        {message && <div className="mt-3 rounded-lg border border-amber-300/40 bg-amber-950/30 p-2 text-xs text-amber-200">{message}</div>}
+        <Button className="mt-8" variant="outline" onClick={() => void refreshAll()}>{t('common.refresh')}</Button>
       </section>
     </div>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <I18nProvider>
+      <ToastProvider>
+        <AppShell />
+      </ToastProvider>
+    </I18nProvider>
+  )
+}

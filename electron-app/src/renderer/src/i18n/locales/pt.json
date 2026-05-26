@@ -1,0 +1,56 @@
+{
+  "app": {
+    "title": "Brover",
+    "subtitle": "Painel de controle de segredos desktop"
+  },
+  "workspaces": {
+    "apps": "Aplicativos",
+    "secrets": "Segredos"
+  },
+  "search": {
+    "placeholder": "Pesquisar...",
+    "appsPlaceholder": "Pesquisar aplicativos...",
+    "secretsPlaceholder": "Pesquisar segredos..."
+  },
+  "apps": {
+    "displayName": "Nome de exibicao",
+    "bundleId": "Bundle ID (com.apple.Terminal)",
+    "addApp": "Adicionar App",
+    "noApps": "Sem aplicativos ainda",
+    "noAppsDescription": "Adicione seu primeiro aplicativo autorizado acima.",
+    "toggleEnabled": "Alternar Habilitado",
+    "deleteApp": "Excluir App",
+    "selectApp": "Selecione um aplicativo."
+  },
+  "secrets": {
+    "newProfile": "Novo perfil",
+    "createProfile": "Criar",
+    "envName": "Nome env (OPENAI_API_KEY)",
+    "secretValue": "Valor secreto",
+    "description": "Descricao (opcional)",
+    "addSecret": "Adicionar Segredo",
+    "noSecrets": "Sem segredos ainda",
+    "noSecretsDescription": "Crie sua primeira variavel de ambiente.",
+    "revealSecret": "Revelar Segredo",
+    "copySecret": "Copiar Segredo",
+    "updateValue": "Atualizar Valor Secreto",
+    "deleteSecret": "Excluir Segredo",
+    "selectSecret": "Selecione um segredo.",
+    "enabled": "Habilitado",
+    "disabled": "Desabilitado",
+    "dialogTitle": "Adicionar Segredo",
+    "dialogDescription": "Criar metadata + armazenar valor secreto em backend seguro.",
+    "cancel": "Cancelar",
+    "create": "Criar"
+  },
+  "common": {
+    "refresh": "Atualizar",
+    "details": "Detalhes",
+    "profile": "Perfil",
+    "unsupportedBackend": "Armazenamento seguro nao implementado para este SO ainda.",
+    "secretCreated": "Segredo criado",
+    "secretCopied": "Segredo copiado",
+    "secretUpdated": "Segredo atualizado",
+    "secretDeleted": "Segredo excluido"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "app": {
+    "title": "Brover",
+    "subtitle": "Desktop secrets control plane"
+  },
+  "workspaces": {
+    "apps": "Apps",
+    "secrets": "Secrets"
+  },
+  "search": {
+    "placeholder": "Search...",
+    "appsPlaceholder": "Search apps...",
+    "secretsPlaceholder": "Search secrets..."
+  },
+  "apps": {
+    "displayName": "Display name",
+    "bundleId": "Bundle ID (com.apple.Terminal)",
+    "addApp": "Add App",
+    "noApps": "No apps yet",
+    "noAppsDescription": "Add your first authorized app above.",
+    "toggleEnabled": "Toggle Enabled",
+    "deleteApp": "Delete App",
+    "selectApp": "Select an app."
+  },
+  "secrets": {
+    "newProfile": "New profile",
+    "createProfile": "Create",
+    "envName": "Env name (OPENAI_API_KEY)",
+    "secretValue": "Secret value",
+    "description": "Description (optional)",
+    "addSecret": "Add Secret",
+    "noSecrets": "No secrets yet",
+    "noSecretsDescription": "Create your first environment variable.",
+    "revealSecret": "Reveal Secret",
+    "copySecret": "Copy Secret",
+    "updateValue": "Update Secret Value",
+    "deleteSecret": "Delete Secret",
+    "selectSecret": "Select a secret.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "dialogTitle": "Add Secret",
+    "dialogDescription": "Create metadata + store secret value in secure backend.",
+    "cancel": "Cancel",
+    "create": "Create"
+  },
+  "common": {
+    "refresh": "Refresh",
+    "details": "Details",
+    "profile": "Profile",
+    "unsupportedBackend": "Secure storage not implemented for this OS yet.",
+    "secretCreated": "Secret created",
+    "secretCopied": "Secret copied",
+    "secretUpdated": "Secret updated",
+    "secretDeleted": "Secret deleted"
+  }
+}
