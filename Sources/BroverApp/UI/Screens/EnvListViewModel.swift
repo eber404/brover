@@ -6,6 +6,10 @@ import AppKit
 
 @MainActor
 final class EnvListViewModel: ObservableObject {
+    private enum RevealState {
+        static let autoHideDuration: TimeInterval = 10
+    }
+
     @Published var profiles: [Profile] = []
     @Published var selectedProfile: String = "default"
     @Published var envs: [EnvMetadata] = []
@@ -18,8 +22,11 @@ final class EnvListViewModel: ObservableObject {
     @Published var message: String?
     @Published var revealedValue: String?
     @Published var copiedName: String?
+    @Published var revealCountdownLabel: String?
 
     private let manager: EnvManager
+    private var revealExpiryDate: Date?
+    private var revealTimer: Timer?
 
     init(manager: EnvManager) {
         self.manager = manager
@@ -92,14 +99,25 @@ final class EnvListViewModel: ObservableObject {
 
     func reveal(_ env: EnvMetadata) {
         do {
+            revealTimer?.invalidate()
             revealedValue = try manager.revealEnv(profile: env.profile, name: env.name)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
+            revealExpiryDate = Date().addingTimeInterval(RevealState.autoHideDuration)
+            updateRevealCountdownLabel()
+            revealTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
                 guard let self else { return }
-                self.revealedValue = nil
+                self.tickRevealCountdown()
             }
         } catch {
             message = "Reveal denied or failed: \(error)"
         }
+    }
+
+    func hideReveal() {
+        revealTimer?.invalidate()
+        revealTimer = nil
+        revealExpiryDate = nil
+        revealedValue = nil
+        revealCountdownLabel = nil
     }
 
     func copy(_ env: EnvMetadata) {
@@ -143,5 +161,29 @@ final class EnvListViewModel: ObservableObject {
         } catch {
             message = "Failed to update status: \(error)"
         }
+    }
+
+    private func tickRevealCountdown() {
+        guard let revealExpiryDate else {
+            hideReveal()
+            return
+        }
+
+        if revealExpiryDate <= Date() {
+            hideReveal()
+            return
+        }
+
+        updateRevealCountdownLabel()
+    }
+
+    private func updateRevealCountdownLabel() {
+        guard let revealExpiryDate else {
+            revealCountdownLabel = nil
+            return
+        }
+
+        let remaining = max(1, Int(ceil(revealExpiryDate.timeIntervalSinceNow)))
+        revealCountdownLabel = "Auto-hide in \(remaining)s"
     }
 }

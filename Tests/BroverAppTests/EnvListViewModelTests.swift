@@ -41,6 +41,27 @@ final class EnvListViewModelTests: XCTestCase {
 
         XCTAssertEqual(normalized, "MY_ENVNAME")
     }
+
+    func testRevealSetsSecretAndCountdownAndHideClearsState() throws {
+        let store = InMemoryProfileStore()
+        try store.createProfile(name: "default")
+        store.createEnv(.init(name: "OPENAI_API_KEY", profile: "default", enabled: true))
+        let keychain = MemoryKeychain(secret: "sk_live_123")
+
+        let manager = EnvManager(envService: store, keychainService: keychain, authGate: AllowAllAuthGate())
+        let vm = EnvListViewModel(manager: manager)
+        let env = EnvMetadata(name: "OPENAI_API_KEY", profile: "default", enabled: true)
+
+        vm.reveal(env)
+
+        XCTAssertEqual(vm.revealedValue, "sk_live_123")
+        XCTAssertEqual(vm.revealCountdownLabel, "Auto-hide in 10s")
+
+        vm.hideReveal()
+
+        XCTAssertNil(vm.revealedValue)
+        XCTAssertNil(vm.revealCountdownLabel)
+    }
 }
 
 private final class NoopKeychain: KeychainService, @unchecked Sendable {

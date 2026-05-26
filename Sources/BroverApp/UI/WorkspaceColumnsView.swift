@@ -361,29 +361,62 @@ struct SecretsDetailView: View {
                         HStack(spacing: 10) {
                             Image(systemName: "shield.lefthalf.filled")
                                 .foregroundStyle(.green)
-                            Text("Stored securely in Keychain")
+                            Text("Stored in login Keychain")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundStyle(Color.white.opacity(0.66))
                         }
 
                         VStack(alignment: .leading, spacing: 12) {
                             sectionTitle("SECRET VALUE")
-                            TextField("New secret value", text: $viewModel.editedValue)
-                                .textFieldStyle(.plain)
-                                .font(.system(size: 18, weight: .regular))
-                                .foregroundStyle(.white)
-                                .padding(16)
-                                .frame(height: 92, alignment: .topLeading)
-                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .strokeBorder(Color.white.opacity(0.10), lineWidth: 0.8)
-                                )
+                            HStack(spacing: 10) {
+                                if let revealCountdownLabel = viewModel.revealCountdownLabel {
+                                    Label(revealCountdownLabel, systemImage: "clock")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundStyle(Color.white.opacity(0.78))
+                                        .padding(.horizontal, 14)
+                                        .frame(height: 38)
+                                        .background(.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                .strokeBorder(Color.white.opacity(0.10), lineWidth: 0.8)
+                                        )
+                                }
+                                Spacer()
+                            }
+
+                            VStack(alignment: .leading, spacing: 16) {
+                                if let revealedValue = viewModel.revealedValue {
+                                    Text(revealedValue)
+                                        .font(.system(size: 18, weight: .medium, design: .monospaced))
+                                        .foregroundStyle(.white)
+                                } else {
+                                    TextField("New secret value", text: $viewModel.editedValue)
+                                        .textFieldStyle(.plain)
+                                        .font(.system(size: 18, weight: .regular))
+                                        .foregroundStyle(.white)
+                                }
+
+                                Rectangle()
+                                    .fill(viewModel.revealedValue == nil ? Color.white.opacity(0.06) : Color.green.opacity(0.90))
+                                    .frame(height: 3)
+                                    .clipShape(Capsule())
+                            }
+                            .padding(16)
+                            .frame(maxWidth: .infinity, minHeight: 108, alignment: .topLeading)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .strokeBorder(Color.white.opacity(0.10), lineWidth: 0.8)
+                            )
                         }
 
                         HStack(spacing: 10) {
                             detailActionButton(title: "Edit", systemImage: "pencil", style: .accent) { viewModel.updateValue(env) }
-                            detailActionButton(title: "Reveal", systemImage: "eye", style: .neutral) { viewModel.reveal(env) }
+                            if viewModel.revealedValue == nil {
+                                detailActionButton(title: "Reveal", systemImage: "eye", style: .neutral) { viewModel.reveal(env) }
+                            } else {
+                                detailActionButton(title: "Hide", systemImage: "eye.slash", style: .neutral) { viewModel.hideReveal() }
+                            }
                             detailActionButton(title: "Copy", systemImage: "doc.on.doc", style: .neutral) { viewModel.copy(env) }
                             detailActionButton(title: "Delete", systemImage: "trash", style: .danger) { viewModel.delete(env) }
                         }
