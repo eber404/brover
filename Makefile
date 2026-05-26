@@ -1,4 +1,4 @@
-.PHONY: run build test run-release clean open
+.PHONY: run build test run-release clean open dev
 
 run:
 	swift run BroverApp
@@ -24,3 +24,10 @@ open:
 		echo "Use 'make run' or package app bundle first."; \
 		exit 1; \
 	fi
+
+dev:
+	@if ! command -v watchexec >/dev/null 2>&1; then \
+		echo "watchexec missing. Install: brew install watchexec"; \
+		exit 1; \
+	fi
+	watchexec -e swift --restart -- "swift run BroverApp"
