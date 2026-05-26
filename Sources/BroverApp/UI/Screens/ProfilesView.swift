@@ -5,20 +5,26 @@ struct ProfilesView: View {
     @ObservedObject var viewModel: ProfilesViewModel
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Profiles")
-                        .font(.title2.bold())
-                    Text("Manage profile lifecycle and active selection")
-                        .font(.caption)
+                        .font(.title3.bold())
+                    Text("Choose active runtime context")
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Refresh") {
-                    viewModel.refresh()
+                Button {
+                    viewModel.newProfileName = ""
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title3.weight(.semibold))
+                        .padding(8)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
             }
+            .padding(.horizontal, 2)
 
             GroupBox("Create Profile") {
                 HStack {
@@ -31,7 +37,7 @@ struct ProfilesView: View {
             }
             .liquidGlassCard()
 
-            GroupBox("Rename Profile") {
+            GroupBox("Rename Selected") {
                 HStack {
                     Picker("From", selection: $viewModel.renameSource) {
                         ForEach(viewModel.profiles, id: \.name) { profile in
@@ -47,29 +53,46 @@ struct ProfilesView: View {
             }
             .liquidGlassCard()
 
-            List(viewModel.profiles) { profile in
-                HStack {
-                    Text(profile.name)
-                        .font(.headline)
-                    if profile.name == viewModel.activeProfile {
-                        Text("Active")
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(.regularMaterial, in: Capsule())
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(viewModel.profiles) { profile in
+                    Button {
+                        viewModel.select(profile)
+                    } label: {
+                        HStack(spacing: 12) {
+                            Circle()
+                                .fill(dotColor(for: profile.name))
+                                .frame(width: 10, height: 10)
+                            Text(profile.name)
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            if profile.name == viewModel.activeProfile {
+                                Text("Active")
+                                    .font(.caption2.weight(.semibold))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(.regularMaterial, in: Capsule())
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(viewModel.selectedProfile == profile.name ? Color.white.opacity(0.16) : Color.clear)
+                        )
                     }
-                    Spacer()
-                    Button("Set Active") {
-                        viewModel.setActive(profile)
+                    .buttonStyle(.plain)
+
+                    HStack(spacing: 10) {
+                        Button("Set Active") { viewModel.setActive(profile) }
+                            .disabled(profile.name == viewModel.activeProfile)
+                        Button("Delete", role: .destructive) { viewModel.delete(profile) }
                     }
-                    .disabled(profile.name == viewModel.activeProfile)
-                    Button("Delete", role: .destructive) {
-                        viewModel.delete(profile)
-                    }
+                    .font(.caption)
+                    .padding(.leading, 36)
                 }
-                .padding(.vertical, 2)
             }
-            .scrollContentBackground(.hidden)
             .liquidGlassCard()
         }
         .padding(16)
@@ -82,5 +105,11 @@ struct ProfilesView: View {
         } message: {
             Text(viewModel.message ?? "")
         }
+    }
+
+    private func dotColor(for profile: String) -> Color {
+        let palette: [Color] = [.pink, .orange, .green, .yellow, .blue, .mint, .teal]
+        let idx = abs(profile.hashValue) % palette.count
+        return palette[idx]
     }
 }

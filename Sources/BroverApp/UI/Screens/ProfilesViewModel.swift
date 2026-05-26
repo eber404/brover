@@ -8,6 +8,7 @@ final class ProfilesViewModel: ObservableObject {
     @Published var newProfileName: String = ""
     @Published var renameSource: String = ""
     @Published var renameTarget: String = ""
+    @Published var selectedProfile: String = ""
     @Published var message: String?
 
     private let manager: EnvManager
@@ -20,9 +21,20 @@ final class ProfilesViewModel: ObservableObject {
     func refresh() {
         profiles = manager.listProfiles()
         activeProfile = manager.activeProfile()
+        if selectedProfile.isEmpty {
+            selectedProfile = activeProfile
+        }
+        if !profiles.map(\.name).contains(selectedProfile) {
+            selectedProfile = activeProfile
+        }
         if renameSource.isEmpty, let first = profiles.first?.name {
             renameSource = first
         }
+    }
+
+    func select(_ profile: Profile) {
+        selectedProfile = profile.name
+        renameSource = profile.name
     }
 
     func createProfile() {
