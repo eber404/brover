@@ -4,6 +4,7 @@ import Foundation
 @MainActor
 final class AppsViewModel: ObservableObject {
     @Published var apps: [AppAuthorization] = []
+    @Published var selectedBundleID: String?
     @Published var newDisplayName: String = ""
     @Published var newBundleID: String = ""
     @Published var message: String?
@@ -17,6 +18,18 @@ final class AppsViewModel: ObservableObject {
 
     func refresh() {
         apps = service.list()
+        if let selectedBundleID,
+           !apps.contains(where: { $0.bundleID == selectedBundleID }) {
+            self.selectedBundleID = apps.first?.bundleID
+        }
+        if self.selectedBundleID == nil {
+            self.selectedBundleID = apps.first?.bundleID
+        }
+    }
+
+    var selectedApp: AppAuthorization? {
+        guard let selectedBundleID else { return nil }
+        return apps.first(where: { $0.bundleID == selectedBundleID })
     }
 
     func addApp() {
@@ -52,6 +65,11 @@ final class AppsViewModel: ObservableObject {
         }
     }
 
+    func toggleSelected() {
+        guard let app = selectedApp else { return }
+        toggle(app)
+    }
+
     func remove(_ app: AppAuthorization) {
         do {
             try service.delete(bundleID: app.bundleID)
@@ -59,5 +77,10 @@ final class AppsViewModel: ObservableObject {
         } catch {
             message = "Failed to remove app: \(error)"
         }
+    }
+
+    func removeSelected() {
+        guard let app = selectedApp else { return }
+        remove(app)
     }
 }

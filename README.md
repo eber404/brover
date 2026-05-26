@@ -17,10 +17,11 @@ Current phase: **SwiftUI + AppKit GUI-first MVP**.
 - real app uses JSON config at `~/Library/Application Support/brover/config.json`;
 - apps allowlist uses JSON config at `~/Library/Application Support/brover/apps.json`;
 - real auth gate uses macOS local authentication (Touch ID/password);
-- sidebar IA now fixed to `Apps`, `Profiles`, `Secrets/Envs`;
+- sidebar IA now fixed to `Apps`, `Secrets`;
+- UI now uses 3-column shell: sidebar, searchable list, detail panel;
+- search bar stays persistent in center column and swaps placeholder by active tab;
 - `Apps` workspace supports manual allowlist (`displayName`, `bundleID`, `enabled`);
-- `Profiles` workspace supports create/rename/delete/set-active;
-- `Secrets/Envs` supports auth-gated reveal/copy/edit/delete with auto-hide reveal timeout;
+- `Secrets` workspace supports auth-gated reveal/copy/edit/delete with auto-hide reveal timeout;
 - bundle ID validation added for app authorization workflow;
 - tests cover validation, stores, auth gate checks, and env manager flows.
 

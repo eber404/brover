@@ -9,6 +9,7 @@ final class EnvListViewModel: ObservableObject {
     @Published var profiles: [Profile] = []
     @Published var selectedProfile: String = "default"
     @Published var envs: [EnvMetadata] = []
+    @Published var selectedEnvName: String?
     @Published var newName: String = ""
     @Published var newValue: String = ""
     @Published var newDescription: String = ""
@@ -36,6 +37,25 @@ final class EnvListViewModel: ObservableObject {
             selectedProfile = profiles[0].name
         }
         envs = manager.listEnvs(profile: selectedProfile)
+        if let selectedEnvName,
+           !envs.contains(where: { $0.name == selectedEnvName }) {
+            self.selectedEnvName = envs.first?.name
+        }
+        if self.selectedEnvName == nil {
+            self.selectedEnvName = envs.first?.name
+        }
+    }
+
+    func normalizeEnvNameInput(_ raw: String) -> String {
+        let uppercased = raw.uppercased()
+        let withUnderscores = uppercased.replacingOccurrences(of: "\\s+", with: "_", options: .regularExpression)
+        let withoutHyphens = withUnderscores.replacingOccurrences(of: "-", with: "")
+        return withoutHyphens
+    }
+
+    var selectedEnv: EnvMetadata? {
+        guard let selectedEnvName else { return nil }
+        return envs.first(where: { $0.name == selectedEnvName })
     }
 
     func selectProfile(_ profile: String) {
@@ -48,7 +68,8 @@ final class EnvListViewModel: ObservableObject {
         }
     }
 
-    func createEnv() {
+    @discardableResult
+    func createEnv() -> Bool {
         do {
             try manager.createEnv(
                 name: newName.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -62,8 +83,10 @@ final class EnvListViewModel: ObservableObject {
             newDescription = ""
             newEnabled = true
             refresh()
+            return true
         } catch {
             message = "Failed to create env: \(error)"
+            return false
         }
     }
 

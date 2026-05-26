@@ -32,6 +32,15 @@ final class EnvListViewModelTests: XCTestCase {
 
         XCTAssertEqual(vm.message, "Copied OPENAI_API_KEY to clipboard.")
     }
+
+    func testNormalizeEnvNameInputForcesUppercaseUnderscoreAndNoHyphen() {
+        let manager = EnvManager(envService: InMemoryProfileStore(), keychainService: NoopKeychain(), authGate: AllowAllAuthGate())
+        let vm = EnvListViewModel(manager: manager)
+
+        let normalized = vm.normalizeEnvNameInput("my env-name")
+
+        XCTAssertEqual(normalized, "MY_ENVNAME")
+    }
 }
 
 private final class NoopKeychain: KeychainService, @unchecked Sendable {

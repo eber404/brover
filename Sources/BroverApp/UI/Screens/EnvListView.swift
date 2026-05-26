@@ -24,10 +24,15 @@ struct EnvListView: View {
 
             GroupBox("Create Env") {
                 VStack(spacing: 8) {
-                    TextField("Name (e.g. OPENAI_API_KEY)", text: $viewModel.newName)
+                    TextField(
+                        "Name (e.g. OPENAI_API_KEY)",
+                        text: Binding(
+                            get: { viewModel.newName },
+                            set: { viewModel.newName = viewModel.normalizeEnvNameInput($0) }
+                        )
+                    )
                     TextField("Secret value", text: $viewModel.newValue)
                     TextField("Description (optional)", text: $viewModel.newDescription)
-                    Toggle("Enabled", isOn: $viewModel.newEnabled)
                     HStack {
                         Spacer()
                         Button("Create") {
@@ -44,9 +49,11 @@ struct EnvListView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(env.name)
                             .font(.headline)
-                        Text(env.description ?? "No description")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        if let description = env.description, !description.isEmpty {
+                            Text(description)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     Spacer()
                     TextField("New secret value", text: $viewModel.editedValue)
@@ -63,11 +70,6 @@ struct EnvListView: View {
                     Button("Delete", role: .destructive) {
                         viewModel.delete(env)
                     }
-                    Toggle("Enabled", isOn: Binding(
-                        get: { env.enabled },
-                        set: { viewModel.setEnabled(env, enabled: $0) }
-                    ))
-                    .labelsHidden()
                 }
                 .padding(.vertical, 2)
             }

@@ -116,7 +116,6 @@ Responsible for:
 - apps allowlist workspace;
 - env list;
 - visual CRUD;
-- profiles;
 - enabled/disabled toggles;
 - visual auth state;
 - onboarding.
@@ -134,9 +133,10 @@ UI talks to typed service interfaces/protocols.
 - Root app wiring uses apps allowlist store at `~/Library/Application Support/brover/apps.json`.
 - Local auth gate uses macOS authentication for sensitive operations.
 - Env manager flow is connected for create/edit/reveal/delete.
-- Profiles workspace supports create/rename/delete/set active.
 - Secrets workspace supports copy action and auto-hide reveal timeout.
-- Sidebar IA is fixed to `Apps`, `Profiles`, `Secrets/Envs`.
+- Sidebar IA is fixed to `Apps`, `Secrets`.
+- Main shell uses 3 columns: sidebar, center list, right detail.
+- Center search bar stays persistent and changes placeholder by active workspace.
 
 ### Future CLI `brover` (next step)
 
@@ -212,7 +212,6 @@ Reject:
 
 - Onboarding;
 - Apps;
-- Profiles;
 - Env List;
 - Create/Edit Env;
 - Reveal Secret;
