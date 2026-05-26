@@ -137,6 +137,8 @@ UI talks to typed service interfaces/protocols.
 - Sidebar IA is fixed to `Apps`, `Secrets`.
 - Main shell uses 3 columns: sidebar, center list, right detail.
 - Center search bar stays persistent and changes placeholder by active workspace.
+- Electron rebuild scaffold exists at `electron-app/` for cross-platform migration (React + TailwindCSS + shadcn/ui).
+- Electron macOS path uses Keychain-backed secret adapter; Linux/Windows sensitive secret actions are blocked until secure backend decision.
 
 ### Future CLI `brover` (next step)
 

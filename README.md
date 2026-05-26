@@ -2,7 +2,7 @@
 
 Native macOS app to manage local environment variables with secure secret storage in macOS Keychain.
 
-Current phase: **SwiftUI + AppKit GUI-first MVP**.
+Current phase: **SwiftUI + AppKit GUI-first MVP**, with active **Electron cross-platform rebuild** in `electron-app/`.
 
 ---
 
@@ -70,9 +70,34 @@ brover/
     BroverCoreTests/
   docs/
     plans/
+  electron-app/
   AGENTS.md
   Package.swift
   README.md
+```
+
+---
+
+## Electron rebuild (new)
+
+- new app lives in `electron-app/`;
+- stack: Electron + React + TypeScript + TailwindCSS + shadcn/ui;
+- UX shape mirrors current app (`Apps`, `Secrets`, 3-column shell);
+- non-sensitive metadata persists in local JSON under Electron app data;
+- on macOS, secrets use Keychain backend;
+- on Linux/Windows, sensitive secret actions are blocked with explicit unsupported message until secure backend is defined.
+
+Run Electron app:
+
+```sh
+npm --prefix electron-app install
+npm --prefix electron-app run dev
+```
+
+Build Electron app:
+
+```sh
+npm --prefix electron-app run build
 ```
 
 ---
