@@ -20,4 +20,24 @@ final class JSONProfileStoreTests: XCTestCase {
         XCTAssertEqual(envs.first?.name, "OPENAI_API_KEY")
         XCTAssertNil(try JSONSerialization.jsonObject(with: Data(contentsOf: fileURL)) as? String)
     }
+
+    func testProfileLifecycle() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let fileURL = root.appendingPathComponent("config.json")
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let store = JSONProfileStore(fileURL: fileURL)
+
+        try store.createProfile(name: "work")
+        XCTAssertEqual(store.listProfiles().map(\.name), ["work"])
+        XCTAssertEqual(store.activeProfile(), "work")
+
+        try store.renameProfile(from: "work", to: "office")
+        XCTAssertEqual(store.listProfiles().map(\.name), ["office"])
+
+        try store.createProfile(name: "default")
+        try store.setActiveProfile(name: "default")
+        try store.deleteProfile(name: "office")
+        XCTAssertEqual(store.listProfiles().map(\.name), ["default"])
+    }
 }

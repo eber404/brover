@@ -1,5 +1,8 @@
 import BroverCore
 import Foundation
+#if canImport(AppKit)
+import AppKit
+#endif
 
 @MainActor
 final class EnvListViewModel: ObservableObject {
@@ -13,6 +16,7 @@ final class EnvListViewModel: ObservableObject {
     @Published var editedValue: String = ""
     @Published var message: String?
     @Published var revealedValue: String?
+    @Published var copiedName: String?
 
     private let manager: EnvManager
 
@@ -23,12 +27,25 @@ final class EnvListViewModel: ObservableObject {
 
     func refresh() {
         profiles = manager.listProfiles()
+        let active = manager.activeProfile()
         if profiles.isEmpty {
-            selectedProfile = "default"
+            selectedProfile = active
         } else if !profiles.map(\.name).contains(selectedProfile) {
+            selectedProfile = active
+        } else if selectedProfile.isEmpty {
             selectedProfile = profiles[0].name
         }
         envs = manager.listEnvs(profile: selectedProfile)
+    }
+
+    func selectProfile(_ profile: String) {
+        do {
+            try manager.setActiveProfile(name: profile)
+            selectedProfile = profile
+            refresh()
+        } catch {
+            message = "Failed to switch profile: \(error)"
+        }
     }
 
     func createEnv() {
@@ -53,8 +70,27 @@ final class EnvListViewModel: ObservableObject {
     func reveal(_ env: EnvMetadata) {
         do {
             revealedValue = try manager.revealEnv(profile: env.profile, name: env.name)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
+                guard let self else { return }
+                self.revealedValue = nil
+            }
         } catch {
             message = "Reveal denied or failed: \(error)"
+        }
+    }
+
+    func copy(_ env: EnvMetadata) {
+        do {
+            let secret = try manager.copyEnv(profile: env.profile, name: env.name)
+            #if canImport(AppKit)
+            let pasteboard = NSPasteboard.general
+            pasteboard.clearContents()
+            pasteboard.setString(secret, forType: .string)
+            #endif
+            copiedName = env.name
+            message = "Copied \(env.name) to clipboard."
+        } catch {
+            message = "Copy denied or failed: \(error)"
         }
     }
 

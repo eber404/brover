@@ -6,6 +6,7 @@ struct RootView: View {
     @State private var selectedRoute: RootRoute? = .secrets
     @StateObject private var envListViewModel: EnvListViewModel
     @StateObject private var appsViewModel: AppsViewModel
+    @StateObject private var profilesViewModel: ProfilesViewModel
 
     init() {
         let configURL = FileManager.default
@@ -21,6 +22,7 @@ struct RootView: View {
             .appendingPathComponent("Library/Application Support/brover/apps.json")
         _envListViewModel = StateObject(wrappedValue: EnvListViewModel(manager: manager))
         _appsViewModel = StateObject(wrappedValue: AppsViewModel(service: JSONAppAuthorizationStore(fileURL: appsURL)))
+        _profilesViewModel = StateObject(wrappedValue: ProfilesViewModel(manager: manager))
     }
 
     var body: some View {
@@ -35,12 +37,20 @@ struct RootView: View {
             case .apps:
                 AppsView(viewModel: appsViewModel)
             case .profiles:
-                ProfilesView(profiles: envListViewModel.profiles)
+                ProfilesView(viewModel: profilesViewModel)
             case .secrets:
                 ZStack {
                     VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
                     EnvListView(viewModel: envListViewModel)
                 }
+            }
+        }
+        .onChange(of: selectedRoute) { _, route in
+            if route == .profiles {
+                profilesViewModel.refresh()
+            }
+            if route == .secrets {
+                envListViewModel.refresh()
             }
         }
     }

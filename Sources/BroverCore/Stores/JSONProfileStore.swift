@@ -25,6 +25,69 @@ public final class JSONProfileStore: EnvService, @unchecked Sendable {
         }
     }
 
+    public func activeProfile() -> String {
+        lock.withLock {
+            loadConfig().activeProfile
+        }
+    }
+
+    public func createProfile(name: String) throws {
+        try lock.withLock {
+            var config = loadConfig()
+            guard config.profiles[name] == nil else {
+                throw ProfileStoreError.duplicateProfile
+            }
+            config.profiles[name] = ProfileData(envs: [:])
+            if config.activeProfile.isEmpty || config.activeProfile == "default" {
+                config.activeProfile = name
+            }
+            saveConfig(config)
+        }
+    }
+
+    public func renameProfile(from oldName: String, to newName: String) throws {
+        try lock.withLock {
+            var config = loadConfig()
+            guard let data = config.profiles[oldName] else {
+                throw ProfileStoreError.profileNotFound
+            }
+            guard config.profiles[newName] == nil else {
+                throw ProfileStoreError.duplicateProfile
+            }
+            config.profiles.removeValue(forKey: oldName)
+            config.profiles[newName] = data
+            if config.activeProfile == oldName {
+                config.activeProfile = newName
+            }
+            saveConfig(config)
+        }
+    }
+
+    public func deleteProfile(name: String) throws {
+        try lock.withLock {
+            var config = loadConfig()
+            guard config.profiles[name] != nil else {
+                throw ProfileStoreError.profileNotFound
+            }
+            guard config.activeProfile != name else {
+                throw ProfileStoreError.cannotDeleteActiveProfile
+            }
+            config.profiles.removeValue(forKey: name)
+            saveConfig(config)
+        }
+    }
+
+    public func setActiveProfile(name: String) throws {
+        try lock.withLock {
+            var config = loadConfig()
+            guard config.profiles[name] != nil else {
+                throw ProfileStoreError.profileNotFound
+            }
+            config.activeProfile = name
+            saveConfig(config)
+        }
+    }
+
     public func listEnvs(profile: String) -> [EnvMetadata] {
         lock.withLock {
             let config = loadConfig()
@@ -79,9 +142,9 @@ public final class JSONProfileStore: EnvService, @unchecked Sendable {
 }
 
 private extension NSLock {
-    func withLock<T>(_ body: () -> T) -> T {
+    func withLock<T>(_ body: () throws -> T) rethrows -> T {
         lock()
         defer { unlock() }
-        return body()
+        return try body()
     }
 }

@@ -14,7 +14,7 @@ struct EnvListView: View {
                     }
                 }
                 .onChange(of: viewModel.selectedProfile) { _, _ in
-                    viewModel.refresh()
+                    viewModel.selectProfile(viewModel.selectedProfile)
                 }
                 Spacer()
                 Button("Refresh") {
@@ -37,6 +37,7 @@ struct EnvListView: View {
                     }
                 }
             }
+            .liquidGlassCard()
 
             List(viewModel.envs) { env in
                 HStack(alignment: .top) {
@@ -56,6 +57,9 @@ struct EnvListView: View {
                     Button("Reveal") {
                         viewModel.reveal(env)
                     }
+                    Button("Copy") {
+                        viewModel.copy(env)
+                    }
                     Button("Delete", role: .destructive) {
                         viewModel.delete(env)
                     }
@@ -67,6 +71,8 @@ struct EnvListView: View {
                 }
                 .padding(.vertical, 2)
             }
+            .scrollContentBackground(.hidden)
+            .liquidGlassCard()
         }
         .padding(16)
         .navigationTitle("Environment Variables")

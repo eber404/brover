@@ -25,6 +25,26 @@ public final class EnvManager: Sendable {
         envService.listProfiles()
     }
 
+    public func activeProfile() -> String {
+        envService.activeProfile()
+    }
+
+    public func createProfile(name: String) throws {
+        try envService.createProfile(name: name)
+    }
+
+    public func renameProfile(from oldName: String, to newName: String) throws {
+        try envService.renameProfile(from: oldName, to: newName)
+    }
+
+    public func deleteProfile(name: String) throws {
+        try envService.deleteProfile(name: name)
+    }
+
+    public func setActiveProfile(name: String) throws {
+        try envService.setActiveProfile(name: name)
+    }
+
     public func listEnvs(profile: String) -> [EnvMetadata] {
         envService.listEnvs(profile: profile)
     }
@@ -69,6 +89,13 @@ public final class EnvManager: Sendable {
 
     public func revealEnv(profile: String, name: String) throws -> String {
         guard authGate.authorize(.revealValue) else {
+            throw EnvManagerError.unauthorized
+        }
+        return try keychainService.loadSecret(profile: profile, name: name)
+    }
+
+    public func copyEnv(profile: String, name: String) throws -> String {
+        guard authGate.authorize(.copyValue) else {
             throw EnvManagerError.unauthorized
         }
         return try keychainService.loadSecret(profile: profile, name: name)

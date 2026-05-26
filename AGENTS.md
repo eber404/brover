@@ -134,6 +134,8 @@ UI talks to typed service interfaces/protocols.
 - Root app wiring uses apps allowlist store at `~/Library/Application Support/brover/apps.json`.
 - Local auth gate uses macOS authentication for sensitive operations.
 - Env manager flow is connected for create/edit/reveal/delete.
+- Profiles workspace supports create/rename/delete/set active.
+- Secrets workspace supports copy action and auto-hide reveal timeout.
 - Sidebar IA is fixed to `Apps`, `Profiles`, `Secrets/Envs`.
 
 ### Future CLI `brover` (next step)

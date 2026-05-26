@@ -33,6 +33,7 @@ struct AppsView: View {
                     }
                 }
             }
+            .liquidGlassCard()
 
             if viewModel.apps.isEmpty {
                 ContentUnavailableView(
@@ -62,6 +63,8 @@ struct AppsView: View {
                     }
                     .padding(.vertical, 2)
                 }
+                .scrollContentBackground(.hidden)
+                .liquidGlassCard()
             }
         }
         .padding(16)

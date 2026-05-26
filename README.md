@@ -19,6 +19,8 @@ Current phase: **SwiftUI + AppKit GUI-first MVP**.
 - real auth gate uses macOS local authentication (Touch ID/password);
 - sidebar IA now fixed to `Apps`, `Profiles`, `Secrets/Envs`;
 - `Apps` workspace supports manual allowlist (`displayName`, `bundleID`, `enabled`);
+- `Profiles` workspace supports create/rename/delete/set-active;
+- `Secrets/Envs` supports auth-gated reveal/copy/edit/delete with auto-hide reveal timeout;
 - bundle ID validation added for app authorization workflow;
 - tests cover validation, stores, auth gate checks, and env manager flows.
 

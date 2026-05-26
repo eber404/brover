@@ -45,7 +45,27 @@ final class EnvManagerTests: XCTestCase {
         try keychain.saveSecret(profile: "default", name: "OPENAI_API_KEY", value: "top-secret")
 
         XCTAssertThrowsError(try manager.revealEnv(profile: "default", name: "OPENAI_API_KEY"))
+        XCTAssertThrowsError(try manager.copyEnv(profile: "default", name: "OPENAI_API_KEY"))
         XCTAssertThrowsError(try manager.deleteEnv(profile: "default", name: "OPENAI_API_KEY"))
+    }
+
+    func testProfileCRUD() throws {
+        let store = InMemoryProfileStore()
+        let keychain = InMemoryKeychainService()
+        let gate = StubAuthGate(allowed: true)
+        let manager = EnvManager(envService: store, keychainService: keychain, authGate: gate)
+
+        try manager.createProfile(name: "work")
+        XCTAssertEqual(manager.listProfiles().map(\.name), ["work"])
+        XCTAssertEqual(manager.activeProfile(), "work")
+
+        try manager.renameProfile(from: "work", to: "office")
+        XCTAssertEqual(manager.listProfiles().map(\.name), ["office"])
+
+        try manager.createProfile(name: "default")
+        try manager.setActiveProfile(name: "default")
+        try manager.deleteProfile(name: "office")
+        XCTAssertEqual(manager.listProfiles().map(\.name), ["default"])
     }
 }
 
