@@ -1,8 +1,4 @@
-.build/
-.swiftpm/
-DerivedData/
-.DS_Store
-
-*.xcworkspace/xcuserdata/
-*.xcodeproj/xcuserdata/
-*.xcuserstate
+node_modules
+dist
+dist-electron
+coverage
