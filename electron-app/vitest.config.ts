@@ -2,6 +2,18 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    exclude: ['**/node_modules/**', '**/dist/**', '**/dist-electron/**', 'tests/electron/**']
+    exclude: ['**/node_modules/**', '**/dist/**', '**/dist-electron/**', 'tests/electron/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/dist-electron/**',
+        'tests/**',
+        '**/*.config.*',
+        '**/*.d.ts'
+      ]
+    }
   }
 })
