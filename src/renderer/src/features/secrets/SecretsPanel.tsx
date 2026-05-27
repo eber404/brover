@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { KeyRound, Plus } from 'lucide-react'
 import type { EnvMetadata } from '../../../../shared/models'
@@ -69,6 +69,27 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   } = props
 
   const { toast } = useToast()
+  const expirationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (expirationTimerRef.current !== null) {
+        clearTimeout(expirationTimerRef.current)
+      }
+    }
+  }, [])
+
+  function scheduleExpiration(expiresAt: number) {
+    if (expirationTimerRef.current !== null) {
+      clearTimeout(expirationTimerRef.current)
+    }
+    const ms = expiresAt - Date.now()
+    if (ms <= 0) return
+    expirationTimerRef.current = setTimeout(() => {
+      setRevealValue('')
+      expirationTimerRef.current = null
+    }, ms)
+  }
 
   const [open, setOpen] = useState(false)
   const [newEnvName, setNewEnvName] = useState('')
@@ -119,6 +140,10 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   async function revealEnv() {
     if (!selectedEnv) return
     setRevealValue('')
+    if (expirationTimerRef.current !== null) {
+      clearTimeout(expirationTimerRef.current)
+      expirationTimerRef.current = null
+    }
     const result = await window.brover.revealEnv({
       profile: selectedEnv.profile,
       name: selectedEnv.name,
@@ -134,6 +159,9 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       return
     }
     setRevealValue(result.value ?? '')
+    if (result.expiresAt) {
+      scheduleExpiration(result.expiresAt)
+    }
   }
 
   async function copyEnv(isRevealed: boolean) {

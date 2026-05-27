@@ -30,6 +30,7 @@ export interface SecretActionResult {
   ok: boolean
   value?: string
   error?: string
+  expiresAt?: number | null
 }
 
 export interface EnvSpace {

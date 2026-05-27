@@ -1,5 +1,6 @@
 export interface AuthSessionCache {
   isAuthorized(targetId: string, now?: number): boolean
+  expiresAt(targetId: string): number | null
   grant(targetId: string, ttlMs?: number, now?: number): void
   revoke(targetId?: string): void
 }
@@ -11,6 +12,9 @@ export function createAuthSessionCache(): AuthSessionCache {
     isAuthorized(targetId: string, now = Date.now()): boolean {
       const session = sessions.get(targetId)
       return session != null && now < session.expiresAt
+    },
+    expiresAt(targetId: string): number | null {
+      return sessions.get(targetId)?.expiresAt ?? null
     },
     grant(targetId: string, ttlMs = 60_000, now = Date.now()): void {
       sessions.set(targetId, { expiresAt: now + ttlMs })

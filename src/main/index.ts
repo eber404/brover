@@ -149,34 +149,33 @@ async function bootstrap() {
     }
   )
 
-  ipcMain.handle(
-    'envs:reveal',
-    async (_, payload: { profile: string; name: string }) => {
-      try {
+  ipcMain.handle('envs:reveal', async (_, payload: { profile: string; name: string }) => {
+    try {
+      const cached = authSessionCache.isAuthorized(payload.profile)
+      if (!cached) {
         await authGate.authorize('reveal', { targetId: payload.profile })
-        const value = await store.revealEnv(payload.profile, payload.name)
-        return ok(value ?? '')
-      } catch (error) {
-        return failure(error)
       }
+      const expiresAt = authSessionCache.expiresAt(payload.profile)
+      const value = await store.revealEnv(payload.profile, payload.name)
+      return { ok: true, value: value ?? '', expiresAt }
+    } catch (error) {
+      return failure(error)
     }
-  )
+  })
 
-  ipcMain.handle(
-    'envs:copy',
-    async (
-      _,
-      payload: { profile: string; name: string; isRevealed: boolean }
-    ) => {
-      try {
+  ipcMain.handle('envs:copy', async (_, payload: { profile: string; name: string; isRevealed: boolean }) => {
+    try {
+      const cached = authSessionCache.isAuthorized(payload.profile)
+      if (!cached) {
         await authGate.authorize('copy', { isRevealed: payload.isRevealed, targetId: payload.profile })
-        const value = await store.revealEnv(payload.profile, payload.name)
-        return ok(value ?? '')
-      } catch (error) {
-        return failure(error)
       }
+      const expiresAt = authSessionCache.expiresAt(payload.profile)
+      const value = await store.revealEnv(payload.profile, payload.name)
+      return { ok: true, value: value ?? '', expiresAt }
+    } catch (error) {
+      return failure(error)
     }
-  )
+  })
 
   ipcMain.handle(
     'envs:update',

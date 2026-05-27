@@ -243,7 +243,10 @@ function AppShell() {
 
   const reorderTargets = useCallback(
     async (spaceId: string, orderedTargetIds: string[]) => {
-      const updated = await window.brover.reorderTargets({ spaceId, orderedTargetIds })
+      const updated = await window.brover.reorderTargets({
+        spaceId,
+        orderedTargetIds,
+      })
       setTargets((prev) => [
         ...prev.filter((item) => item.spaceId !== spaceId),
         ...updated,
@@ -267,8 +270,14 @@ function AppShell() {
         const fallbackSpace = nextSpaces[0] ?? null
         setSelectedSpaceId(fallbackSpace?.id ?? null)
         if (fallbackSpace) {
-          const fallbackTargets = targets.filter((item) => item.spaceId === fallbackSpace.id)
-          setSelectedTargetId(fallbackTargets.find((item) => item.isActive)?.id ?? fallbackTargets[0]?.id ?? null)
+          const fallbackTargets = targets.filter(
+            (item) => item.spaceId === fallbackSpace.id
+          )
+          setSelectedTargetId(
+            fallbackTargets.find((item) => item.isActive)?.id ??
+              fallbackTargets[0]?.id ??
+              null
+          )
         } else {
           setSelectedTargetId(null)
         }
@@ -365,9 +374,9 @@ function AppShell() {
         />
       </div>
 
-      <div className="col-start-2 col-end-4 row-start-1 row-end-2 bg-panel/85">
+      <div className="col-start-2 col-end-4 row-start-1 row-end-2 bg-panel/85 border-b border-edge/60">
         <div className="grid h-full grid-cols-[1fr_1fr]">
-          <div className="flex items-center gap-2 border-b border-edge/60 px-4">
+          <div className="flex items-center gap-2 px-4">
             <Search className="h-4 w-4 shrink-0 text-slate-500" />
             <input
               className="h-full w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
