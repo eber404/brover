@@ -3,6 +3,11 @@ import { join } from 'node:path'
 import { BroverStore, MacOSKeytarSecretStore, UnsupportedSecretStore } from './store'
 import { UNSUPPORTED_SECRET_BACKEND, type SecretActionResult } from '../shared/models'
 
+if (!app.isPackaged) {
+  app.commandLine.appendSwitch('disable-http-cache')
+  app.commandLine.appendSwitch('disable-features', 'ServiceWorker')
+}
+
 const isDev = !app.isPackaged
 
 function createSecretStore() {
@@ -96,8 +101,12 @@ async function bootstrap() {
 
   if (isDev) {
     window.webContents.openDevTools()
+    console.log('[main] Clearing Electron storage (cache, cookies, service workers)...')
+    await window.webContents.session.clearStorageData({
+      storages: ['appcache', 'cookies', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage']
+    })
     await window.webContents.session.clearCache()
-    console.log('[main] Cleared Electron cache, loading dev server...')
+    console.log('[main] Loading dev server...')
     await window.loadURL(process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5173')
   } else {
     await window.loadFile(join(app.getAppPath(), 'dist', 'index.html'))
