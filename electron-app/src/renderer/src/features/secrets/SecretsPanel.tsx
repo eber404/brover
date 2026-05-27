@@ -1,4 +1,5 @@
 import { memo, useCallback, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import { KeyRound, Plus } from 'lucide-react'
 import type { EnvMetadata } from '../../../../shared/models'
 import { UNSUPPORTED_SECRET_BACKEND } from '../../../../shared/models'
@@ -37,6 +38,8 @@ interface SecretRowProps {
 
 const SecretRow = memo(function SecretRow(props: SecretRowProps) {
   const { item, isSelected, enabledLabel, disabledLabel, onSelect } = props
+  const statusToneClass = item.enabled ? 'bg-emerald-950/50 text-emerald-300' : 'bg-slate-800 text-slate-400'
+  const statusLabel = item.enabled ? enabledLabel : disabledLabel
 
   return (
     <button
@@ -48,10 +51,8 @@ const SecretRow = memo(function SecretRow(props: SecretRowProps) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate font-semibold">{item.name}</span>
-          <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${item.enabled ? 'bg-emerald-950/50 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}
-          >
-            {item.enabled ? enabledLabel : disabledLabel}
+          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${statusToneClass}`}>
+            {statusLabel}
           </span>
         </div>
         <div className="truncate text-xs text-slate-400">{item.description || 'No description'}</div>
@@ -203,6 +204,32 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     toast(t('common.secretDeleted'))
   }
 
+  let listContent: ReactNode
+  if (filteredEnvs.length === 0) {
+    listContent = (
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-edge bg-slate-950/30 p-8 text-center">
+        <KeyRound className="h-10 w-10 text-slate-500" />
+        <div className="text-sm font-medium text-slate-300">{t('secrets.noSecrets')}</div>
+        <div className="text-xs text-slate-500">{t('secrets.noSecretsDescription')}</div>
+      </div>
+    )
+  } else {
+    listContent = (
+      <div className="grid gap-2">
+        {filteredEnvs.map((item) => (
+          <SecretRow
+            key={item.id}
+            item={item}
+            isSelected={selectedEnvId === item.id}
+            enabledLabel={t('secrets.enabled')}
+            disabledLabel={t('secrets.disabled')}
+            onSelect={onSelectEnv}
+          />
+        ))}
+      </div>
+    )
+  }
+
   return {
     center: (
       <>
@@ -261,30 +288,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
           </div>
         </Card>
 
-        {filteredEnvs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-edge bg-slate-950/30 p-8 text-center">
-            <KeyRound className="h-10 w-10 text-slate-500" />
-            <div className="text-sm font-medium text-slate-300">
-              {t('secrets.noSecrets')}
-            </div>
-            <div className="text-xs text-slate-500">
-              {t('secrets.noSecretsDescription')}
-            </div>
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            {filteredEnvs.map((item) => (
-              <SecretRow
-                key={item.id}
-                item={item}
-                isSelected={selectedEnvId === item.id}
-                enabledLabel={t('secrets.enabled')}
-                disabledLabel={t('secrets.disabled')}
-                onSelect={onSelectEnv}
-              />
-            ))}
-          </div>
-        )}
+        {listContent}
       </>
     ),
     selectedEnv,

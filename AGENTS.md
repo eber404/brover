@@ -351,3 +351,20 @@ Allowed to log:
 ## Documentation sync rule
 
 When scope, architecture, or roadmap changes, update both `AGENTS.md` and `README.md` in the same change set.
+
+---
+
+## React/TypeScript engineering rules (Electron app)
+
+- Avoid nested `if` blocks; prefer guard clauses and early return.
+- Avoid nested ternary expressions.
+- Avoid ternary expressions inside JSX trees; compute values before `return`.
+- Avoid declaring inline callbacks directly in JSX when possible; prefer stable handlers.
+- Use `useMemo`/`useCallback` where repeated computation or callback identity can trigger avoidable rerenders.
+- Prefer screen split into `*-container.tsx` (state/logic) and `*-view.tsx` (presentational tree + props) for new screens or major refactors.
+- Prefer route params for navigation/state transfer when appropriate.
+- For shared cross-screen state, prefer Zustand; use `immer` and `persist` middlewares when mutation ergonomics/persistence are needed.
+- Verification workflow for each change set:
+  1. run `npm --prefix electron-app run tsc` (`tsc --noEmit`)
+  2. if compile passes, run unit tests
+  3. if tests fail, fix before completion

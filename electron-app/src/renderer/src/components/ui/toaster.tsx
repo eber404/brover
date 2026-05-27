@@ -47,16 +47,19 @@ export function useToast() {
 function Toaster() {
   const { toasts, remove } = useToast()
 
+  function getToastClass(type: Toast['type']) {
+    if (type === 'error') {
+      return 'border-rose-300/40 bg-rose-950/80 text-rose-200'
+    }
+    return 'border-emerald-300/40 bg-emerald-950/80 text-emerald-200'
+  }
+
   return (
     <div className="fixed bottom-4 right-4 z-50 grid gap-2">
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm shadow-lg ${
-            t.type === 'error'
-              ? 'border-rose-300/40 bg-rose-950/80 text-rose-200'
-              : 'border-emerald-300/40 bg-emerald-950/80 text-emerald-200'
-          }`}
+          className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm shadow-lg ${getToastClass(t.type)}`}
         >
           {t.message}
           <button className="ml-1 opacity-70 hover:opacity-100" onClick={() => remove(t.id)}>×</button>

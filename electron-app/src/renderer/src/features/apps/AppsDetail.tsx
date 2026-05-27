@@ -13,6 +13,7 @@ interface AppsDetailProps {
 
 export function AppsDetail({ app, enabled, onToggleEnabled, onDelete }: AppsDetailProps) {
   const { t } = useI18n()
+  const statusLabel = enabled ? t('secrets.enabled') : t('secrets.disabled')
 
   if (!app) {
     return <p className="text-slate-400">{t('apps.selectApp')}</p>
@@ -26,7 +27,7 @@ export function AppsDetail({ app, enabled, onToggleEnabled, onDelete }: AppsDeta
       </div>
       <div className="flex items-center gap-3">
         <Switch checked={enabled} onCheckedChange={() => onToggleEnabled()} />
-        <span className="text-sm text-slate-300">{enabled ? t('secrets.enabled') : t('secrets.disabled')}</span>
+        <span className="text-sm text-slate-300">{statusLabel}</span>
       </div>
       <Button variant="destructive" onClick={() => onDelete()}>
         <Trash2 className="mr-2 h-4 w-4" />

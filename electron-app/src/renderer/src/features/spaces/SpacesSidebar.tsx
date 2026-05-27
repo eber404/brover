@@ -49,6 +49,41 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
     onUpdateTargetColor,
   } = props
 
+  function renderSpaceChevron(expanded: boolean) {
+    if (expanded) return <ChevronDown className="h-4 w-4" />
+    return <ChevronRight className="h-4 w-4" />
+  }
+
+  function renderTargetNameCell(spaceId: string, target: EnvTarget) {
+    if (editingTargetId === target.id) {
+      return (
+        <input
+          autoFocus
+          className="h-7 flex-1 rounded border border-edge bg-slate-900 px-2 text-xs"
+          value={editingName}
+          onChange={(event) => onEditNameChange(event.target.value)}
+          onBlur={() => void onSaveRenameTarget(target.id)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              void onSaveRenameTarget(target.id)
+            }
+          }}
+        />
+      )
+    }
+
+    const selectedClass = selectedTargetId === target.id ? 'bg-accent/15 text-accent' : 'text-slate-300'
+    return (
+      <button
+        className={`flex-1 truncate rounded px-2 py-1 text-left text-xs ${selectedClass}`}
+        onClick={() => onSelectTarget(spaceId, target.id)}
+        onDoubleClick={() => onStartRenameTarget(target.id, target.name)}
+      >
+        {target.name}
+      </button>
+    )
+  }
+
   return (
     <aside className="flex flex-col rounded-2xl border border-edge bg-panel/90 p-4 pt-6">
       <div className="flex items-center gap-2">
@@ -74,7 +109,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
                   onClick={() => onToggleSpace(space.id)}
                   className="rounded p-1 text-slate-300 hover:bg-slate-900"
                 >
-                  {space.expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  {renderSpaceChevron(Boolean(space.expanded))}
                 </button>
                 <Folder className="h-4 w-4 text-slate-400" />
                 <button
@@ -92,28 +127,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
                 <div className="mt-1 grid gap-1 pl-6">
                   {spaceTargets.map((target) => (
                     <div key={target.id} className="flex items-center gap-2 rounded px-1 py-1 hover:bg-slate-900/60">
-                      {editingTargetId === target.id ? (
-                        <input
-                          autoFocus
-                          className="h-7 flex-1 rounded border border-edge bg-slate-900 px-2 text-xs"
-                          value={editingName}
-                          onChange={(event) => onEditNameChange(event.target.value)}
-                          onBlur={() => void onSaveRenameTarget(target.id)}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter') {
-                              void onSaveRenameTarget(target.id)
-                            }
-                          }}
-                        />
-                      ) : (
-                        <button
-                          className={`flex-1 truncate rounded px-2 py-1 text-left text-xs ${selectedTargetId === target.id ? 'bg-accent/15 text-accent' : 'text-slate-300'}`}
-                          onClick={() => onSelectTarget(space.id, target.id)}
-                          onDoubleClick={() => onStartRenameTarget(target.id, target.name)}
-                        >
-                          {target.name}
-                        </button>
-                      )}
+                      {renderTargetNameCell(space.id, target)}
 
                       <label className="relative h-4 w-4 cursor-pointer overflow-hidden rounded-full border border-edge">
                         <input

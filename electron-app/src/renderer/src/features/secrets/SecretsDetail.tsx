@@ -30,6 +30,10 @@ export function SecretsDetail({
   const { t } = useI18n()
   const [editValue, setEditValue] = useState('')
   const [isRevealed, setIsRevealed] = useState(false)
+  const statusLabel = enabled ? t('secrets.enabled') : t('secrets.disabled')
+  const revealValueText = isRevealed ? revealValue : '••••••••'
+  const revealAriaLabel = isRevealed ? 'Hide secret' : 'Reveal secret'
+  const revealIcon = isRevealed ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />
 
   useEffect(() => {
     setIsRevealed(false)
@@ -48,7 +52,7 @@ export function SecretsDetail({
 
       <div className="flex items-center gap-3">
         <Switch checked={enabled} onCheckedChange={() => onToggleEnabled()} />
-        <span className="text-sm text-slate-300">{enabled ? t('secrets.enabled') : t('secrets.disabled')}</span>
+        <span className="text-sm text-slate-300">{statusLabel}</span>
       </div>
 
       <div className="grid gap-2 rounded-xl border border-edge bg-slate-950/30 p-3">
@@ -56,7 +60,7 @@ export function SecretsDetail({
         <div className="relative">
           <Input
             readOnly
-            value={isRevealed ? revealValue : '••••••••'}
+            value={revealValueText}
             className="pr-11 font-mono"
           />
           <button
@@ -71,13 +75,9 @@ export function SecretsDetail({
               onReveal()
               setIsRevealed(true)
             }}
-            aria-label={isRevealed ? 'Hide secret' : 'Reveal secret'}
+            aria-label={revealAriaLabel}
           >
-            {isRevealed ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
+            {revealIcon}
           </button>
         </div>
         <Button

@@ -15,13 +15,13 @@ const reasonByAction: Record<Exclude<SecretAction, 'copy'>, string> = {
 export function createSecretAuthGate(prompt: AuthPrompt) {
   return {
     async authorize(action: SecretAction, context?: SecretActionContext) {
-      if (action === 'copy') {
-        if (context?.isRevealed) return
-        await prompt('Authenticate to copy hidden secret')
+      if (action !== 'copy') {
+        await prompt(reasonByAction[action])
         return
       }
 
-      await prompt(reasonByAction[action])
+      if (context?.isRevealed) return
+      await prompt('Authenticate to copy hidden secret')
     },
   }
 }

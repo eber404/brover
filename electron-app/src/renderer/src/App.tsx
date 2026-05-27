@@ -174,6 +174,11 @@ function AppShell() {
     void window.brover.toggleEnvEnabled(secretsPanel.selectedEnv.id).then(setEnvs)
   }, [secretsPanel.selectedEnv])
 
+  const applyLabel = useMemo(() => {
+    if (selectedSpace?.kind === 'global') return 'Apply to zsh/bash'
+    return 'Apply to .env target'
+  }, [selectedSpace?.kind])
+
   return (
     <div className="relative grid h-screen grid-cols-[260px_1fr_1fr] gap-3 p-4 pt-11 text-sm">
       <div data-testid="drag-bar" className="absolute inset-x-0 top-0 z-50 h-11 w-full" style={DRAG_REGION_STYLE} />
@@ -231,7 +236,7 @@ function AppShell() {
         onToggleEnabled={onToggleSelectedEnvEnabled}
         onUpdateValue={(value) => void secretsPanel.updateEnvValue(value)}
         onApply={() => void applyCurrentSelection()}
-        applyLabel={selectedSpace?.kind === 'global' ? 'Apply to zsh/bash' : 'Apply to .env target'}
+        applyLabel={applyLabel}
         canApply={Boolean(selectedTarget)}
         onDelete={() => void secretsPanel.deleteEnv()}
         canDelete={Boolean(secretsPanel.selectedEnv)}
