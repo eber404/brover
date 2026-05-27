@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { KeyRound, Plus } from 'lucide-react'
 import type { EnvMetadata } from '../../../../shared/models'
 import { UNSUPPORTED_SECRET_BACKEND } from '../../../../shared/models'
@@ -27,6 +27,39 @@ interface SecretsPanelProps {
   setRevealValue: (value: string) => void
 }
 
+interface SecretRowProps {
+  item: EnvMetadata
+  isSelected: boolean
+  enabledLabel: string
+  disabledLabel: string
+  onSelect: (id: string) => void
+}
+
+const SecretRow = memo(function SecretRow(props: SecretRowProps) {
+  const { item, isSelected, enabledLabel, disabledLabel, onSelect } = props
+
+  return (
+    <button
+      data-testid={`secret-row-${item.name}`}
+      className={`flex items-center gap-3 rounded-xl border p-3 text-left ${isSelected ? 'border-accent bg-slate-900' : 'border-edge bg-slate-950/30'}`}
+      onClick={() => onSelect(item.id)}
+    >
+      <KeyRound className="h-5 w-5 shrink-0 text-slate-400" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="truncate font-semibold">{item.name}</span>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${item.enabled ? 'bg-emerald-950/50 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}
+          >
+            {item.enabled ? enabledLabel : disabledLabel}
+          </span>
+        </div>
+        <div className="truncate text-xs text-slate-400">{item.description || 'No description'}</div>
+      </div>
+    </button>
+  )
+})
+
 export function useSecretsPanel(props: SecretsPanelProps) {
   const { t } = useI18n()
   const {
@@ -46,7 +79,17 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   const [newEnvValue, setNewEnvValue] = useState('')
   const [newEnvDescription, setNewEnvDescription] = useState('')
 
-  const selectedEnv = envs.find((item) => item.id === selectedEnvId) ?? null
+  const selectedEnv = useMemo(
+    () => envs.find((item) => item.id === selectedEnvId) ?? null,
+    [envs, selectedEnvId]
+  )
+
+  const onSelectEnv = useCallback(
+    (id: string) => {
+      setSelectedEnvId(id)
+    },
+    [setSelectedEnvId]
+  )
 
   function normalizeEnvNameInput(value: string) {
     return value.toUpperCase().replace(/[-\s]+/g, '_')
@@ -231,29 +274,14 @@ export function useSecretsPanel(props: SecretsPanelProps) {
         ) : (
           <div className="grid gap-2">
             {filteredEnvs.map((item) => (
-              <button
+              <SecretRow
                 key={item.id}
-                data-testid={`secret-row-${item.name}`}
-                className={`flex items-center gap-3 rounded-xl border p-3 text-left ${selectedEnvId === item.id ? 'border-accent bg-slate-900' : 'border-edge bg-slate-950/30'}`}
-                onClick={() => setSelectedEnvId(item.id)}
-              >
-                <KeyRound className="h-5 w-5 shrink-0 text-slate-400" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate font-semibold">{item.name}</span>
-                    <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${item.enabled ? 'bg-emerald-950/50 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}
-                    >
-                      {item.enabled
-                        ? t('secrets.enabled')
-                        : t('secrets.disabled')}
-                    </span>
-                  </div>
-                  <div className="truncate text-xs text-slate-400">
-                    {item.description || 'No description'}
-                  </div>
-                </div>
-              </button>
+                item={item}
+                isSelected={selectedEnvId === item.id}
+                enabledLabel={t('secrets.enabled')}
+                disabledLabel={t('secrets.disabled')}
+                onSelect={onSelectEnv}
+              />
             ))}
           </div>
         )}
