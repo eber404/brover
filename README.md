@@ -1,5 +1,7 @@
 # brover
 
+[![CI](https://github.com/eber404/brover/actions/workflows/ci.yml/badge.svg)](https://github.com/eber404/brover/actions/workflows/ci.yml)
+
 Desktop app to manage local environment variables and secrets with authentication-gated secret actions.
 
 Stack: **Electron + React + TypeScript + TailwindCSS**.
