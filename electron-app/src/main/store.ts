@@ -294,6 +294,14 @@ export class BroverStore {
     if (spaceId === GLOBAL_SPACE_ID) throw new Error('Cannot delete global space')
     const spaceTargets = db.targets.filter((target) => target.spaceId === spaceId)
     const targetIds = spaceTargets.map((target) => target.id)
+
+    const spaceEnvs = db.envs.filter((env) => targetIds.includes(env.profile))
+    for (const env of spaceEnvs) {
+      for (const targetId of targetIds) {
+        await this.secrets.delete(`${targetId}:${env.name}`)
+      }
+    }
+
     db.targets = db.targets.filter((target) => target.spaceId !== spaceId)
     db.envs = db.envs.filter((env) => !targetIds.includes(env.profile))
     db.spaces = db.spaces.filter((space) => space.id !== spaceId)
@@ -357,6 +365,11 @@ export class BroverStore {
     const db = await this.readDB()
     const target = db.targets.find((item) => item.id === payload.targetId)
     if (!target) throw new Error('Target not found')
+
+    const targetEnvs = db.envs.filter((env) => env.profile === payload.targetId)
+    for (const env of targetEnvs) {
+      await this.secrets.delete(`${payload.targetId}:${env.name}`)
+    }
 
     db.targets = db.targets.filter((item) => item.id !== payload.targetId)
     db.envs = db.envs.filter((item) => item.profile !== payload.targetId)

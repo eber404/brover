@@ -241,7 +241,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
         </select>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col p-4 pt-3">
+      <div className="flex min-w-0 flex-1 flex-col bg-slate-950/50 p-4 pt-3">
         <div className="flex items-center gap-2">
           <Layers className="h-4 w-4 text-slate-400" />
           <h1 className="text-sm font-semibold tracking-wide text-slate-200">
