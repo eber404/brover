@@ -82,13 +82,12 @@ async function bootstrap() {
   })
 
   const window = new BrowserWindow({
-    width: 1440,
-    height: 920,
-    minWidth: 1120,
-    minHeight: 760,
+    width: 1200,
+    height: 760,
+    minWidth: 900,
+    minHeight: 600,
     resizable: true,
-    titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 16, y: 18 },
+    titleBarStyle: 'hidden',
     backgroundColor: '#070b12',
     webPreferences: {
       preload: join(app.getAppPath(), 'dist-electron', 'preload', 'preload.js'),

@@ -70,9 +70,8 @@ function AppShell() {
   })
 
   return (
-    <div className="grid h-screen grid-cols-[220px_400px_1fr] gap-3 pt-12 pb-3 px-3 text-sm">
-      <aside className="flex flex-col rounded-2xl border border-edge bg-panel/90 p-4">
-        <div className="h-6 w-full" style={{ WebkitAppRegion: 'drag' as const }} />
+    <div className="grid h-screen grid-cols-[220px_400px_1fr] gap-3 p-3 text-sm">
+      <aside className="flex flex-col rounded-2xl border border-edge bg-panel/90 p-4 pt-10">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-accent" />
           <h1 className="text-lg font-semibold tracking-tight">{t('app.title')}</h1>
