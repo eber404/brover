@@ -24,6 +24,8 @@ function AppShell() {
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null)
   const [selectedEnvId, setSelectedEnvId] = useState<string>('')
   const [revealValue, setRevealValue] = useState('')
+  const [editingSpaceId, setEditingSpaceId] = useState<string | null>(null)
+  const [editingSpaceName, setEditingSpaceName] = useState('')
   const [editingTargetId, setEditingTargetId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const deferredSearchText = useDeferredValue(searchText)
@@ -83,6 +85,9 @@ function AppShell() {
     return map
   }, [targets])
 
+  const shellSpaces = useMemo(() => spaces.filter((space) => space.kind === 'global'), [spaces])
+  const dirSpaces = useMemo(() => spaces.filter((space) => space.kind === 'directory'), [spaces])
+
   const filteredEnvs = useMemo(() => {
     const query = deferredSearchText.trim().toLowerCase()
     if (!query) return targetEnvs
@@ -108,15 +113,13 @@ function AppShell() {
     setRevealValue('')
   }, [selectedTargetId])
 
-  const toggleSpace = useCallback(async (spaceId: string) => {
-    setSpaces(await window.brover.toggleSpaceExpanded(spaceId))
-  }, [])
-
   const addSpace = useCallback(async () => {
-    const name = window.prompt('Space name')?.trim()
-    if (!name) return
-    const path = window.prompt('Directory path')?.trim()
-    if (!path) return
+    const picked = await window.brover.pickDirectory()
+    if (picked.canceled || !picked.path) return
+    const segments = picked.path.split('/').filter(Boolean)
+    const fallbackName = segments[segments.length - 1] ?? 'Space'
+    const name = fallbackName.trim()
+    const path = picked.path.trim()
     const nextSpaces = await window.brover.createSpace({ name, path })
     const nextTargets = await Promise.all(
       nextSpaces.map((space) => window.brover.listTargets(space.id))
@@ -125,12 +128,60 @@ function AppShell() {
     setTargets(nextTargets.flat())
   }, [])
 
-  const addTarget = useCallback(async (spaceId: string) => {
-    const name = window.prompt('Target name (e.g. dev)')?.trim()
+  const startRenameSpace = useCallback((spaceId: string, currentName: string) => {
+    setEditingSpaceId(spaceId)
+    setEditingSpaceName(currentName)
+  }, [])
+
+  const saveRenameSpace = useCallback(async (spaceId: string) => {
+    const name = editingSpaceName.trim()
+    setEditingSpaceId(null)
     if (!name) return
+    setSpaces(await window.brover.renameSpace({ spaceId, name }))
+  }, [editingSpaceName])
+
+  const onEditSpaceNameChange = useCallback((value: string) => {
+    setEditingSpaceName(value)
+  }, [])
+
+  const addTarget = useCallback(async (spaceId: string) => {
+    const existingNames = new Set(
+      targets
+        .filter((item) => item.spaceId === spaceId)
+        .map((item) => item.name.trim().toLowerCase())
+    )
+    const baseName = existingNames.has('prod') ? 'env' : 'prod'
+    let name = baseName
+    let index = 2
+    while (existingNames.has(name.toLowerCase())) {
+      name = `${baseName}-${index}`
+      index += 1
+    }
+
     const updated = await window.brover.createTarget({ spaceId, name })
     setTargets((prev) => [...prev.filter((item) => item.spaceId !== spaceId), ...updated])
-  }, [])
+    const created = updated.find((item) => item.name === name)
+    if (!created) return
+    setEditingTargetId(created.id)
+    setEditingName('')
+  }, [targets])
+
+  const deleteTarget = useCallback(async (targetId: string) => {
+    const target = targets.find((item) => item.id === targetId)
+    if (!target) return
+    const api = window.brover as typeof window.brover & {
+      deleteTarget?: (payload: { targetId: string }) => Promise<typeof targets>
+    }
+    if (!api.deleteTarget) {
+      throw new Error('deleteTarget API unavailable. Reload app window.')
+    }
+    const updated = await api.deleteTarget({ targetId })
+    setTargets((prev) => [...prev.filter((item) => item.spaceId !== target.spaceId), ...updated])
+    if (selectedTargetId === targetId) {
+      const next = updated.find((item) => item.isActive) ?? updated[0]
+      setSelectedTargetId(next?.id ?? null)
+    }
+  }, [selectedTargetId, targets])
 
   const saveTargetRename = useCallback(async (targetId: string) => {
     const name = editingName.trim()
@@ -180,7 +231,7 @@ function AppShell() {
   }, [selectedSpace?.kind])
 
   return (
-    <div className="relative grid h-screen grid-cols-[260px_1fr_1fr] gap-3 p-4 pt-11 text-sm">
+    <div className="relative grid h-screen grid-cols-[320px_1fr_1fr] gap-3 p-4 pt-11 text-sm">
       <div data-testid="drag-bar" className="absolute inset-x-0 top-0 z-50 h-11 w-full" style={DRAG_REGION_STYLE} />
       <div data-testid="drag-bar" className="absolute inset-x-0 left-0 z-50 h-full w-4" style={DRAG_REGION_STYLE} />
       <div data-testid="drag-bar" className="absolute top-0 right-0 z-50 h-full w-4" style={DRAG_REGION_STYLE} />
@@ -189,21 +240,26 @@ function AppShell() {
       <SpacesSidebar
         title={t('app.title')}
         subtitle={t('app.subtitle')}
-        spacesLabel="ENV SPACES"
-        spaces={spaces}
+        shellSpaces={shellSpaces}
+        dirSpaces={dirSpaces}
         targetsBySpace={targetsBySpace}
         selectedSpaceId={selectedSpaceId}
         selectedTargetId={selectedTargetId}
+        editingSpaceId={editingSpaceId}
+        editingSpaceName={editingSpaceName}
         editingTargetId={editingTargetId}
         editingName={editingName}
         locale={locale}
         onLocaleChange={setLocale}
         onEditNameChange={setEditingName}
         onAddSpace={() => void addSpace()}
-        onToggleSpace={(spaceId) => void toggleSpace(spaceId)}
+        onStartRenameSpace={startRenameSpace}
+        onSaveRenameSpace={(spaceId) => void saveRenameSpace(spaceId)}
+        onEditSpaceNameChange={onEditSpaceNameChange}
         onSelectSpace={(spaceId, firstTargetId) => {
           setSelectedSpaceId(spaceId)
-          if (!selectedTargetId && firstTargetId) {
+          const currentBelongsToSpace = targets.some((target) => target.id === selectedTargetId && target.spaceId === spaceId)
+          if (!currentBelongsToSpace && firstTargetId) {
             setSelectedTargetId(firstTargetId)
           }
         }}
@@ -215,6 +271,7 @@ function AppShell() {
         onSaveRenameTarget={(targetId) => void saveTargetRename(targetId)}
         onSelectTarget={(spaceId, targetId) => void setActiveTarget(spaceId, targetId)}
         onUpdateTargetColor={(targetId, color) => void updateTargetColor(targetId, color)}
+        onDeleteTarget={(targetId) => void deleteTarget(targetId)}
       />
 
       <SecretsCenterPanel

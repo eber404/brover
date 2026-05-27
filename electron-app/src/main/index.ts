@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, systemPreferences } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, systemPreferences } from 'electron'
 import { join } from 'node:path'
 import {
   BroverStore,
@@ -75,12 +75,27 @@ async function bootstrap() {
   ipcMain.handle('spaces:create', (_, payload: { name: string; path: string }) =>
     store.createSpace(payload)
   )
+  ipcMain.handle('spaces:rename', (_, payload: { spaceId: string; name: string }) =>
+    store.renameSpace(payload)
+  )
+  ipcMain.handle('system:pick-directory', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory', 'createDirectory'],
+    })
+    return {
+      canceled: result.canceled,
+      path: result.canceled ? null : (result.filePaths[0] ?? null),
+    }
+  })
   ipcMain.handle('spaces:toggle-expanded', (_, spaceId: string) =>
     store.toggleSpaceExpanded(spaceId)
   )
   ipcMain.handle('targets:list', (_, spaceId: string) => store.listTargets(spaceId))
   ipcMain.handle('targets:create', (_, payload: { spaceId: string; name: string }) =>
     store.createTarget(payload)
+  )
+  ipcMain.handle('targets:delete', (_, payload: { targetId: string }) =>
+    store.deleteTarget(payload)
   )
   ipcMain.handle('targets:rename', (_, payload: { targetId: string; name: string }) =>
     store.renameTarget(payload)

@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { basename, dirname } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import type { AppAuthorization, EnvMetadata, EnvSpace, EnvTarget, Profile } from '../shared/models'
 import { isValidBundleID, isValidEnvName } from '../shared/validators'
@@ -61,6 +61,12 @@ interface DBShape {
 }
 
 const GLOBAL_SPACE_ID = 'space-global'
+const TARGET_COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
+
+function randomTargetColor(): string {
+  const index = Math.floor(Math.random() * TARGET_COLORS.length)
+  return TARGET_COLORS[index] ?? '#f59e0b'
+}
 const GLOBAL_TARGET_ID = 'target-global-default'
 
 function createDefaultGlobalSpace(now: string): EnvSpace {
@@ -251,7 +257,7 @@ export class BroverStore {
     const now = new Date().toISOString()
     const created: EnvSpace = {
       id: randomUUID(),
-      name: payload.name.trim(),
+      name: payload.name.trim() || basename(payload.path.trim()),
       kind: 'directory',
       path: payload.path.trim(),
       expanded: true,
@@ -266,6 +272,19 @@ export class BroverStore {
       isActive: true,
       updatedAt: now,
     })
+    await this.writeDB(db)
+    return db.spaces
+  }
+
+  async renameSpace(payload: { spaceId: string; name: string }): Promise<EnvSpace[]> {
+    const db = await this.readDB()
+    const name = payload.name.trim()
+    if (!name) throw new Error('Space name required')
+    db.spaces = db.spaces.map((space) =>
+      space.id === payload.spaceId
+        ? { ...space, name, updatedAt: new Date().toISOString() }
+        : space
+    )
     await this.writeDB(db)
     return db.spaces
   }
@@ -298,7 +317,7 @@ export class BroverStore {
       id: randomUUID(),
       spaceId: payload.spaceId,
       name,
-      color: '#f59e0b',
+      color: randomTargetColor(),
       isActive: false,
       updatedAt: now,
     }
@@ -320,6 +339,32 @@ export class BroverStore {
 
     await this.writeDB(db)
     return db.targets.filter((target) => target.spaceId === payload.spaceId)
+  }
+
+  async deleteTarget(payload: { targetId: string }): Promise<EnvTarget[]> {
+    const db = await this.readDB()
+    const target = db.targets.find((item) => item.id === payload.targetId)
+    if (!target) throw new Error('Target not found')
+
+    const spaceTargets = db.targets.filter((item) => item.spaceId === target.spaceId)
+    if (spaceTargets.length <= 1) throw new Error('Cannot delete last target in this space')
+
+    db.targets = db.targets.filter((item) => item.id !== payload.targetId)
+    db.envs = db.envs.filter((item) => item.profile !== payload.targetId)
+
+    const remaining = db.targets.filter((item) => item.spaceId === target.spaceId)
+    const hasActive = remaining.some((item) => item.isActive)
+    if (!hasActive && remaining[0]) {
+      const replacementId = remaining[0].id
+      db.targets = db.targets.map((item) =>
+        item.spaceId === target.spaceId
+          ? { ...item, isActive: item.id === replacementId, updatedAt: new Date().toISOString() }
+          : item
+      )
+    }
+
+    await this.writeDB(db)
+    return db.targets.filter((item) => item.spaceId === target.spaceId)
   }
 
   async renameTarget(payload: { targetId: string; name: string }): Promise<EnvTarget[]> {
