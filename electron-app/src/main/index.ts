@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, systemPreferences } from 'electron'
 import { join } from 'node:path'
+import { watchFile, unwatchFile } from 'node:fs'
 import {
   BroverStore,
   MacOSKeytarSecretStore,
@@ -251,6 +252,15 @@ async function bootstrap() {
     await window.loadURL(
       process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5173'
     )
+
+    const preloadPath = join(app.getAppPath(), 'dist-electron', 'preload', 'preload.js')
+    watchFile(preloadPath, () => {
+      console.log('[main] Preload changed, reloading window...')
+      window.webContents.reload()
+    })
+    window.on('closed', () => {
+      unwatchFile(preloadPath)
+    })
   } else {
     await window.loadFile(join(app.getAppPath(), 'dist', 'index.html'))
   }
