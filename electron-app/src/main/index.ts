@@ -90,8 +90,14 @@ async function bootstrap() {
     }
   })
 
+  window.webContents.on('did-finish-load', () => {
+    console.log('[main] Page loaded:', window.webContents.getURL())
+  })
+
   if (isDev) {
     window.webContents.openDevTools()
+    await window.webContents.session.clearCache()
+    console.log('[main] Cleared Electron cache, loading dev server...')
     await window.loadURL(process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5173')
   } else {
     await window.loadFile(join(app.getAppPath(), 'dist', 'index.html'))
