@@ -29,6 +29,7 @@ interface SpacesSidebarProps {
   onUpdateTargetColor: (targetId: string, color: string) => void
   onReorderTargets: (spaceId: string, orderedTargetIds: string[]) => void
   onDeleteTarget: (targetId: string) => void
+  onDeleteSpace: (spaceId: string) => void
 }
 
 export const SpacesSidebar = memo(function SpacesSidebar(
@@ -61,6 +62,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     onUpdateTargetColor,
     onReorderTargets,
     onDeleteTarget,
+    onDeleteSpace,
   } = props
 
   const allSpaces = [...shellSpaces, ...dirSpaces]
@@ -95,6 +97,14 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     y: number
   } | null>(null)
   const [draggingTargetId, setDraggingTargetId] = useState<string | null>(null)
+  const [spaceContextMenu, setSpaceContextMenu] = useState<{
+    spaceId: string
+    x: number
+    y: number
+  } | null>(null)
+  const [pendingDeleteSpace, setPendingDeleteSpace] = useState<string | null>(
+    null
+  )
   const asideRef = useRef<HTMLElement | null>(null)
 
   function applyTargetColor(targetId: string, color: string) {
@@ -187,7 +197,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             return (
               <button
                 key={space.id}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl border text-xs font-semibold transition ${isSelected ? 'border-slate-100 text-slate-50' : 'border-edge text-slate-300 hover:border-slate-400 hover:text-slate-100'}`}
+                className={`relative flex h-11 w-11 items-center justify-center rounded-xl border text-xs font-semibold transition ${isSelected ? 'border-slate-100 text-slate-50' : 'border-edge text-slate-300 hover:border-slate-400 hover:text-slate-100'}`}
                 style={{
                   backgroundColor: isSelected
                     ? 'rgba(30,41,59,0.95)'
@@ -200,6 +210,10 @@ export const SpacesSidebar = memo(function SpacesSidebar(
                   )
                 }
                 onDoubleClick={() => onStartRenameSpace(space.id, space.name)}
+                onContextMenu={(event) => {
+                  event.preventDefault()
+                  setSpaceContextMenu({ spaceId: space.id, x: event.clientX, y: event.clientY })
+                }}
                 title={space.name}
               >
                 {getSpaceBadge(space)}
@@ -388,6 +402,70 @@ export const SpacesSidebar = memo(function SpacesSidebar(
                 }
               />
             </label>
+          </div>
+        </div>
+      ) : null}
+
+      {spaceContextMenu ? (
+        <div className="absolute inset-0 z-30">
+          <button
+            type="button"
+            className="absolute inset-0"
+            onClick={() => setSpaceContextMenu(null)}
+          />
+          <div
+            className="absolute flex w-36 flex-col rounded-lg border border-edge bg-slate-950/95 p-1 shadow-xl"
+            style={{ left: spaceContextMenu.x, top: spaceContextMenu.y }}
+          >
+            <button
+              className="rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:bg-slate-900"
+              onClick={() => {
+                const space = allSpaces.find((s) => s.id === spaceContextMenu.spaceId)
+                if (space) onStartRenameSpace(space.id, space.name)
+                setSpaceContextMenu(null)
+              }}
+            >
+              Rename
+            </button>
+            {spaceContextMenu.spaceId !== 'space-global' && (
+              <button
+                className="rounded px-2 py-1.5 text-left text-xs text-rose-300 hover:bg-slate-900"
+                onClick={() => {
+                  setPendingDeleteSpace(spaceContextMenu.spaceId)
+                  setSpaceContextMenu(null)
+                }}
+              >
+                Delete
+              </button>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {pendingDeleteSpace ? (
+        <div className="absolute inset-0 z-40 flex items-center justify-center rounded-2xl bg-slate-950/70 p-4">
+          <div className="w-full max-w-xs rounded-xl border border-edge bg-slate-900 p-4">
+            <div className="text-sm font-semibold text-slate-100">Delete space?</div>
+            <p className="mt-1 text-xs text-slate-400">
+              This will remove all targets and secrets in this space.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                className="rounded px-2 py-1 text-xs text-slate-300 hover:bg-slate-800"
+                onClick={() => setPendingDeleteSpace(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded bg-rose-600 px-2 py-1 text-xs text-white hover:bg-rose-500"
+                onClick={() => {
+                  void onDeleteSpace(pendingDeleteSpace)
+                  setPendingDeleteSpace(null)
+                }}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

@@ -289,6 +289,18 @@ export class BroverStore {
     return db.spaces
   }
 
+  async deleteSpace(spaceId: string): Promise<EnvSpace[]> {
+    const db = await this.readDB()
+    if (spaceId === GLOBAL_SPACE_ID) throw new Error('Cannot delete global space')
+    const spaceTargets = db.targets.filter((target) => target.spaceId === spaceId)
+    const targetIds = spaceTargets.map((target) => target.id)
+    db.targets = db.targets.filter((target) => target.spaceId !== spaceId)
+    db.envs = db.envs.filter((env) => !targetIds.includes(env.profile))
+    db.spaces = db.spaces.filter((space) => space.id !== spaceId)
+    await this.writeDB(db)
+    return db.spaces
+  }
+
   async toggleSpaceExpanded(spaceId: string): Promise<EnvSpace[]> {
     const db = await this.readDB()
     db.spaces = db.spaces.map((space) =>

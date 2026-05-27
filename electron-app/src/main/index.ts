@@ -80,6 +80,7 @@ async function bootstrap() {
   ipcMain.handle('spaces:rename', (_, payload: { spaceId: string; name: string }) =>
     store.renameSpace(payload)
   )
+  ipcMain.handle('spaces:delete', (_, spaceId: string) => store.deleteSpace(spaceId))
   ipcMain.handle('system:pick-directory', async () => {
     const result = await dialog.showOpenDialog({
       properties: ['openDirectory', 'createDirectory'],

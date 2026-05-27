@@ -24,6 +24,7 @@ const api: BroverAPI = {
   listSpaces: () => ipcRenderer.invoke('spaces:list'),
   createSpace: (payload) => ipcRenderer.invoke('spaces:create', payload),
   renameSpace: (payload) => ipcRenderer.invoke('spaces:rename', payload),
+  deleteSpace: (spaceId) => ipcRenderer.invoke('spaces:delete', spaceId),
   pickDirectory: () => ipcRenderer.invoke('system:pick-directory'),
   toggleSpaceExpanded: (spaceId) => ipcRenderer.invoke('spaces:toggle-expanded', spaceId),
   listTargets: (spaceId) => ipcRenderer.invoke('targets:list', spaceId),

@@ -251,6 +251,25 @@ function AppShell() {
     []
   )
 
+  const deleteSpace = useCallback(
+    async (spaceId: string) => {
+      const nextSpaces = await window.brover.deleteSpace(spaceId)
+      setSpaces(nextSpaces)
+      setTargets((prev) => prev.filter((item) => item.spaceId !== spaceId))
+      if (selectedSpaceId === spaceId) {
+        const fallbackSpace = nextSpaces[0] ?? null
+        setSelectedSpaceId(fallbackSpace?.id ?? null)
+        if (fallbackSpace) {
+          const fallbackTargets = targets.filter((item) => item.spaceId === fallbackSpace.id)
+          setSelectedTargetId(fallbackTargets.find((item) => item.isActive)?.id ?? fallbackTargets[0]?.id ?? null)
+        } else {
+          setSelectedTargetId(null)
+        }
+      }
+    },
+    [selectedSpaceId, targets]
+  )
+
   const setActiveTarget = useCallback(
     async (spaceId: string, targetId: string) => {
       const updated = await window.brover.setActiveTarget({ spaceId, targetId })
@@ -335,6 +354,7 @@ function AppShell() {
             void reorderTargets(spaceId, orderedTargetIds)
           }
           onDeleteTarget={(targetId) => void deleteTarget(targetId)}
+          onDeleteSpace={(spaceId) => void deleteSpace(spaceId)}
         />
       </div>
 
