@@ -14,7 +14,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:coverage:text": "vitest run --coverage --reporter=text",
+    "test:coverage:text": "vitest run --coverage --coverage.reporter=text",
     "test:e2e": "npm run build && npx playwright test",
     "tsc": "npx tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx"
