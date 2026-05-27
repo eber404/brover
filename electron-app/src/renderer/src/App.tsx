@@ -253,7 +253,13 @@ function AppShell() {
 
   const deleteSpace = useCallback(
     async (spaceId: string) => {
-      const nextSpaces = await window.brover.deleteSpace(spaceId)
+      const api = window.brover as typeof window.brover & {
+        deleteSpace?: (spaceId: string) => Promise<EnvSpace[]>
+      }
+      if (!api.deleteSpace) {
+        throw new Error('deleteSpace API unavailable. Reload app window.')
+      }
+      const nextSpaces = await api.deleteSpace(spaceId)
       setSpaces(nextSpaces)
       setTargets((prev) => prev.filter((item) => item.spaceId !== spaceId))
       if (selectedSpaceId === spaceId) {
