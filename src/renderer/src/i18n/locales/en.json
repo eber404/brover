@@ -31,6 +31,8 @@
     "addSecret": "Add Secret",
     "noSecrets": "No secrets yet",
     "noSecretsDescription": "Create your first environment variable.",
+    "noResults": "No secrets match your search",
+    "noResultsDescription": "Try a different search term.",
     "revealSecret": "Reveal Secret",
     "copySecret": "Copy Secret",
     "updateValue": "Update Secret Value",

@@ -24,6 +24,7 @@ interface SecretsPanelProps {
   envs: EnvMetadata[]
   filteredEnvs: EnvMetadata[]
   selectedEnvId: string
+  searchQuery?: string
   setSelectedEnvId: (value: string) => void
   setEnvs: (items: EnvMetadata[]) => void
   setRevealValue: (value: string) => void
@@ -41,15 +42,15 @@ const SecretRow = memo(function SecretRow(props: SecretRowProps) {
   return (
     <button
       data-testid={`secret-row-${item.name}`}
-      className={`flex items-center gap-3 rounded-xl border p-3 text-left ${isSelected ? 'border-accent bg-slate-900' : 'border-edge bg-slate-950/30'}`}
+      className={`flex items-center gap-3 rounded-xl border p-3 text-left ${isSelected ? 'border-accent bg-surface-active' : 'border-edge bg-surface-card'}`}
       onClick={() => onSelect(item.id)}
     >
-      <KeyRound className="h-5 w-5 shrink-0 text-slate-400" />
+      <KeyRound className="h-5 w-5 shrink-0 text-text-muted" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate font-semibold">{item.name}</span>
         </div>
-        <div className="truncate text-xs text-slate-400">{item.description || 'No description'}</div>
+        <div className="truncate text-xs text-text-muted">{item.description || 'No description'}</div>
       </div>
     </button>
   )
@@ -63,6 +64,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     envs,
     filteredEnvs,
     selectedEnvId,
+    searchQuery,
     setSelectedEnvId,
     setEnvs,
     setRevealValue,
@@ -239,14 +241,25 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   }
 
   let listContent: ReactNode
+  const isFiltered = (searchQuery ?? '').trim().length > 0
   if (filteredEnvs.length === 0) {
-    listContent = (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-edge bg-slate-950/30 p-8 text-center">
-        <KeyRound className="h-10 w-10 text-slate-500" />
-        <div className="text-sm font-medium text-slate-300">{t('secrets.noSecrets')}</div>
-        <div className="text-xs text-slate-500">{t('secrets.noSecretsDescription')}</div>
-      </div>
-    )
+    if (isFiltered) {
+      listContent = (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-edge bg-surface-card p-8 text-center">
+          <KeyRound className="h-10 w-10 text-text-muted" />
+          <div className="text-sm font-medium text-text-base">{t('secrets.noResults')}</div>
+          <div className="text-xs text-text-muted">{t('secrets.noResultsDescription')}</div>
+        </div>
+      )
+    } else {
+      listContent = (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-edge bg-surface-card p-8 text-center">
+          <KeyRound className="h-10 w-10 text-text-muted" />
+          <div className="text-sm font-medium text-text-base">{t('secrets.noSecrets')}</div>
+          <div className="text-xs text-text-muted">{t('secrets.noSecretsDescription')}</div>
+        </div>
+      )
+    }
   } else {
     listContent = (
       <div className="grid gap-2">
@@ -267,7 +280,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       <>
         <Card className="mb-3 border-transparent bg-transparent p-0">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold text-slate-100">{targetName}</h2>
+            <h2 className="text-lg font-semibold text-text-emphasis">{targetName}</h2>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button data-testid="add-secret-button" className="px-3 py-1.5">
@@ -299,7 +312,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
                   />
                   <textarea
                     data-testid="add-secret-description"
-                    className="min-h-20 w-full rounded-lg border border-edge bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-accent"
+                    className="min-h-20 w-full rounded-lg border border-edge bg-slate-900 px-3 py-2 text-sm text-text-emphasis outline-none placeholder:text-text-muted focus-visible:ring-2 focus-visible:ring-accent"
                     placeholder={t('secrets.description')}
                     value={newEnvDescription}
                     onChange={(event) =>

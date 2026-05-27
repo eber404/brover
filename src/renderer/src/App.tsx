@@ -112,6 +112,7 @@ function AppShell() {
     envs: targetEnvs,
     filteredEnvs,
     selectedEnvId,
+    searchQuery: deferredSearchText,
     setSelectedEnvId,
     setEnvs,
     setRevealValue,
@@ -377,9 +378,9 @@ function AppShell() {
       <div className="col-start-2 col-end-4 row-start-1 row-end-2 bg-panel/85 border-b border-edge/60">
         <div className="grid h-full grid-cols-[1fr_1fr]">
           <div className="flex items-center gap-2 px-4">
-            <Search className="h-4 w-4 shrink-0 text-slate-500" />
+            <Search className="h-4 w-4 shrink-0 text-text-muted" />
             <input
-              className="h-full w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
+              className="h-full w-full bg-transparent text-sm text-text-base outline-none placeholder:text-text-muted focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
               placeholder={t('search.secretsPlaceholder')}
               value={searchText}
               onChange={(event) => onSearchChange(event.target.value)}

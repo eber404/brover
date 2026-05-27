@@ -152,7 +152,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
       return (
         <input
           autoFocus
-          className="h-8 flex-1 rounded border border-edge bg-slate-900 px-2 text-sm"
+          className="h-8 flex-1 rounded border border-edge bg-surface-base px-2 text-sm text-text-base"
           data-testid={`target-rename-${target.id}`}
           value={editingName}
           placeholder="dev, prod, staging..."
@@ -168,7 +168,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     }
 
     const selectedClass =
-      selectedTargetId === target.id ? 'text-accent' : 'text-slate-300'
+      selectedTargetId === target.id ? 'text-accent' : 'text-text-base'
     return (
       <div
         className={`min-w-0 flex-1 overflow-hidden rounded px-2 py-1 text-left text-sm ${selectedClass}`}
@@ -192,14 +192,14 @@ export const SpacesSidebar = memo(function SpacesSidebar(
       ref={asideRef}
       className="relative flex h-full border-r border-edge/60 bg-panel/90"
     >
-      <div className="flex w-[84px] flex-col items-center border-r border-edge/60 bg-slate-950/50 px-2 py-4">
+      <div className="flex w-[84px] flex-col items-center border-r border-edge/60 bg-surface-sidebar px-2 py-4">
         <div className="mt-7 flex w-full flex-1 flex-col items-center gap-2">
           {allSpaces.map((space) => {
             const isSelected = selectedSpace?.id === space.id
             return (
               <button
                 key={space.id}
-                className={`relative flex h-11 w-11 items-center justify-center rounded-xl border text-xs font-semibold transition ${isSelected ? 'border-slate-100 text-slate-50' : 'border-edge text-slate-300 hover:border-slate-400 hover:text-slate-100'}`}
+                className={`relative flex h-11 w-11 items-center justify-center rounded-xl border text-xs font-semibold transition ${isSelected ? 'border-slate-100 text-slate-50' : 'border-edge text-text-base hover:border-slate-400 hover:text-text-emphasis'}`}
                 style={{
                   backgroundColor: isSelected
                     ? 'rgba(30,41,59,0.95)'
@@ -225,7 +225,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
 
           <button
             onClick={onAddSpace}
-            className="mt-1 flex h-11 w-11 items-center justify-center rounded-xl border border-dashed border-edge text-slate-300 hover:border-slate-400 hover:text-slate-100"
+            className="mt-1 flex h-11 w-11 items-center justify-center rounded-xl border border-dashed border-edge text-text-base hover:border-slate-400 hover:text-text-emphasis"
             title="Add directory space"
           >
             <Plus className="h-5 w-5" />
@@ -233,7 +233,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
         </div>
 
         <select
-          className="mt-auto w-full rounded-lg border border-edge bg-slate-900 px-1 py-1 text-[10px] text-slate-300 outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="mt-auto w-full rounded-lg border border-edge bg-surface-base px-1 py-1 text-[10px] text-text-base outline-none focus-visible:ring-2 focus-visible:ring-accent"
           value={locale}
           onChange={(e) => onLocaleChange(e.target.value as 'en' | 'es' | 'pt')}
         >
@@ -243,24 +243,24 @@ export const SpacesSidebar = memo(function SpacesSidebar(
         </select>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col bg-slate-950/50 p-4 pt-3">
+      <div className="flex min-w-0 flex-1 flex-col bg-surface-sidebar p-4 pt-3">
         <div className="flex items-center gap-2">
-          <Layers className="h-4 w-4 text-slate-400" />
-          <h1 className="text-sm font-semibold tracking-wide text-slate-200">
+          <Layers className="h-4 w-4 text-text-muted" />
+          <h1 className="text-sm font-semibold tracking-wide text-text-base">
             TARGETS
           </h1>
           <button
             onClick={() => selectedSpace && onAddTarget(selectedSpace.id)}
-            className="ml-auto rounded p-1 text-slate-300 hover:bg-slate-900"
+            className="ml-auto rounded p-1 text-text-base hover:bg-surface-hover"
             data-testid="target-add"
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
-        <div className="mt-2 flex items-center justify-between rounded border border-edge/60 bg-slate-900/40 px-2 py-1.5">
+        <div className="mt-2 flex items-center justify-between rounded border border-edge/60 bg-surface-base px-2 py-1.5">
           <div className="group/tt relative">
-            <span className="text-[11px] text-slate-300">Tied targets</span>
-            <div className="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-30 hidden w-56 rounded-md border border-edge bg-slate-950 px-2 py-1.5 text-[11px] text-slate-200 shadow-lg group-hover/tt:block">
+            <span className="text-[011px] text-text-base">Tied targets</span>
+            <div className="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-30 hidden w-56 rounded-md border border-edge bg-surface-overlay px-2 py-1.5 text-[11px] text-text-base shadow-lg group-hover/tt:block">
               Keep env names synced across all targets in this space. Values remain target-specific.
             </div>
           </div>
@@ -268,7 +268,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             type="button"
             className={`relative h-5 w-9 rounded-full transition ${selectedSpace?.tiedSecrets ? 'bg-accent/80' : 'bg-slate-700'}`}
             onClick={() => selectedSpace && onToggleSpaceTiedSecrets(selectedSpace.id)}
-            aria-label="Tied targets"
+            aria-label={selectedSpace?.tiedSecrets ? 'Tied targets on' : 'Tied targets off'}
           >
             <span
               className={`absolute top-0.5 h-4 w-4 rounded-full bg-slate-100 transition ${selectedSpace?.tiedSecrets ? 'left-4' : 'left-0.5'}`}
@@ -280,7 +280,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             <div
               key={target.id}
               data-testid={`target-row-${target.id}`}
-              className={`group relative flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded-md border px-1 py-1 ${selectedTargetId === target.id ? 'border-edge/70 bg-accent/15' : 'border-transparent hover:bg-slate-900/60'} ${draggingTargetId === target.id ? 'opacity-50' : ''}`}
+              className={`group relative flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded-md border px-1 py-1 ${selectedTargetId === target.id ? 'border-edge/70 bg-accent/15' : 'border-transparent hover:bg-surface-hover'} ${draggingTargetId === target.id ? 'opacity-50' : ''}`}
               draggable={editingTargetId !== target.id}
               onClick={() =>
                 selectedSpace && onSelectTarget(selectedSpace.id, target.id)
@@ -331,7 +331,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
               </div>
               {editingTargetId !== target.id && (
                 <button
-                  className={`shrink-0 rounded p-1 transition ${selectedTargetId === target.id ? 'text-slate-400 hover:bg-slate-900 hover:text-rose-300' : 'pointer-events-none opacity-0 text-slate-500 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:hover:bg-slate-900 group-hover:hover:text-rose-300'}`}
+                  className={`shrink-0 rounded p-1 transition ${selectedTargetId === target.id ? 'text-text-muted hover:bg-surface-hover hover:text-rose-status' : 'pointer-events-none opacity-0 text-slate-500 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:hover:bg-surface-hover group-hover:hover:text-rose-status'}`}
                   data-testid={`target-delete-${target.id}`}
                   onClick={(event) => {
                     event.stopPropagation()
@@ -352,25 +352,25 @@ export const SpacesSidebar = memo(function SpacesSidebar(
       </div>
 
       {pendingDeleteTarget ? (
-        <div className="absolute inset-0 z-40 flex items-center justify-center rounded-2xl bg-slate-950/70 p-4">
-          <div className="w-full max-w-xs rounded-xl border border-edge bg-slate-900 p-4">
-            <div className="text-sm font-semibold text-slate-100">
+        <div className="absolute inset-0 z-40 flex items-center justify-center rounded-2xl bg-surface-overlay p-4">
+          <div className="w-full max-w-xs rounded-xl border border-edge bg-surface-base p-4">
+            <div className="text-sm font-semibold text-text-emphasis">
               Delete target?
             </div>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-text-muted">
               Remove{' '}
-              <span className="text-slate-200">{pendingDeleteTarget.name}</span>{' '}
+              <span className="text-text-base">{pendingDeleteTarget.name}</span>{' '}
               and target-scoped values.
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
-                className="rounded px-2 py-1 text-xs text-slate-300 hover:bg-slate-800"
+                className="rounded px-2 py-1 text-xs text-text-base hover:bg-surface-hover"
                 onClick={() => setPendingDeleteTarget(null)}
               >
                 Cancel
               </button>
               <button
-                className="rounded bg-rose-600 px-2 py-1 text-xs text-white hover:bg-rose-500"
+                className="rounded bg-[#dc2626] px-2 py-1 text-xs text-white hover:bg-[#dc2626]/80"
                 onClick={() => {
                   void onDeleteTarget(pendingDeleteTarget.id)
                   setPendingDeleteTarget(null)
@@ -391,7 +391,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             onClick={() => setColorMenu(null)}
           />
           <div
-            className="absolute flex w-44 flex-col gap-2 rounded-lg border border-edge bg-slate-950/95 p-2 shadow-xl"
+            className="absolute flex w-44 flex-col gap-2 rounded-lg border border-edge bg-surface-overlay p-2 shadow-xl"
             style={{ left: colorMenu.x, top: colorMenu.y }}
             data-testid="target-color-menu"
           >
@@ -407,7 +407,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
                 />
               ))}
             </div>
-            <label className="flex items-center gap-2 rounded border border-edge bg-slate-900 px-2 py-1 text-[11px] text-slate-300">
+            <label className="flex items-center gap-2 rounded border border-edge bg-surface-base px-2 py-1 text-[11px] text-text-base">
               Custom
               <input
                 type="color"
@@ -434,11 +434,11 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             onClick={() => setSpaceContextMenu(null)}
           />
           <div
-            className="absolute flex w-36 flex-col rounded-lg border border-edge bg-slate-950/95 p-1 shadow-xl"
+            className="absolute flex w-36 flex-col rounded-lg border border-edge bg-surface-overlay p-1 shadow-xl"
             style={{ left: spaceContextMenu.x, top: spaceContextMenu.y }}
           >
             <button
-              className="rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:bg-slate-900"
+              className="rounded px-2 py-1.5 text-left text-xs text-text-base hover:bg-surface-hover"
               onClick={() => {
                 const space = allSpaces.find((s) => s.id === spaceContextMenu.spaceId)
                 if (space) onStartRenameSpace(space.id, space.name)
@@ -448,7 +448,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
               Rename
             </button>
             <button
-              className="rounded px-2 py-1.5 text-left text-xs text-rose-300 hover:bg-slate-900"
+              className="rounded px-2 py-1.5 text-left text-xs text-rose-status hover:bg-surface-hover"
               onClick={() => {
                 setPendingDeleteSpace(spaceContextMenu.spaceId)
                 setSpaceContextMenu(null)
@@ -461,21 +461,21 @@ export const SpacesSidebar = memo(function SpacesSidebar(
       ) : null}
 
       {pendingDeleteSpace ? (
-        <div className="absolute inset-0 z-40 flex items-center justify-center rounded-2xl bg-slate-950/70 p-4">
-          <div className="w-full max-w-xs rounded-xl border border-edge bg-slate-900 p-4">
-            <div className="text-sm font-semibold text-slate-100">Delete space?</div>
-            <p className="mt-1 text-xs text-slate-400">
+        <div className="absolute inset-0 z-40 flex items-center justify-center rounded-2xl bg-surface-overlay p-4">
+          <div className="w-full max-w-xs rounded-xl border border-edge bg-surface-base p-4">
+            <div className="text-sm font-semibold text-text-emphasis">Delete space?</div>
+            <p className="mt-1 text-xs text-text-muted">
               This will remove all targets and secrets in this space.
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
-                className="rounded px-2 py-1 text-xs text-slate-300 hover:bg-slate-800"
+                className="rounded px-2 py-1 text-xs text-text-base hover:bg-surface-hover"
                 onClick={() => setPendingDeleteSpace(null)}
               >
                 Cancel
               </button>
               <button
-                className="rounded bg-rose-600 px-2 py-1 text-xs text-white hover:bg-rose-500"
+                className="rounded bg-[#dc2626] px-2 py-1 text-xs text-white hover:bg-[#dc2626]/80"
                 onClick={() => {
                   void onDeleteSpace(pendingDeleteSpace)
                   setPendingDeleteSpace(null)
@@ -490,7 +490,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
 
       {nameTooltip ? (
         <div
-          className="pointer-events-none absolute z-30 max-w-[260px] rounded-md border border-edge bg-slate-950 px-2 py-1 text-xs text-slate-100 shadow-lg"
+          className="pointer-events-none absolute z-30 max-w-[260px] rounded-md border border-edge bg-surface-overlay px-2 py-1 text-xs text-text-emphasis shadow-lg"
           style={{ left: nameTooltip.x, top: nameTooltip.y }}
         >
           {nameTooltip.text}

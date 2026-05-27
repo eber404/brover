@@ -40,18 +40,18 @@ export function SecretsDetail({
   }, [revealValue])
 
   if (!env) {
-    return <p className="text-slate-400">{t('secrets.selectSecret')}</p>
+    return <p className="text-text-muted">{t('secrets.selectSecret')}</p>
   }
 
   return (
     <div className="grid gap-3">
       <div>
         <div className="text-lg font-semibold">{env.name}</div>
-        <div className="text-xs text-slate-400">Target: {targetName}</div>
+        <div className="text-xs text-text-muted">Target: {targetName}</div>
       </div>
 
-      <div className="grid gap-2 rounded-xl border border-edge bg-slate-950/30 p-3">
-        <div className="text-xs font-semibold uppercase tracking-widest text-slate-500">Current Secret</div>
+      <div className="grid gap-2 rounded-xl border border-edge bg-surface-card p-3">
+        <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">Current Secret</div>
         <div className="relative">
           <Input
             readOnly
@@ -61,7 +61,7 @@ export function SecretsDetail({
           <button
             data-testid="secret-reveal-toggle"
             type="button"
-            className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400 transition hover:text-slate-200"
+            className="absolute top-1/2 right-3 -translate-y-1/2 text-text-muted transition hover:text-text-base"
             onClick={() => {
               if (isRevealed) {
                 setIsRevealed(false)
@@ -86,8 +86,8 @@ export function SecretsDetail({
         </Button>
       </div>
 
-      <div className="grid gap-2 rounded-xl border border-edge bg-slate-950/30 p-3">
-        <div className="text-xs font-semibold uppercase tracking-widest text-slate-500">Rotate Secret</div>
+      <div className="grid gap-2 rounded-xl border border-edge bg-surface-card p-3">
+        <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">Rotate Secret</div>
         <Input
           data-testid="secret-update-input"
           placeholder={t('secrets.secretValue')}

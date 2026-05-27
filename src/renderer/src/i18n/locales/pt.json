@@ -31,6 +31,8 @@
     "addSecret": "Adicionar Segredo",
     "noSecrets": "Sem segredos ainda",
     "noSecretsDescription": "Crie sua primeira variavel de ambiente.",
+    "noResults": "Nenhum segredo corresponde a sua busca",
+    "noResultsDescription": "Tente um termo de busca diferente.",
     "revealSecret": "Revelar Segredo",
     "copySecret": "Copiar Segredo",
     "updateValue": "Atualizar Valor Secreto",

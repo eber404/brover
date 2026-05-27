@@ -16,18 +16,18 @@ export function AppsDetail({ app, enabled, onToggleEnabled, onDelete }: AppsDeta
   const statusLabel = enabled ? t('secrets.enabled') : t('secrets.disabled')
 
   if (!app) {
-    return <p className="text-slate-400">{t('apps.selectApp')}</p>
+    return <p className="text-text-muted">{t('apps.selectApp')}</p>
   }
 
   return (
     <div className="grid gap-3">
       <div>
         <div className="text-lg font-semibold">{app.displayName}</div>
-        <div className="text-xs text-slate-400">{app.bundleID}</div>
+        <div className="text-xs text-text-muted">{app.bundleID}</div>
       </div>
       <div className="flex items-center gap-3">
-        <Switch checked={enabled} onCheckedChange={() => onToggleEnabled()} />
-        <span className="text-sm text-slate-300">{statusLabel}</span>
+        <Switch checked={enabled} onCheckedChange={() => onToggleEnabled()} label={statusLabel} />
+        <span className="text-sm text-text-base">{statusLabel}</span>
       </div>
       <Button variant="destructive" onClick={() => onDelete()}>
         <Trash2 className="mr-2 h-4 w-4" />

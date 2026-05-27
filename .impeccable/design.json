@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-27T00:00:00.000Z",
+  "title": "Design System: brover",
+  "extensions": {
+    "colorMeta": {
+      "signal-cyan": {
+        "role": "primary",
+        "displayName": "Signal Cyan",
+        "canonical": "#1fb6ff",
+        "tonalRamp": ["#0a1628", "#0c2d4a", "#0e446c", "#105b8e", "#1272b0", "#1489d2", "#17a0f4", "#1fb6ff"]
+      },
+      "void-navy": {
+        "role": "neutral",
+        "displayName": "Void Navy",
+        "canonical": "#10161f",
+        "tonalRamp": ["#03080d", "#050f19", "#071626", "#091d33", "#0b2440", "#0d2b4d", "#0f325a", "#113967"]
+      },
+      "rift-edge": {
+        "role": "neutral",
+        "displayName": "Rift Edge",
+        "canonical": "#1d2b3f",
+        "tonalRamp": ["#060c14", "#0a1521", "#0e1e2e", "#12273b", "#163048", "#1a3955", "#1e4262", "#224b6f"]
+      },
+      "abyss-bg": {
+        "role": "neutral",
+        "displayName": "Abyss Background",
+        "canonical": "#070b12",
+        "tonalRamp": ["#020408", "#03070d", "#040a12", "#050d17", "#06101c", "#071321", "#081626", "#09192b"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Dialog titles, space badges" },
+      "headline": { "displayName": "Headline", "purpose": "Target names, section headings" },
+      "title": { "displayName": "Title", "purpose": "Button labels, panel headers" },
+      "body": { "displayName": "Body", "purpose": "Default prose, descriptions" },
+      "label": { "displayName": "Label", "purpose": "Status chips, metadata" }
+    },
+    "shadows": [
+      { "name": "overlay", "value": "0 25px 50px -12px rgba(0,0,0,0.75)", "purpose": "Dialogs and modals only." },
+      { "name": "dropdown", "value": "0 10px 15px -3px rgba(0,0,0,0.40)", "purpose": "Context menus, color picker menus, name tooltips." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing for state transitions." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default primary action button. Cyan fill, near-black text.",
+      "html": "<button class=\"ds-btn-primary\">Get started</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; padding: 8px 12px; font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 500; background: #1fb6ff; color: #0a1628; border: none; cursor: pointer; transition: background 0.15s; } .ds-btn-primary:hover { background: #67d0ff; } .ds-btn-primary:focus-visible { outline: none; ring: 2px solid #1fb6ff; ring-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action button. Rift Edge border, semi-transparent fill.",
+      "html": "<button class=\"ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; padding: 8px 12px; font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 500; background: rgba(15,23,42,0.70); color: #cbd5e1; border: 1px solid #1d2b3f; cursor: pointer; transition: background 0.15s; } .ds-btn-outline:hover { background: rgba(30,41,59,0.80); } .ds-btn-outline:focus-visible { outline: none; ring: 2px solid #1fb6ff; }"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Delete and other destructive actions. Rose tint treatment.",
+      "html": "<button class=\"ds-btn-destructive\">Delete</button>",
+      "css": ".ds-btn-destructive { display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; padding: 8px 12px; font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 500; background: rgba(127,29,29,0.30); color: #fca5a5; border: 1px solid #f87171; cursor: pointer; transition: background 0.15s; } .ds-btn-destructive:hover { background: rgba(127,29,29,0.40); } .ds-btn-destructive:focus-visible { outline: none; ring: 2px solid #f87171; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Default text input. 40px height, rounded-lg, Rift Edge border.",
+      "html": "<input class=\"ds-input\" placeholder=\"Enter value\" />",
+      "css": ".ds-input { height: 40px; width: 100%; border-radius: 8px; padding: 8px 12px; font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif; font-size: 14px; background: #0f172a; color: #e2e8f0; border: 1px solid #1d2b3f; outline: none; transition: ring 0.15s; box-sizing: border-box; } .ds-input::placeholder { color: #64748b; } .ds-input:focus { outline: none; box-shadow: 0 0 0 2px #1fb6ff; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Default container. slate-950/40 bg, Rift Edge border, rounded-xl.",
+      "html": "<div class=\"ds-card\">Card content</div>",
+      "css": ".ds-card { border-radius: 12px; padding: 12px; background: rgba(2,6,14,0.40); border: 1px solid #1d2b3f; }"
+    },
+    {
+      "name": "Dialog",
+      "kind": "dialog",
+      "refersTo": "dialog",
+      "description": "Modal dialog. Elevated overlay with shadow-2xl.",
+      "html": "<div class=\"ds-dialog\"><div class=\"ds-dialog-content\">Dialog content</div></div>",
+      "css": ".ds-dialog { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; } .ds-dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.60); z-index: 50; } .ds-dialog-content { position: relative; z-index: 51; border-radius: 12px; padding: 20px; background: #0d131d; border: 1px solid #1d2b3f; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.75); width: min(560px, 92vw); transform: translate(-50%, -50%); left: 50%; top: 50%; }"
+    },
+    {
+      "name": "Toggle Switch",
+      "kind": "switch",
+      "refersTo": "switch",
+      "description": "Boolean toggle. 44x24px, fully rounded, signal cyan when on.",
+      "html": "<button class=\"ds-switch ds-switch-on\" role=\"switch\" aria-checked=\"true\"><span class=\"ds-switch-thumb\"></span></button>",
+      "css": ".ds-switch { position: relative; display: inline-flex; align-items: center; width: 44px; height: 24px; border-radius: 9999px; border: none; cursor: pointer; transition: background 0.15s; } .ds-switch-off { background: #334155; } .ds-switch-on { background: #1fb6ff; } .ds-switch-thumb { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: transform 0.15s; } .ds-switch-on .ds-switch-thumb { transform: translateX(20px); }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "App enabled/disabled status pill. Fully rounded, small text.",
+      "html": "<span class=\"ds-chip ds-chip-enabled\">Enabled</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; border-radius: 9999px; padding: 2px 8px; font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif; font-size: 10px; font-weight: 500; } .ds-chip-enabled { background: rgba(16,185,129,0.12); color: #6ee7b7; } .ds-chip-disabled { background: #1e293b; color: #94a3b8; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Terminal Night Ops",
+    "overview": "A dark, navy-grounded interface built for focused technical work. The palette draws from deep space and terminal aesthetics: inky void backgrounds, subtle rift-like borders, and a single cold-cyan signal color used only on elements that demand attention. No gradients as decoration, no glow for mood, no shine. Depth comes from tonal layering of semi-transparent surfaces. The IBM Plex Sans type family reinforces the technical-precision tone without feeling generic or corporate. Information density is high but never cramped. Every interactive element earns its hover state.",
+    "keyCharacteristics": [
+      "Deep navy base with cold cyan accent for actionable signals only",
+      "Flat layered surfaces, no shadows except elevated overlays",
+      "IBM Plex Sans throughout, 1.25+ scale ratio between hierarchy steps",
+      "Destructive actions carry rose-tinted treatment, not just iconography",
+      "Radial gradient body background establishes depth without texture"
+    ],
+    "rules": [
+      { "name": "The Signal Rule", "body": "The cyan accent (#1fb6ff) appears on ≤10% of any screen. Its rarity is the point. It marks selection, focus, primary actions, and toggled states. Nothing else gets this color.", "section": "colors" },
+      { "name": "The Void Rule", "body": "Background never uses pure black. Always tint toward the blue-black Abyss Navy (#070b12) or Void Navy (#10161f).", "section": "colors" },
+      { "name": "The Edge Rule", "body": "Borders are Rift Edge (#1d2b3f). Dividers and structural strokes use this color exclusively. Never use full-opacity white or black for borders.", "section": "colors" },
+      { "name": "The Scale Discipline Rule", "body": "Hierarchy through scale plus weight contrast (minimum 1.25 ratio). Avoid same-size elements with only color differentiation.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. Shadows appear only on elevated overlay elements (dialogs, dropdowns, tooltips). Cards, list items, and buttons never carry shadows.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Signal Cyan only for selection, focus rings, primary CTA, and toggled states. Its scarcity is functional, not decorative.",
+      "Do use rift-edge (#1d2b3f) for all borders and dividers. Structural color; never decorative.",
+      "Do use semi-transparent backgrounds (slate-950/30 to slate-950/95) to establish layered depth. Flat-By-Default Rule.",
+      "Do use shadow-2xl only on dialogs and overlays. All other surfaces are shadow-free.",
+      "Do use emerald tints for enabled/success states and rose tints for destructive states.",
+      "Do use IBM Plex Sans at all sizes. It is the singular type family.",
+      "Do test interactive elements in dark mode. The dark palette is the product."
+    ],
+    "donts": [
+      "Don't use #000 or #fff. Tint every neutral toward the Abyss/Void hue.",
+      "Don't use Signal Cyan as a decorative color or on large surface areas. The Signal Rule is absolute.",
+      "Don't use gradient backgrounds on panels or cards. The body radial gradient is the only gradient; it is structural.",
+      "Don't use glassmorphism, backdrop-blur, or frosted glass effects anywhere.",
+      "Don't use side-stripe borders (border-left/right > 1px) as colored accent.",
+      "Don't use gradient text. Use a single solid color for emphasis.",
+      "Don't use hero-metric templates or identical card grids.",
+      "Don't use modals as first thought. Dialogs are for confirmations and focused input, not navigation.",
+      "Don't use em dashes in UI copy. Use commas, colons, semicolons, or periods."
+    ]
+  }
+}

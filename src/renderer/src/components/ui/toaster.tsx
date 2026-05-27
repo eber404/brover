@@ -15,7 +15,7 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue>({ toasts: [], toast: () => {}, remove: () => {} })
 
-let toastId = 0
+let toastId = Date.now()
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
@@ -49,9 +49,9 @@ function Toaster() {
 
   function getToastClass(type: Toast['type']) {
     if (type === 'error') {
-      return 'border-rose-300/40 bg-rose-950/80 text-rose-200'
+      return 'border-rose-action bg-rose-on text-rose-status'
     }
-    return 'border-emerald-300/40 bg-emerald-950/80 text-emerald-200'
+    return 'border-emerald-status bg-emerald-on text-emerald-status'
   }
 
   return (
