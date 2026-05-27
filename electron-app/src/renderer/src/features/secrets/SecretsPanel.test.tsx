@@ -8,13 +8,11 @@ import { useSecretsPanel } from './SecretsPanel'
 
 function SecretsTestWrapper() {
   const panel = useSecretsPanel({
-    profiles: [{ id: '1', name: 'default', isActive: true, updatedAt: new Date().toISOString() }],
     selectedProfile: { id: '1', name: 'default', isActive: true, updatedAt: new Date().toISOString() },
     envs: [],
     filteredEnvs: [],
     selectedEnvId: '',
     setSelectedEnvId: () => {},
-    setProfiles: () => {},
     setEnvs: () => {},
     setRevealValue: () => {}
   })

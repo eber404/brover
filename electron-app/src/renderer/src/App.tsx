@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AppWindow, KeyRound, Search, ShieldCheck } from 'lucide-react'
-import type { AppAuthorization, EnvMetadata, Profile, RootWorkspace } from '../../shared/models'
+import type {
+  AppAuthorization,
+  EnvMetadata,
+  Profile,
+  RootWorkspace,
+} from '../../shared/models'
 import { Button } from './components/ui/button'
 import { ToastProvider } from './components/ui/toaster'
 import { I18nProvider, useI18n } from './i18n'
@@ -23,19 +28,36 @@ function AppShell() {
   const [newAppName, setNewAppName] = useState('')
   const [newAppBundle, setNewAppBundle] = useState('')
 
-  const selectedProfile = useMemo(() => profiles.find((p) => p.isActive) ?? profiles[0], [profiles])
+  const selectedProfile = useMemo(
+    () => profiles.find((p) => p.isActive) ?? profiles[0],
+    [profiles]
+  )
   const filteredApps = useMemo(() => {
     if (!searchText.trim()) return apps
-    return apps.filter((item) => item.displayName.toLowerCase().includes(searchText.toLowerCase()) || item.bundleID.toLowerCase().includes(searchText.toLowerCase()))
+    return apps.filter(
+      (item) =>
+        item.displayName.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.bundleID.toLowerCase().includes(searchText.toLowerCase())
+    )
   }, [apps, searchText])
 
   const filteredEnvs = useMemo(() => {
     if (!searchText.trim()) return envs
-    return envs.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()) || (item.description ?? '').toLowerCase().includes(searchText.toLowerCase()))
+    return envs.filter(
+      (item) =>
+        item.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        (item.description ?? '')
+          .toLowerCase()
+          .includes(searchText.toLowerCase())
+    )
   }, [envs, searchText])
 
   async function refreshAll() {
-    const [nextApps, nextProfiles, nextEnvs] = await Promise.all([window.brover.listApps(), window.brover.listProfiles(), window.brover.listEnvs()])
+    const [nextApps, nextProfiles, nextEnvs] = await Promise.all([
+      window.brover.listApps(),
+      window.brover.listProfiles(),
+      window.brover.listEnvs(),
+    ])
     setApps(nextApps)
     setProfiles(nextProfiles)
     setEnvs(nextEnvs)
@@ -54,32 +76,47 @@ function AppShell() {
     setNewAppName,
     newAppBundle,
     setNewAppBundle,
-    setApps
+    setApps,
   })
 
   const secretsPanel = useSecretsPanel({
-    profiles,
     selectedProfile,
     envs,
     filteredEnvs,
     selectedEnvId,
     setSelectedEnvId,
-    setProfiles,
     setEnvs,
-    setRevealValue
+    setRevealValue,
   })
 
   return (
-    <div className="relative grid h-screen grid-cols-[220px_400px_1fr] gap-3 p-3 text-sm">
+    <div className="relative grid h-screen grid-cols-[240px_1fr_1fr] gap-3 p-4 pt-11 text-sm">
       <div
         data-testid="drag-bar"
-        className="absolute inset-x-0 top-0 z-50 h-6 w-full"
+        className="absolute inset-x-0 top-0 z-50 h-11 w-full"
         style={{ WebkitAppRegion: 'drag' as const }}
       />
-      <aside className="flex flex-col rounded-2xl border border-edge bg-panel/90 p-4 pt-8">
+      <div
+        data-testid="drag-bar"
+        className="absolute inset-x-0 left-0 z-50 h-full w-4"
+        style={{ WebkitAppRegion: 'drag' as const }}
+      />
+      <div
+        data-testid="drag-bar"
+        className="absolute top-0 right-0 z-50 h-full w-4"
+        style={{ WebkitAppRegion: 'drag' as const }}
+      />
+      <div
+        data-testid="drag-bar"
+        className="absolute bottom-0 z-50 h-4 w-full"
+        style={{ WebkitAppRegion: 'drag' as const }}
+      />
+      <aside className="flex flex-col rounded-2xl border border-edge bg-panel/90 p-4 pt-6">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-accent" />
-          <h1 className="text-lg font-semibold tracking-tight">{t('app.title')}</h1>
+          <h1 className="text-lg font-semibold tracking-tight">
+            {t('app.title')}
+          </h1>
         </div>
         <p className="mt-1 text-xs text-slate-400">{t('app.subtitle')}</p>
 
@@ -113,35 +150,51 @@ function AppShell() {
         </div>
       </aside>
 
-      <section className="flex flex-col rounded-2xl border border-edge bg-panel/85 p-4 pt-8">
-        <div className="mb-3 flex items-center gap-2 rounded-xl border border-edge bg-slate-950/60 px-3 py-2">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2 rounded-xl border border-edge bg-slate-950/60 px-3 py-2">
           <Search className="h-4 w-4 shrink-0 text-slate-500" />
           <input
             className="w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
-            placeholder={workspace === 'apps' ? t('search.appsPlaceholder') : t('search.secretsPlaceholder')}
+            placeholder={
+              workspace === 'apps'
+                ? t('search.appsPlaceholder')
+                : t('search.secretsPlaceholder')
+            }
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {workspace === 'apps' ? (
-            <>{appsPanel.center}</>
-          ) : (
-            <>{secretsPanel.center}</>
-          )}
-        </div>
-      </section>
+        <section className="flex min-h-0 flex-1 flex-col rounded-2xl border border-edge bg-panel/85 p-4">
+          <div className="flex-1 overflow-y-auto">
+            {workspace === 'apps' ? (
+              <>{appsPanel.center}</>
+            ) : (
+              <>{secretsPanel.center}</>
+            )}
+          </div>
+        </section>
+      </div>
 
-      <section className="flex flex-col rounded-2xl border border-edge bg-panel/80 p-4 pt-8">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">{t('common.details')}</div>
+      <section className="flex flex-col rounded-2xl border border-edge bg-panel/80 p-4 pt-6">
+        <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">
+          {t('common.details')}
+        </div>
         <div className="flex-1 overflow-y-auto">
           {workspace === 'apps' ? (
             <AppsDetail
               app={appsPanel.selectedApp}
               enabled={appsPanel.selectedApp?.enabled ?? false}
-              onToggleEnabled={() => void window.brover.toggleApp(appsPanel.selectedApp!.id).then(setApps)}
-              onDelete={() => void window.brover.deleteApp(appsPanel.selectedApp!.id).then(setApps)}
+              onToggleEnabled={() =>
+                void window.brover
+                  .toggleApp(appsPanel.selectedApp!.id)
+                  .then(setApps)
+              }
+              onDelete={() =>
+                void window.brover
+                  .deleteApp(appsPanel.selectedApp!.id)
+                  .then(setApps)
+              }
             />
           ) : (
             <SecretsDetail
@@ -149,17 +202,36 @@ function AppShell() {
               enabled={secretsPanel.selectedEnv?.enabled ?? false}
               revealValue={revealValue}
               onReveal={() => void secretsPanel.revealEnv()}
-              onCopy={() => void secretsPanel.copyEnv()}
-              onToggleEnabled={() => void window.brover.toggleEnvEnabled(secretsPanel.selectedEnv!.id).then(setEnvs)}
-              onDelete={() => void secretsPanel.deleteEnv()}
+              onCopy={(isRevealed) => void secretsPanel.copyEnv(isRevealed)}
+              onToggleEnabled={() =>
+                void window.brover
+                  .toggleEnvEnabled(secretsPanel.selectedEnv!.id)
+                  .then(setEnvs)
+              }
               onUpdateValue={(value) => void secretsPanel.updateEnvValue(value)}
             />
           )}
         </div>
 
-        <Button className="mt-4 shrink-0" variant="outline" onClick={() => void refreshAll()}>
-          {t('common.refresh')}
-        </Button>
+        {workspace === 'secrets' ? (
+          <Button
+            data-testid="secret-delete-bottom"
+            className="mt-4 shrink-0"
+            variant="destructive"
+            onClick={() => void secretsPanel.deleteEnv()}
+            disabled={!secretsPanel.selectedEnv}
+          >
+            {t('secrets.deleteSecret')}
+          </Button>
+        ) : (
+          <Button
+            className="mt-4 shrink-0"
+            variant="outline"
+            onClick={() => void refreshAll()}
+          >
+            {t('common.refresh')}
+          </Button>
+        )}
       </section>
     </div>
   )

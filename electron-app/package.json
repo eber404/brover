@@ -13,7 +13,8 @@
     "build:main": "tsup src/main/main.ts src/preload/preload.ts --format cjs --out-dir dist-electron --external electron",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:e2e": "npm run build && npx playwright test"
+    "test:e2e": "npm run build && npx playwright test",
+    "tsc": "npx tsc --noEmit"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

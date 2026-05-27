@@ -13,6 +13,7 @@ export interface BroverAPI {
   listEnvs: () => Promise<EnvMetadata[]>
   createEnv: (payload: { name: string; profile: string; value: string; description?: string }) => Promise<SecretActionResult>
   revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>
+  copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>
   updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string; enabled: boolean }) => Promise<SecretActionResult>
   deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>
   toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>

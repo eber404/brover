@@ -12,7 +12,8 @@ test.describe('Electron Window', () => {
       args: [electronAppPath],
       env: {
         ...process.env,
-        NODE_ENV: 'test'
+        NODE_ENV: 'test',
+        BROVER_E2E: '1'
       }
     })
   })

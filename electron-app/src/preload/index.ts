@@ -16,6 +16,7 @@ const api: BroverAPI = {
   listEnvs: () => ipcRenderer.invoke('envs:list'),
   createEnv: (payload) => ipcRenderer.invoke('envs:create', payload),
   revealEnv: (payload) => ipcRenderer.invoke('envs:reveal', payload),
+  copyEnv: (payload) => ipcRenderer.invoke('envs:copy', payload),
   updateEnv: (payload) => ipcRenderer.invoke('envs:update', payload),
   deleteEnv: (payload) => ipcRenderer.invoke('envs:delete', payload),
   toggleEnvEnabled: (id) => ipcRenderer.invoke('envs:toggle-enabled', id)
