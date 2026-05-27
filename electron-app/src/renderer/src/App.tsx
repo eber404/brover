@@ -70,15 +70,16 @@ function AppShell() {
   })
 
   return (
-    <div className="grid h-screen grid-cols-[220px_400px_1fr] gap-3 p-3 text-sm">
+    <div className="grid h-screen grid-cols-[220px_400px_1fr] gap-3 pt-12 pb-3 px-3 text-sm">
       <aside className="flex flex-col rounded-2xl border border-edge bg-panel/90 p-4">
+        <div className="h-6 w-full" style={{ WebkitAppRegion: 'drag' as const }} />
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-accent" />
           <h1 className="text-lg font-semibold tracking-tight">{t('app.title')}</h1>
         </div>
         <p className="mt-1 text-xs text-slate-400">{t('app.subtitle')}</p>
 
-        <div className="mt-6 grid gap-1.5">
+        <div className="mt-4 grid gap-1.5">
           <button
             className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${workspace === 'apps' ? 'bg-accent/15 text-accent' : 'text-slate-300 hover:bg-slate-900'}`}
             onClick={() => setWorkspace('apps')}
@@ -109,6 +110,7 @@ function AppShell() {
       </aside>
 
       <section className="flex flex-col rounded-2xl border border-edge bg-panel/85 p-4">
+        <div className="h-6 w-full" style={{ WebkitAppRegion: 'drag' as const }} />
         <div className="mb-3 flex items-center gap-2 rounded-xl border border-edge bg-slate-950/60 px-3 py-2">
           <Search className="h-4 w-4 shrink-0 text-slate-500" />
           <input
@@ -129,6 +131,7 @@ function AppShell() {
       </section>
 
       <section className="flex flex-col rounded-2xl border border-edge bg-panel/80 p-4">
+        <div className="h-6 w-full" style={{ WebkitAppRegion: 'drag' as const }} />
         <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">{t('common.details')}</div>
         <div className="flex-1 overflow-y-auto">
           {workspace === 'apps' ? (
