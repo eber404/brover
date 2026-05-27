@@ -108,6 +108,7 @@ function AppShell() {
 
   const secretsPanel = useSecretsPanel({
     selectedTargetId,
+    targetName: selectedTarget?.name ?? '',
     envs: targetEnvs,
     filteredEnvs,
     selectedEnvId,
@@ -297,13 +298,6 @@ function AppShell() {
     setSearchText(value)
   }, [])
 
-  const onToggleSelectedEnvEnabled = useCallback(() => {
-    if (!secretsPanel.selectedEnv) return
-    void window.brover
-      .toggleEnvEnabled(secretsPanel.selectedEnv.id)
-      .then(setEnvs)
-  }, [secretsPanel.selectedEnv])
-
   return (
     <div className="relative grid h-screen grid-cols-[320px_1fr_1fr] grid-rows-[52px_1fr] gap-0 text-sm">
       {/* Drag bars */}
@@ -395,16 +389,14 @@ function AppShell() {
           title={t('common.details')}
           env={secretsPanel.selectedEnv}
           targetName={selectedTarget?.name ?? '-'}
-          enabled={secretsPanel.selectedEnv?.enabled ?? false}
           revealValue={revealValue}
           onReveal={() => void secretsPanel.revealEnv()}
-        onCopy={(isRevealed) => void secretsPanel.copyEnv(isRevealed)}
-        onToggleEnabled={onToggleSelectedEnvEnabled}
-        onUpdateValue={(value) => void secretsPanel.updateEnvValue(value)}
-        onDelete={() => void secretsPanel.deleteEnv()}
-        canDelete={Boolean(secretsPanel.selectedEnv)}
-        deleteLabel={t('secrets.deleteSecret')}
-      />
+          onCopy={(isRevealed) => void secretsPanel.copyEnv(isRevealed)}
+          onUpdateValue={(value) => void secretsPanel.updateEnvValue(value)}
+          onDelete={() => void secretsPanel.deleteEnv()}
+          canDelete={Boolean(secretsPanel.selectedEnv)}
+          deleteLabel={t('secrets.deleteSecret')}
+        />
       </div>
     </div>
   )

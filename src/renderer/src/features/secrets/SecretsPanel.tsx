@@ -20,6 +20,7 @@ import { useToast } from '../../components/ui/toaster'
 
 interface SecretsPanelProps {
   selectedTargetId: string | null
+  targetName: string
   envs: EnvMetadata[]
   filteredEnvs: EnvMetadata[]
   selectedEnvId: string
@@ -31,15 +32,11 @@ interface SecretsPanelProps {
 interface SecretRowProps {
   item: EnvMetadata
   isSelected: boolean
-  enabledLabel: string
-  disabledLabel: string
   onSelect: (id: string) => void
 }
 
 const SecretRow = memo(function SecretRow(props: SecretRowProps) {
-  const { item, isSelected, enabledLabel, disabledLabel, onSelect } = props
-  const statusToneClass = item.enabled ? 'bg-emerald-950/50 text-emerald-300' : 'bg-slate-800 text-slate-400'
-  const statusLabel = item.enabled ? enabledLabel : disabledLabel
+  const { item, isSelected, onSelect } = props
 
   return (
     <button
@@ -51,9 +48,6 @@ const SecretRow = memo(function SecretRow(props: SecretRowProps) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate font-semibold">{item.name}</span>
-          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${statusToneClass}`}>
-            {statusLabel}
-          </span>
         </div>
         <div className="truncate text-xs text-slate-400">{item.description || 'No description'}</div>
       </div>
@@ -65,6 +59,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   const { t } = useI18n()
   const {
     selectedTargetId,
+    targetName,
     envs,
     filteredEnvs,
     selectedEnvId,
@@ -169,7 +164,6 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       name: selectedEnv.name,
       value: editedValue,
       description: selectedEnv.description,
-      enabled: selectedEnv.enabled,
     })
     if (!result.ok) {
       toast(
@@ -199,6 +193,15 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       )
       return
     }
+    if (result.value === 'needs-confirmation') {
+      const answer = window.confirm(`Delete "${selectedEnv.name}"? This cannot be undone.`)
+      if (!answer) return
+      await window.brover.deleteEnvConfirmed({
+        id: selectedEnv.id,
+        profile: selectedEnv.profile,
+        name: selectedEnv.name,
+      })
+    }
     setEnvs(await window.brover.listEnvs())
     setSelectedEnvId('')
     toast(t('common.secretDeleted'))
@@ -221,8 +224,6 @@ export function useSecretsPanel(props: SecretsPanelProps) {
             key={item.id}
             item={item}
             isSelected={selectedEnvId === item.id}
-            enabledLabel={t('secrets.enabled')}
-            disabledLabel={t('secrets.disabled')}
             onSelect={onSelectEnv}
           />
         ))}
@@ -235,7 +236,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       <>
         <Card className="mb-3 border-transparent bg-transparent p-0">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold text-slate-100">Secrets</h2>
+            <h2 className="text-lg font-semibold text-slate-100">{targetName}</h2>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button data-testid="add-secret-button" className="px-3 py-1.5">

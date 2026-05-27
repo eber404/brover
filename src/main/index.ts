@@ -188,7 +188,6 @@ async function bootstrap() {
         name: string
         value: string
         description?: string
-        enabled: boolean
       }
     ) => {
       try {
@@ -201,18 +200,29 @@ async function bootstrap() {
     }
   )
 
-  ipcMain.handle(
-    'envs:delete',
-    async (_, payload: { id: string; profile: string; name: string }) => {
-      try {
-        await authGate.authorize('delete', { targetId: payload.profile })
+  ipcMain.handle('envs:delete', async (_, payload: { id: string; profile: string; name: string }) => {
+    try {
+      const cached = authSessionCache.isAuthorized(payload.profile)
+      if (cached) {
         await store.deleteEnv(payload)
-        return ok()
-      } catch (error) {
-        return failure(error)
+        return { ok: true }
       }
+      await authGate.authorize('delete', { targetId: payload.profile })
+      await store.deleteEnv(payload)
+      return { ok: true, value: 'needs-confirmation' }
+    } catch (error) {
+      return failure(error)
     }
-  )
+  })
+
+  ipcMain.handle('envs:delete-confirmed', async (_, payload: { id: string; profile: string; name: string }) => {
+    try {
+      await store.deleteEnv(payload)
+      return { ok: true }
+    } catch (error) {
+      return failure(error)
+    }
+  })
 
   const window = new BrowserWindow({
     width: 1200,

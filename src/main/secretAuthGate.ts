@@ -21,14 +21,14 @@ export function createSecretAuthGate(prompt: AuthPrompt, cache?: AuthSessionCach
       if (action === 'copy' && context?.isRevealed) return
 
       if (action === 'copy' && !context?.isRevealed) {
-        if (cache?.isAuthorized(context.targetId ?? '')) return
+        if (cache?.isAuthorized(context?.targetId ?? '')) return
         await prompt('Authenticate to copy hidden secret')
-        if (context.targetId) cache?.grant(context.targetId)
+        if (context?.targetId) cache?.grant(context.targetId)
         return
       }
 
       if (cache?.isAuthorized(context?.targetId ?? '')) return
-      await prompt(reasonByAction[action])
+      await prompt(reasonByAction[action as Exclude<SecretAction, 'copy'>])
       if (context?.targetId) cache?.grant(context.targetId)
     },
   }

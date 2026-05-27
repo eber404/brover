@@ -239,14 +239,13 @@ export class BroverStore {
     return this.secrets.get(`${profile}:${name}`)
   }
 
-  async updateEnv(payload: { id: string; profile: string; name: string; value: string; description?: string; enabled: boolean }): Promise<void> {
+  async updateEnv(payload: { id: string; profile: string; name: string; value: string; description?: string }): Promise<void> {
     const db = await this.readDB()
     db.envs = db.envs.map((env) =>
       env.id === payload.id
         ? {
             ...env,
             description: payload.description?.trim() || undefined,
-            enabled: payload.enabled,
             updatedAt: new Date().toISOString()
           }
         : env

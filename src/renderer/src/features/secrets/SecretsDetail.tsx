@@ -4,33 +4,27 @@ import { Copy, Eye, EyeOff } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
-import { Switch } from '../../components/ui/switch'
 
 interface SecretsDetailProps {
   env: EnvMetadata | null
   targetName: string
-  enabled: boolean
   revealValue: string
   onReveal: () => void
   onCopy: (isRevealed: boolean) => void
-  onToggleEnabled: () => void
   onUpdateValue: (value: string) => void
 }
 
 export function SecretsDetail({
   env,
   targetName,
-  enabled,
   revealValue,
   onReveal,
   onCopy,
-  onToggleEnabled,
   onUpdateValue
 }: SecretsDetailProps) {
   const { t } = useI18n()
   const [editValue, setEditValue] = useState('')
   const [isRevealed, setIsRevealed] = useState(false)
-  const statusLabel = enabled ? t('secrets.enabled') : t('secrets.disabled')
   const revealValueText = isRevealed ? revealValue : '••••••••'
   const revealAriaLabel = isRevealed ? 'Hide secret' : 'Reveal secret'
   const revealIcon = isRevealed ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />
@@ -48,11 +42,6 @@ export function SecretsDetail({
       <div>
         <div className="text-lg font-semibold">{env.name}</div>
         <div className="text-xs text-slate-400">Target: {targetName}</div>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Switch checked={enabled} onCheckedChange={() => onToggleEnabled()} />
-        <span className="text-sm text-slate-300">{statusLabel}</span>
       </div>
 
       <div className="grid gap-2 rounded-xl border border-edge bg-slate-950/30 p-3">

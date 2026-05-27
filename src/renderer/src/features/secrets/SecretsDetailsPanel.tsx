@@ -8,11 +8,9 @@ interface SecretsDetailsPanelProps {
   title: string
   env: EnvMetadata | null
   targetName: string
-  enabled: boolean
   revealValue: string
   onReveal: () => void
   onCopy: (isRevealed: boolean) => void
-  onToggleEnabled: () => void
   onUpdateValue: (value: string) => void
   onDelete: () => void
   canDelete: boolean
@@ -26,11 +24,9 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
     title,
     env,
     targetName,
-    enabled,
     revealValue,
     onReveal,
     onCopy,
-    onToggleEnabled,
     onUpdateValue,
     onDelete,
     canDelete,
@@ -44,11 +40,9 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
           <SecretsDetail
             env={env}
             targetName={targetName}
-            enabled={enabled}
             revealValue={revealValue}
             onReveal={onReveal}
             onCopy={onCopy}
-            onToggleEnabled={onToggleEnabled}
             onUpdateValue={onUpdateValue}
           />
         </div>
