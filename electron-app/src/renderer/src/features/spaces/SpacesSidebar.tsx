@@ -30,6 +30,7 @@ interface SpacesSidebarProps {
   onReorderTargets: (spaceId: string, orderedTargetIds: string[]) => void
   onDeleteTarget: (targetId: string) => void
   onDeleteSpace: (spaceId: string) => void
+  onToggleSpaceTiedSecrets: (spaceId: string) => void
 }
 
 export const SpacesSidebar = memo(function SpacesSidebar(
@@ -63,6 +64,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     onReorderTargets,
     onDeleteTarget,
     onDeleteSpace,
+    onToggleSpaceTiedSecrets,
   } = props
 
   const allSpaces = [...shellSpaces, ...dirSpaces]
@@ -253,6 +255,24 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             data-testid="target-add"
           >
             <Plus className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="mt-2 flex items-center justify-between rounded border border-edge/60 bg-slate-900/40 px-2 py-1.5">
+          <div className="group/tt relative">
+            <span className="text-[11px] text-slate-300">Tied targets</span>
+            <div className="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-30 hidden w-56 rounded-md border border-edge bg-slate-950 px-2 py-1.5 text-[11px] text-slate-200 shadow-lg group-hover/tt:block">
+              Keep env names synced across all targets in this space. Values remain target-specific.
+            </div>
+          </div>
+          <button
+            type="button"
+            className={`relative h-5 w-9 rounded-full transition ${selectedSpace?.tiedSecrets ? 'bg-accent/80' : 'bg-slate-700'}`}
+            onClick={() => selectedSpace && onToggleSpaceTiedSecrets(selectedSpace.id)}
+            aria-label="Tied targets"
+          >
+            <span
+              className={`absolute top-0.5 h-4 w-4 rounded-full bg-slate-100 transition ${selectedSpace?.tiedSecrets ? 'left-4' : 'left-0.5'}`}
+            />
           </button>
         </div>
         <div className="mt-3 grid gap-1.5 overflow-y-auto overflow-x-hidden">

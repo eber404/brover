@@ -38,6 +38,7 @@ export interface EnvSpace {
   kind: SpaceKind
   path?: string
   expanded?: boolean
+  tiedSecrets: boolean
   updatedAt: string
 }
 

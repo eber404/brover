@@ -29,6 +29,7 @@ export interface BroverAPI {
   createSpace: (payload: { name: string; path: string }) => Promise<EnvSpace[]>
   renameSpace: (payload: { spaceId: string; name: string }) => Promise<EnvSpace[]>
   deleteSpace: (spaceId: string) => Promise<EnvSpace[]>
+  toggleSpaceTiedSecrets: (spaceId: string) => Promise<EnvSpace[]>
   pickDirectory: () => Promise<{ canceled: boolean; path: string | null }>
   toggleSpaceExpanded: (spaceId: string) => Promise<EnvSpace[]>
   listTargets: (spaceId: string) => Promise<EnvTarget[]>

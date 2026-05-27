@@ -82,6 +82,9 @@ async function bootstrap() {
     store.renameSpace(payload)
   )
   ipcMain.handle('spaces:delete', (_, spaceId: string) => store.deleteSpace(spaceId))
+  ipcMain.handle('spaces:toggle-tied-secrets', (_, spaceId: string) =>
+    store.toggleSpaceTiedSecrets(spaceId)
+  )
   ipcMain.handle('system:pick-directory', async () => {
     const result = await dialog.showOpenDialog({
       properties: ['openDirectory', 'createDirectory'],

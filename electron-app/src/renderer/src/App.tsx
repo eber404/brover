@@ -276,6 +276,10 @@ function AppShell() {
     [selectedSpaceId, targets]
   )
 
+  const toggleSpaceTiedSecrets = useCallback(async (spaceId: string) => {
+    setSpaces(await window.brover.toggleSpaceTiedSecrets(spaceId))
+  }, [])
+
   const setActiveTarget = useCallback(
     async (spaceId: string, targetId: string) => {
       const updated = await window.brover.setActiveTarget({ spaceId, targetId })
@@ -361,6 +365,9 @@ function AppShell() {
           }
           onDeleteTarget={(targetId) => void deleteTarget(targetId)}
           onDeleteSpace={(spaceId) => void deleteSpace(spaceId)}
+          onToggleSpaceTiedSecrets={(spaceId) =>
+            void toggleSpaceTiedSecrets(spaceId)
+          }
         />
       </div>
 

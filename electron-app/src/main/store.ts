@@ -75,6 +75,7 @@ function createDefaultGlobalSpace(now: string): EnvSpace {
     name: 'Glob',
     kind: 'global',
     expanded: true,
+    tiedSecrets: true,
     updatedAt: now,
   }
 }
@@ -103,11 +104,23 @@ export class BroverStore {
     try {
       const raw = await readFile(this.dbPath, 'utf8')
       const parsed = JSON.parse(raw) as unknown as DBShape
+      const now = new Date().toISOString()
+      const normalizedSpaces = Array.isArray(parsed.spaces)
+        ? parsed.spaces.map((space) => ({
+            ...space,
+            tiedSecrets:
+              typeof (space as { tiedSecrets?: unknown }).tiedSecrets ===
+              'boolean'
+                ? space.tiedSecrets
+                : true,
+            updatedAt: space.updatedAt ?? now,
+          }))
+        : []
       return {
         apps: Array.isArray(parsed.apps) ? parsed.apps : [],
         profiles: Array.isArray(parsed.profiles) ? parsed.profiles : [{ id: randomUUID(), name: 'default', isActive: true, updatedAt: new Date().toISOString() }],
         envs: Array.isArray(parsed.envs) ? parsed.envs : [],
-        spaces: Array.isArray(parsed.spaces) && parsed.spaces.length > 0 ? parsed.spaces : [createDefaultGlobalSpace(new Date().toISOString())],
+        spaces: normalizedSpaces.length > 0 ? normalizedSpaces : [createDefaultGlobalSpace(now)],
         targets: Array.isArray(parsed.targets) && parsed.targets.length > 0 ? parsed.targets : [createDefaultGlobalTarget(new Date().toISOString())]
       }
     } catch {
@@ -185,21 +198,36 @@ export class BroverStore {
     const db = await this.readDB()
     const currentTarget = db.targets.find((target) => target.id === payload.profile)
     if (!currentTarget) throw new Error('Target not found')
+    const currentSpace = db.spaces.find((space) => space.id === currentTarget.spaceId)
+    if (!currentSpace) throw new Error('Space not found')
     const spaceTargets = db.targets.filter((target) => target.spaceId === currentTarget.spaceId)
-    const alreadyExistsInSpace = db.envs.some(
-      (env) => env.name === envName && spaceTargets.some((target) => target.id === env.profile)
-    )
-    if (alreadyExistsInSpace) throw new Error('Secret already exists in this space')
+    const alreadyExists = currentSpace.tiedSecrets
+      ? db.envs.some(
+          (env) => env.name === envName && spaceTargets.some((target) => target.id === env.profile)
+        )
+      : db.envs.some((env) => env.name === envName && env.profile === payload.profile)
+    if (alreadyExists) throw new Error('Secret already exists in this target')
 
     const now = new Date().toISOString()
-    for (const target of spaceTargets) {
+    if (currentSpace.tiedSecrets) {
+      for (const target of spaceTargets) {
+        db.envs.push({
+          id: randomUUID(),
+          name: envName,
+          profile: target.id,
+          enabled: target.id === payload.profile,
+          description: payload.description?.trim() || undefined,
+          updatedAt: now
+        })
+      }
+    } else {
       db.envs.push({
         id: randomUUID(),
         name: envName,
-        profile: target.id,
-        enabled: target.id === payload.profile,
+        profile: payload.profile,
+        enabled: true,
         description: payload.description?.trim() || undefined,
-        updatedAt: now
+        updatedAt: now,
       })
     }
 
@@ -233,10 +261,18 @@ export class BroverStore {
     const db = await this.readDB()
     const currentTarget = db.targets.find((target) => target.id === payload.profile)
     if (!currentTarget) throw new Error('Target not found')
-    const targetIds = db.targets.filter((target) => target.spaceId === currentTarget.spaceId).map((target) => target.id)
-    db.envs = db.envs.filter((env) => !(env.name === payload.name && targetIds.includes(env.profile)))
-    for (const targetId of targetIds) {
-      await this.secrets.delete(`${targetId}:${payload.name}`)
+    const currentSpace = db.spaces.find((space) => space.id === currentTarget.spaceId)
+    if (!currentSpace) throw new Error('Space not found')
+
+    if (currentSpace.tiedSecrets) {
+      const targetIds = db.targets.filter((target) => target.spaceId === currentTarget.spaceId).map((target) => target.id)
+      db.envs = db.envs.filter((env) => !(env.name === payload.name && targetIds.includes(env.profile)))
+      for (const targetId of targetIds) {
+        await this.secrets.delete(`${targetId}:${payload.name}`)
+      }
+    } else {
+      db.envs = db.envs.filter((env) => !(env.name === payload.name && env.profile === payload.profile))
+      await this.secrets.delete(`${payload.profile}:${payload.name}`)
     }
     await this.writeDB(db)
   }
@@ -261,6 +297,7 @@ export class BroverStore {
       kind: 'directory',
       path: payload.path.trim(),
       expanded: true,
+      tiedSecrets: true,
       updatedAt: now,
     }
     db.spaces.push(created)
@@ -308,6 +345,21 @@ export class BroverStore {
     return db.spaces
   }
 
+  async toggleSpaceTiedSecrets(spaceId: string): Promise<EnvSpace[]> {
+    const db = await this.readDB()
+    db.spaces = db.spaces.map((space) =>
+      space.id === spaceId
+        ? {
+            ...space,
+            tiedSecrets: !space.tiedSecrets,
+            updatedAt: new Date().toISOString(),
+          }
+        : space
+    )
+    await this.writeDB(db)
+    return db.spaces
+  }
+
   async toggleSpaceExpanded(spaceId: string): Promise<EnvSpace[]> {
     const db = await this.readDB()
     db.spaces = db.spaces.map((space) =>
@@ -325,6 +377,8 @@ export class BroverStore {
 
   async createTarget(payload: { spaceId: string; name: string }): Promise<EnvTarget[]> {
     const db = await this.readDB()
+    const space = db.spaces.find((item) => item.id === payload.spaceId)
+    if (!space) throw new Error('Space not found')
     const name = payload.name.trim()
     if (!name) throw new Error('Target name required')
     const duplicate = db.targets.some(
@@ -343,7 +397,7 @@ export class BroverStore {
     db.targets.push(createdTarget)
 
     const templateTarget = db.targets.find((target) => target.spaceId === payload.spaceId && target.id !== createdTarget.id)
-    if (templateTarget) {
+    if (space.tiedSecrets && templateTarget) {
       const templateEnvs = db.envs.filter((env) => env.profile === templateTarget.id)
       for (const env of templateEnvs) {
         db.envs.push({
