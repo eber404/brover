@@ -17,10 +17,13 @@ Current phase: **SwiftUI + AppKit GUI-first MVP**, with active **Electron cross-
 - real app uses JSON config at `~/Library/Application Support/brover/config.json`;
 - apps allowlist uses JSON config at `~/Library/Application Support/brover/apps.json`;
 - real auth gate uses macOS local authentication (Touch ID/password);
-- sidebar IA now fixed to `Apps`, `Secrets`;
+- sidebar IA now uses `ENV SPACES` tree with default `Glob` space and nested targets;
 - UI now uses 3-column shell: sidebar, searchable list, detail panel;
-- search bar stays persistent in center column and swaps placeholder by active tab;
-- `Apps` workspace supports manual allowlist (`displayName`, `bundleID`, `enabled`);
+- search bar stays persistent in center column and filters secrets for selected target;
+- each space can host multiple targets (e.g. dev/qa/uat/prod) with unique target names and target color tags;
+- secret name schema is auto-synced across targets in same space; value/enable remain target-scoped;
+- `Glob` space can apply active target to user shells (`~/.zshrc`, `~/.bashrc`) via managed block;
+- directory spaces can apply selected target to `.env.<target>` files;
 - `Secrets` workspace supports auth-gated reveal/copy/edit/delete with auto-hide reveal timeout;
 - bundle ID validation added for app authorization workflow;
 - tests cover validation, stores, auth gate checks, and env manager flows.
@@ -82,7 +85,7 @@ brover/
 
 - new app lives in `electron-app/`;
 - stack: Electron + React + TypeScript + TailwindCSS + shadcn/ui;
-- UX shape mirrors current app (`Apps`, `Secrets`, 3-column shell);
+- UX shape uses 3-column shell with `ENV SPACES` sidebar, secrets list, and details panel;
 - non-sensitive metadata persists in local JSON under Electron app data;
 - on macOS, secrets use Keychain backend;
 - on Linux/Windows, sensitive secret actions are blocked with explicit unsupported message until secure backend is defined.

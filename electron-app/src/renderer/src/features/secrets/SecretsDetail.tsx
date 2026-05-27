@@ -8,6 +8,7 @@ import { Switch } from '../../components/ui/switch'
 
 interface SecretsDetailProps {
   env: EnvMetadata | null
+  targetName: string
   enabled: boolean
   revealValue: string
   onReveal: () => void
@@ -18,6 +19,7 @@ interface SecretsDetailProps {
 
 export function SecretsDetail({
   env,
+  targetName,
   enabled,
   revealValue,
   onReveal,
@@ -41,7 +43,7 @@ export function SecretsDetail({
     <div className="grid gap-3">
       <div>
         <div className="text-lg font-semibold">{env.name}</div>
-        <div className="text-xs text-slate-400">{t('common.profile')}: {env.profile}</div>
+        <div className="text-xs text-slate-400">Target: {targetName}</div>
       </div>
 
       <div className="flex items-center gap-3">

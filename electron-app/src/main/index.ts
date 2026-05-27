@@ -71,6 +71,33 @@ async function bootstrap() {
     store.setActiveProfile(id)
   )
 
+  ipcMain.handle('spaces:list', () => store.listSpaces())
+  ipcMain.handle('spaces:create', (_, payload: { name: string; path: string }) =>
+    store.createSpace(payload)
+  )
+  ipcMain.handle('spaces:toggle-expanded', (_, spaceId: string) =>
+    store.toggleSpaceExpanded(spaceId)
+  )
+  ipcMain.handle('targets:list', (_, spaceId: string) => store.listTargets(spaceId))
+  ipcMain.handle('targets:create', (_, payload: { spaceId: string; name: string }) =>
+    store.createTarget(payload)
+  )
+  ipcMain.handle('targets:rename', (_, payload: { targetId: string; name: string }) =>
+    store.renameTarget(payload)
+  )
+  ipcMain.handle('targets:set-color', (_, payload: { targetId: string; color: string }) =>
+    store.setTargetColor(payload)
+  )
+  ipcMain.handle(
+    'targets:set-active',
+    (_, payload: { spaceId: string; targetId: string }) =>
+      store.setActiveTarget(payload)
+  )
+  ipcMain.handle('apply:global-shell', () => store.applyGlobalShell())
+  ipcMain.handle('apply:directory-target', (_, payload: { targetId: string }) =>
+    store.applyDirectoryTarget(payload)
+  )
+
   ipcMain.handle('envs:list', () => store.listEnvs())
   ipcMain.handle('envs:toggle-enabled', (_, id: string) =>
     store.toggleEnvEnabled(id)
@@ -188,7 +215,6 @@ async function bootstrap() {
     )
     await window.webContents.session.clearStorageData({
       storages: [
-        'appcache',
         'cookies',
         'filesystem',
         'indexdb',

@@ -24,70 +24,85 @@ test.describe('Secrets Auth Flow', () => {
   })
 
   test('create, reveal, update and delete secret', async () => {
+    const secretName = `PW_KEY_${Date.now()}`
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
-    const profile = await window.evaluate(async () => {
-      const profiles = await window.brover.listProfiles()
-      return profiles.find((item) => item.isActive) ?? profiles[0]
+    const target = await window.evaluate(async () => {
+      const spaces = await window.brover.listSpaces()
+      const globalSpace = spaces.find((space) => space.id === 'space-global') ?? spaces[0]
+      const targets = await window.brover.listTargets(globalSpace.id)
+      return targets.find((item) => item.isActive) ?? targets[0]
     })
 
-    const created = await window.evaluate(async ({ profileName }) => {
-      await window.brover.createEnv({
-        name: 'PLAYWRIGHT_KEY',
-        profile: profileName,
+    await window.evaluate(async ({ secretName }) => {
+      const envs = await window.brover.listEnvs()
+      const matches = envs.filter((item) => item.name === secretName)
+      for (const item of matches) {
+        await window.brover.deleteEnv({ id: item.id, profile: item.profile, name: item.name })
+      }
+    }, { secretName })
+
+    const created = await window.evaluate(async ({ targetId, secretName }) => {
+      const createdResult = await window.brover.createEnv({
+        name: secretName,
+        profile: targetId,
         value: 'secret-1',
       })
       const envs = await window.brover.listEnvs()
-      return envs.find((item) => item.name === 'PLAYWRIGHT_KEY')
-    }, { profileName: profile.name })
+      return {
+        createdResult,
+        env: envs.find((item) => item.name === secretName && item.profile === targetId)
+      }
+    }, { targetId: target.id, secretName })
 
-    expect(created?.name).toBe('PLAYWRIGHT_KEY')
+    expect(created.createdResult.ok).toBe(true)
+    expect(created.env?.name).toBe(secretName)
 
-    const revealResult = await window.evaluate(async ({ profileName }) => {
-      return window.brover.revealEnv({ profile: profileName, name: 'PLAYWRIGHT_KEY' })
-    }, { profileName: profile.name })
+    const revealResult = await window.evaluate(async ({ targetId, secretName }) => {
+      return window.brover.revealEnv({ profile: targetId, name: secretName })
+    }, { targetId: target.id, secretName })
     expect(revealResult.ok).toBe(true)
     expect(revealResult.value).toBe('secret-1')
 
-    const copyResult = await window.evaluate(async ({ profileName }) => {
+    const copyResult = await window.evaluate(async ({ targetId, secretName }) => {
       return window.brover.copyEnv({
-        profile: profileName,
-        name: 'PLAYWRIGHT_KEY',
+        profile: targetId,
+        name: secretName,
         isRevealed: false,
       })
-    }, { profileName: profile.name })
+    }, { targetId: target.id, secretName })
     expect(copyResult.ok).toBe(true)
     expect(copyResult.value).toBe('secret-1')
 
-    const updateResult = await window.evaluate(async ({ envId, profileName }) => {
+    const updateResult = await window.evaluate(async ({ envId, targetId, secretName }) => {
       return window.brover.updateEnv({
         id: envId,
-        profile: profileName,
-        name: 'PLAYWRIGHT_KEY',
+        profile: targetId,
+        name: secretName,
         value: 'secret-2',
         enabled: true,
       })
-    }, { envId: created!.id, profileName: profile.name })
+    }, { envId: created.env!.id, targetId: target.id, secretName })
     expect(updateResult.ok).toBe(true)
 
-    const afterUpdateReveal = await window.evaluate(async ({ profileName }) => {
-      return window.brover.revealEnv({ profile: profileName, name: 'PLAYWRIGHT_KEY' })
-    }, { profileName: profile.name })
+    const afterUpdateReveal = await window.evaluate(async ({ targetId, secretName }) => {
+      return window.brover.revealEnv({ profile: targetId, name: secretName })
+    }, { targetId: target.id, secretName })
     expect(afterUpdateReveal.value).toBe('secret-2')
 
-    const deleteResult = await window.evaluate(async ({ envId, profileName }) => {
+    const deleteResult = await window.evaluate(async ({ envId, targetId, secretName }) => {
       return window.brover.deleteEnv({
         id: envId,
-        profile: profileName,
-        name: 'PLAYWRIGHT_KEY',
+        profile: targetId,
+        name: secretName,
       })
-    }, { envId: created!.id, profileName: profile.name })
+    }, { envId: created.env!.id, targetId: target.id, secretName })
     expect(deleteResult.ok).toBe(true)
 
-    const remaining = await window.evaluate(async () => {
-      return (await window.brover.listEnvs()).filter((item) => item.name === 'PLAYWRIGHT_KEY').length
-    })
+    const remaining = await window.evaluate(async ({ secretName }) => {
+      return (await window.brover.listEnvs()).filter((item) => item.name === secretName).length
+    }, { secretName })
     expect(remaining).toBe(0)
   })
 })

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { KeyRound, Plus } from 'lucide-react'
-import type { EnvMetadata, Profile } from '../../../../shared/models'
+import type { EnvMetadata } from '../../../../shared/models'
 import { UNSUPPORTED_SECRET_BACKEND } from '../../../../shared/models'
 import { useI18n } from '../../i18n'
 import { Button } from '../../components/ui/button'
@@ -18,7 +18,7 @@ import { Input } from '../../components/ui/input'
 import { useToast } from '../../components/ui/toaster'
 
 interface SecretsPanelProps {
-  selectedProfile: Profile | undefined
+  selectedTargetId: string | null
   envs: EnvMetadata[]
   filteredEnvs: EnvMetadata[]
   selectedEnvId: string
@@ -30,7 +30,7 @@ interface SecretsPanelProps {
 export function useSecretsPanel(props: SecretsPanelProps) {
   const { t } = useI18n()
   const {
-    selectedProfile,
+    selectedTargetId,
     envs,
     filteredEnvs,
     selectedEnvId,
@@ -53,10 +53,10 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   }
 
   async function createEnv() {
-    if (!selectedProfile) return
+    if (!selectedTargetId) return
     const result = await window.brover.createEnv({
       name: newEnvName.trim().toUpperCase(),
-      profile: selectedProfile.name,
+      profile: selectedTargetId,
       value: newEnvValue,
       description: newEnvDescription,
     })

@@ -23,6 +23,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
+          targetName="dev"
           enabled
           revealValue=""
           onReveal={() => {}}
@@ -46,6 +47,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
+          targetName="dev"
           enabled
           revealValue=""
           onReveal={() => {}}

@@ -1,5 +1,7 @@
 export type RootWorkspace = 'apps' | 'secrets'
 
+export type SpaceKind = 'global' | 'directory'
+
 export interface AppAuthorization {
   id: string
   displayName: string
@@ -28,6 +30,24 @@ export interface SecretActionResult {
   ok: boolean
   value?: string
   error?: string
+}
+
+export interface EnvSpace {
+  id: string
+  name: string
+  kind: SpaceKind
+  path?: string
+  expanded?: boolean
+  updatedAt: string
+}
+
+export interface EnvTarget {
+  id: string
+  spaceId: string
+  name: string
+  color: string
+  isActive: boolean
+  updatedAt: string
 }
 
 export const UNSUPPORTED_SECRET_BACKEND = 'UNSUPPORTED_SECRET_BACKEND'

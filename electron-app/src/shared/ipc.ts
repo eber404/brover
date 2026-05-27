@@ -1,4 +1,11 @@
-import type { AppAuthorization, EnvMetadata, Profile, SecretActionResult } from './models'
+import type {
+  AppAuthorization,
+  EnvMetadata,
+  EnvSpace,
+  EnvTarget,
+  Profile,
+  SecretActionResult,
+} from './models'
 
 export interface BroverAPI {
   listApps: () => Promise<AppAuthorization[]>
@@ -17,4 +24,15 @@ export interface BroverAPI {
   updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string; enabled: boolean }) => Promise<SecretActionResult>
   deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>
   toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>
+
+  listSpaces: () => Promise<EnvSpace[]>
+  createSpace: (payload: { name: string; path: string }) => Promise<EnvSpace[]>
+  toggleSpaceExpanded: (spaceId: string) => Promise<EnvSpace[]>
+  listTargets: (spaceId: string) => Promise<EnvTarget[]>
+  createTarget: (payload: { spaceId: string; name: string }) => Promise<EnvTarget[]>
+  renameTarget: (payload: { targetId: string; name: string }) => Promise<EnvTarget[]>
+  setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>
+  setActiveTarget: (payload: { spaceId: string; targetId: string }) => Promise<EnvTarget[]>
+  applyGlobalShell: () => Promise<{ applied: number }>
+  applyDirectoryTarget: (payload: { targetId: string }) => Promise<{ applied: number; path: string }>
 }

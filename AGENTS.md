@@ -134,9 +134,13 @@ UI talks to typed service interfaces/protocols.
 - Local auth gate uses macOS authentication for sensitive operations.
 - Env manager flow is connected for create/edit/reveal/delete.
 - Secrets workspace supports copy action and auto-hide reveal timeout.
-- Sidebar IA is fixed to `Apps`, `Secrets`.
+- Sidebar IA now uses `ENV SPACES` tree with default `Glob` and nested targets.
 - Main shell uses 3 columns: sidebar, center list, right detail.
-- Center search bar stays persistent and changes placeholder by active workspace.
+- Center search bar stays persistent and filters secrets for selected target.
+- Space model supports multiple targets (dev/qa/uat/prod/custom) with unique names and per-target color tag.
+- Secret name schema syncs across targets in same space; value and enabled state remain target-scoped.
+- Global space apply writes managed env exports to `~/.zshrc` and `~/.bashrc` for active target.
+- Directory space apply writes selected target to `.env.<target>` inside space path.
 - Electron rebuild scaffold exists at `electron-app/` for cross-platform migration (React + TailwindCSS + shadcn/ui).
 - Electron macOS path uses Keychain-backed secret adapter; Linux/Windows sensitive secret actions are blocked until secure backend decision.
 
