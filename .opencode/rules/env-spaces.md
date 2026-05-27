@@ -14,8 +14,14 @@
 
 ## Secret sync behavior
 
-- Create secret in one target => schema appears in sibling targets.
-- Delete secret in one target => removed from all targets in same space.
+- Each space has `tiedSecrets` (`Tied targets`) toggle, default `true`.
+- When `tiedSecrets=true`:
+  - Create secret in one target => schema appears in sibling targets.
+  - Delete secret in one target => removed from all targets in same space.
+  - Create new target => clone env names from peers with empty values.
+- When `tiedSecrets=false`:
+  - Create/delete secret affect only selected target.
+  - New target starts empty.
 - Toggle enabled is target-scoped.
 - Update value is target-scoped.
 

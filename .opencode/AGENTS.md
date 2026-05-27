@@ -2,10 +2,9 @@
 
 ## Project Overview
 
-Brover is a local environment secret manager.
+Brover is an Electron desktop app for local environment secret management.
 
-- Native app: SwiftUI + AppKit (macOS-first)
-- Electron app: React + TypeScript + Tailwind + shadcn primitives
+- Stack: Electron + React + TypeScript + TailwindCSS
 - Sensitive values: macOS Keychain via Electron main process adapters
 - Metadata: local JSON config under app data
 
@@ -22,10 +21,10 @@ Rule files:
 ## Quick Commands
 
 ```bash
-npm --prefix electron-app run lint
-npm --prefix electron-app run tsc
-npm --prefix electron-app run test
-npm --prefix electron-app run test:e2e -- tests/electron/window.spec.ts tests/electron/secrets-auth.spec.ts
+npm run lint
+npm run tsc
+npm run test
+npm run test:e2e
 ```
 
 ## Critical Principles
@@ -33,7 +32,7 @@ npm --prefix electron-app run test:e2e -- tests/electron/window.spec.ts tests/el
 1. Never persist secret values in JSON or logs.
 2. Keep auth gates for reveal/copy(hidden)/update/delete.
 3. Use target-scoped value and enabled state.
-4. Keep secret name schema synchronized across targets in same space.
+4. Respect per-space `tiedSecrets` toggle (`Tied targets`) behavior.
 5. Global space applies active target to shell files (`.zshrc`, `.bashrc`).
 6. Directory spaces apply selected target to `.env.<target>`.
 7. Prefer early return and avoid nested conditionals/ternaries.

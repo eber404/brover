@@ -15,4 +15,7 @@
 
 - Space types: `global` and `directory`.
 - Targets live under a space and have unique names per space.
-- Secret schema is shared by space; secret value/enabled is target-scoped.
+- Secret schema sync is controlled by per-space `tiedSecrets`.
+  - `true`: names sync across targets in space.
+  - `false`: names are target-local.
+- Secret value/enabled remain target-scoped always.
