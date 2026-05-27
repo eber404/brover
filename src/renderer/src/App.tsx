@@ -8,6 +8,7 @@ import {
 import { Search } from 'lucide-react'
 import type { EnvMetadata, EnvSpace, EnvTarget } from '../../shared/models'
 import { Button } from './components/ui/button'
+import { ConfirmDialog } from './components/ui/confirmDialog'
 import { ToastProvider } from './components/ui/toaster'
 import { I18nProvider, useI18n } from './i18n'
 import { SecretsDetail } from './features/secrets/SecretsDetail'
@@ -395,6 +396,16 @@ function AppShell() {
       </div>
 
       <div className="col-start-3 col-end-4 row-start-2 row-end-3">
+        <ConfirmDialog
+          open={secretsPanel.deleteConfirmOpen}
+          onOpenChange={secretsPanel.setDeleteConfirmOpen}
+          title={`Delete "${secretsPanel.selectedEnv?.name}"?`}
+          description="This cannot be undone."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          destructive
+          onConfirm={() => void secretsPanel.deleteEnvConfirmed()}
+        />
         <SecretsDetailsPanel
           title={t('common.details')}
           env={secretsPanel.selectedEnv}

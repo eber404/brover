@@ -203,12 +203,11 @@ async function bootstrap() {
     try {
       const cached = authSessionCache.isAuthorized(payload.profile)
       if (cached) {
-        await store.deleteEnv(payload)
-        return { ok: true }
+        return { ok: true, value: 'needs-confirmation' }
       }
       await authGate.authorize('delete', { targetId: payload.profile })
       await store.deleteEnv(payload)
-      return { ok: true, value: 'needs-confirmation' }
+      return { ok: true }
     } catch (error) {
       return failure(error)
     }

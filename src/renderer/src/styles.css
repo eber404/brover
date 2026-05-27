@@ -17,8 +17,11 @@
     margin: 0;
     background: radial-gradient(1200px 700px at 20% -10%, #123055 0%, #070b12 55%);
     color: #e7eef9;
-    user-select: none;
-    -webkit-user-select: none;
+  }
+
+  ::selection {
+    background: #1fb6ff40;
+    color: #e7eef9;
   }
 
   #root {

@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../../components/ui/dialog'
+import { ConfirmDialog } from '../../components/ui/confirmDialog'
 import { Input } from '../../components/ui/input'
 import { useToast } from '../../components/ui/toaster'
 
@@ -94,6 +95,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   }
 
   const [open, setOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [newEnvName, setNewEnvName] = useState('')
   const [newEnvValue, setNewEnvValue] = useState('')
   const [newEnvDescription, setNewEnvDescription] = useState('')
@@ -226,14 +228,32 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       return
     }
     if (result.value === 'needs-confirmation') {
-      const answer = window.confirm(`Delete "${selectedEnv.name}"? This cannot be undone.`)
-      if (!answer) return
-      await window.brover.deleteEnvConfirmed({
-        id: selectedEnv.id,
-        profile: selectedEnv.profile,
-        name: selectedEnv.name,
-      })
+      setDeleteConfirmOpen(true)
+      return
     }
+    setEnvs(await window.brover.listEnvs())
+    setSelectedEnvId('')
+    setRevealValue('')
+    toast(t('common.secretDeleted'))
+  }
+
+  async function deleteEnvConfirmed() {
+    if (!selectedEnv) return
+    const result = await window.brover.deleteEnvConfirmed({
+      id: selectedEnv.id,
+      profile: selectedEnv.profile,
+      name: selectedEnv.name,
+    })
+    if (!result.ok) {
+      toast(
+        result.error === UNSUPPORTED_SECRET_BACKEND
+          ? t('common.unsupportedBackend')
+          : (result.error ?? 'Failed to delete secret'),
+        'error'
+      )
+      return
+    }
+    setDeleteConfirmOpen(false)
     setEnvs(await window.brover.listEnvs())
     setSelectedEnvId('')
     setRevealValue('')
@@ -245,18 +265,16 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   if (filteredEnvs.length === 0) {
     if (isFiltered) {
       listContent = (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-edge bg-surface-card p-8 text-center">
-          <KeyRound className="h-10 w-10 text-text-muted" />
+        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-edge bg-surface-card p-4 text-center">
+          <KeyRound className="h-6 w-6 text-text-muted" />
           <div className="text-sm font-medium text-text-base">{t('secrets.noResults')}</div>
-          <div className="text-xs text-text-muted">{t('secrets.noResultsDescription')}</div>
         </div>
       )
     } else {
       listContent = (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-edge bg-surface-card p-8 text-center">
-          <KeyRound className="h-10 w-10 text-text-muted" />
+        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-edge bg-surface-card p-4 text-center">
+          <KeyRound className="h-6 w-6 text-text-muted" />
           <div className="text-sm font-medium text-text-base">{t('secrets.noSecrets')}</div>
-          <div className="text-xs text-text-muted">{t('secrets.noSecretsDescription')}</div>
         </div>
       )
     }
@@ -334,6 +352,16 @@ export function useSecretsPanel(props: SecretsPanelProps) {
         </Card>
 
         {listContent}
+
+        <ConfirmDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          title={`Delete "${selectedEnv?.name}"?`}
+          description="This cannot be undone."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          destructive
+        />
       </>
     ),
     selectedEnv,
@@ -341,5 +369,8 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     copyEnv,
     updateEnvValue,
     deleteEnv,
+    deleteEnvConfirmed,
+    deleteConfirmOpen,
+    setDeleteConfirmOpen,
   }
 }

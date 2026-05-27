@@ -98,11 +98,19 @@ test.describe('Secrets Auth Flow', () => {
     expect(afterUpdateReveal.value).toBe('secret-2')
 
     const deleteResult = await window.evaluate(async ({ envId, targetId, secretName }) => {
-      return window.brover.deleteEnv({
+      const result = await window.brover.deleteEnv({
         id: envId,
         profile: targetId,
         name: secretName,
       })
+      if (result.value === 'needs-confirmation') {
+        return window.brover.deleteEnvConfirmed({
+          id: envId,
+          profile: targetId,
+          name: secretName,
+        })
+      }
+      return result
     }, { envId: created.env!.id, targetId: target.id, secretName })
     expect(deleteResult.ok).toBe(true)
 

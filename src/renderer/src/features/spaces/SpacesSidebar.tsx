@@ -1,6 +1,7 @@
 import { memo, useRef, useState } from 'react'
 import { Layers, Plus, Trash2 } from 'lucide-react'
 import type { EnvSpace, EnvTarget } from '../../../../shared/models'
+import { Switch } from '../../components/ui/switch'
 
 interface SpacesSidebarProps {
   title: string
@@ -264,16 +265,11 @@ export const SpacesSidebar = memo(function SpacesSidebar(
               Keep env names synced across all targets in this space. Values remain target-specific.
             </div>
           </div>
-          <button
-            type="button"
-            className={`relative h-5 w-9 rounded-full transition ${selectedSpace?.tiedSecrets ? 'bg-accent/80' : 'bg-slate-700'}`}
-            onClick={() => selectedSpace && onToggleSpaceTiedSecrets(selectedSpace.id)}
-            aria-label={selectedSpace?.tiedSecrets ? 'Tied targets on' : 'Tied targets off'}
-          >
-            <span
-              className={`absolute top-0.5 h-4 w-4 rounded-full bg-slate-100 transition ${selectedSpace?.tiedSecrets ? 'left-4' : 'left-0.5'}`}
-            />
-          </button>
+          <Switch
+            checked={selectedSpace?.tiedSecrets ?? false}
+            onCheckedChange={() => selectedSpace && onToggleSpaceTiedSecrets(selectedSpace.id)}
+            label="Tied targets"
+          />
         </div>
         <div className="mt-3 grid gap-1.5 overflow-y-auto overflow-x-hidden">
           {selectedTargets.map((target) => (

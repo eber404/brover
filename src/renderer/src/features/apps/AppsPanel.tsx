@@ -48,10 +48,9 @@ export function useAppsPanel(props: AppsPanelProps) {
   let listContent: React.ReactNode
   if (filteredApps.length === 0) {
     listContent = (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-edge bg-surface-card p-8 text-center">
-        <AppWindow className="h-10 w-10 text-text-muted" />
+      <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-edge bg-surface-card p-4 text-center">
+        <AppWindow className="h-6 w-6 text-text-muted" />
         <div className="text-sm font-medium text-text-base">{t('apps.noApps')}</div>
-        <div className="text-xs text-text-muted">{t('apps.noAppsDescription')}</div>
       </div>
     )
   } else {
