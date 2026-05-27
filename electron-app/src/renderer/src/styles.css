@@ -1,16 +1,25 @@
 @import 'tailwindcss';
 
-:root {
-  color-scheme: dark;
-  font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
+@theme {
+  --color-panel: #10161f;
+  --color-edge: #1d2b3f;
+  --color-accent: #1fb6ff;
+  --color-bg: #070b12;
 }
 
-body {
-  margin: 0;
-  background: radial-gradient(1200px 700px at 20% -10%, #123055 0%, #070b12 55%);
-  color: #e7eef9;
-}
+@layer base {
+  :root {
+    color-scheme: dark;
+    font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
+  }
 
-#root {
-  min-height: 100vh;
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 700px at 20% -10%, #123055 0%, #070b12 55%);
+    color: #e7eef9;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
 }
