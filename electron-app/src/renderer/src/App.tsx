@@ -70,7 +70,12 @@ function AppShell() {
   })
 
   return (
-    <div className="grid h-screen grid-cols-[220px_400px_1fr] gap-3 p-3 text-sm">
+    <div className="relative grid h-screen grid-cols-[220px_400px_1fr] gap-3 p-3 text-sm">
+      <div
+        data-testid="drag-bar"
+        className="absolute inset-x-0 top-0 z-50 h-10 w-full"
+        style={{ WebkitAppRegion: 'drag' as const }}
+      />
       <aside className="flex flex-col rounded-2xl border border-edge bg-panel/90 p-4 pt-12">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-accent" />
