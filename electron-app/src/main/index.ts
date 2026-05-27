@@ -91,6 +91,7 @@ async function bootstrap() {
   })
 
   if (isDev) {
+    window.webContents.openDevTools()
     await window.loadURL(process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5173')
   } else {
     await window.loadFile(join(app.getAppPath(), 'dist', 'index.html'))

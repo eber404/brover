@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { BroverAPI } from '../shared/ipc'
 
+console.log('[preload] Loading preload script...')
+
 const api: BroverAPI = {
   listApps: () => ipcRenderer.invoke('apps:list'),
   createApp: (payload) => ipcRenderer.invoke('apps:create', payload),
@@ -20,3 +22,4 @@ const api: BroverAPI = {
 }
 
 contextBridge.exposeInMainWorld('brover', api)
+console.log('[preload] Exposed window.brover API')
