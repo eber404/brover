@@ -1,6 +1,7 @@
 import { memo, useRef, useState } from 'react'
 import { Layers, Plus, Trash2 } from 'lucide-react'
 import type { EnvSpace, EnvTarget } from '../../../../shared/models'
+import { ConfirmDialog } from '../../components/ui/confirmDialog'
 import { Switch } from '../../components/ui/switch'
 
 interface SpacesSidebarProps {
@@ -347,37 +348,22 @@ export const SpacesSidebar = memo(function SpacesSidebar(
         </p>
       </div>
 
-      {pendingDeleteTarget ? (
-        <div className="absolute inset-0 z-40 flex items-center justify-center rounded-2xl bg-surface-overlay p-4">
-          <div className="w-full max-w-xs rounded-xl border border-edge bg-surface-base p-4">
-            <div className="text-sm font-semibold text-text-emphasis">
-              Delete target?
-            </div>
-            <p className="mt-1 text-xs text-text-muted">
-              Remove{' '}
-              <span className="text-text-base">{pendingDeleteTarget.name}</span>{' '}
-              and target-scoped values.
-            </p>
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                className="rounded px-2 py-1 text-xs text-text-base hover:bg-surface-hover"
-                onClick={() => setPendingDeleteTarget(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded bg-[#dc2626] px-2 py-1 text-xs text-white hover:bg-[#dc2626]/80"
-                onClick={() => {
-                  void onDeleteTarget(pendingDeleteTarget.id)
-                  setPendingDeleteTarget(null)
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={!!pendingDeleteTarget}
+        onOpenChange={(open) => { if (!open) setPendingDeleteTarget(null) }}
+        title="Delete target?"
+        description={
+          pendingDeleteTarget
+            ? `Remove ${pendingDeleteTarget.name} and target-scoped values.`
+            : ''
+        }
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={() => {
+          if (pendingDeleteTarget) onDeleteTarget(pendingDeleteTarget.id)
+        }}
+      />
 
       {colorMenu ? (
         <div className="absolute inset-0 z-30">
@@ -456,33 +442,18 @@ export const SpacesSidebar = memo(function SpacesSidebar(
         </div>
       ) : null}
 
-      {pendingDeleteSpace ? (
-        <div className="absolute inset-0 z-40 flex items-center justify-center rounded-2xl bg-surface-overlay p-4">
-          <div className="w-full max-w-xs rounded-xl border border-edge bg-surface-base p-4">
-            <div className="text-sm font-semibold text-text-emphasis">Delete space?</div>
-            <p className="mt-1 text-xs text-text-muted">
-              This will remove all targets and secrets in this space.
-            </p>
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                className="rounded px-2 py-1 text-xs text-text-base hover:bg-surface-hover"
-                onClick={() => setPendingDeleteSpace(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded bg-[#dc2626] px-2 py-1 text-xs text-white hover:bg-[#dc2626]/80"
-                onClick={() => {
-                  void onDeleteSpace(pendingDeleteSpace)
-                  setPendingDeleteSpace(null)
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={!!pendingDeleteSpace}
+        onOpenChange={(open) => { if (!open) setPendingDeleteSpace(null) }}
+        title="Delete space?"
+        description="This will remove all targets and secrets in this space."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={() => {
+          if (pendingDeleteSpace) onDeleteSpace(pendingDeleteSpace)
+        }}
+      />
 
       {nameTooltip ? (
         <div
