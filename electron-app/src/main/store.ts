@@ -346,9 +346,6 @@ export class BroverStore {
     const target = db.targets.find((item) => item.id === payload.targetId)
     if (!target) throw new Error('Target not found')
 
-    const spaceTargets = db.targets.filter((item) => item.spaceId === target.spaceId)
-    if (spaceTargets.length <= 1) throw new Error('Cannot delete last target in this space')
-
     db.targets = db.targets.filter((item) => item.id !== payload.targetId)
     db.envs = db.envs.filter((item) => item.profile !== payload.targetId)
 

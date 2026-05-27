@@ -1,13 +1,17 @@
 import { test, expect } from '@playwright/test'
 import { _electron as electron } from 'playwright'
 import { join } from 'node:path'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 
 const electronAppPath = join(__dirname, '../..')
 
 test.describe('Secrets Auth Flow', () => {
   let electronApp: Awaited<ReturnType<typeof electron.launch>>
+  let dbDir: string
 
   test.beforeEach(async () => {
+    dbDir = mkdtempSync(join(tmpdir(), 'brover-e2e-'))
     electronApp = await electron.launch({
       args: [electronAppPath],
       env: {
@@ -15,12 +19,14 @@ test.describe('Secrets Auth Flow', () => {
         NODE_ENV: 'test',
         BROVER_E2E: '1',
         BROVER_SKIP_AUTH: '1',
+        BROVER_DB_PATH: join(dbDir, 'config.json'),
       },
     })
   })
 
   test.afterEach(async () => {
     await electronApp.close()
+    rmSync(dbDir, { recursive: true, force: true })
   })
 
   test('create, reveal, update and delete secret', async () => {

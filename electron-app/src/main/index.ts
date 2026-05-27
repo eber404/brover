@@ -39,7 +39,9 @@ function failure(error: unknown): SecretActionResult {
 }
 
 async function bootstrap() {
-  const dbPath = join(app.getPath('appData'), 'brover-electron', 'config.json')
+  const dbPath =
+    process.env.BROVER_DB_PATH ??
+    join(app.getPath('appData'), 'brover-electron', 'config.json')
   const store = new BroverStore(dbPath, createSecretStore())
   const authGate = createSecretAuthGate(async (reason: string) => {
     if (process.env.BROVER_SKIP_AUTH === '1') {
