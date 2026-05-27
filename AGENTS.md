@@ -4,367 +4,128 @@
 
 **brover**
 
-Native macOS desktop app, built with **SwiftUI + AppKit**, to manage local environment variables with secure storage in **macOS Keychain**.
+Desktop app to manage local environment secrets with secure storage and auth-gated secret actions.
 
-MVP is **macOS-only** and **GUI-first**. CLI comes in next roadmap step.
+Current implementation uses **Electron + React + TypeScript**.
 
 ---
 
 ## Main goal (current phase)
 
-Build local UI to:
+Deliver a stable local control plane to:
 
-- register environment variables;
-- organize by profiles;
-- enable/disable envs;
-- store sensitive values in macOS Keychain;
-- reveal/copy/edit/delete with auth gates;
-- persist non-sensitive metadata locally.
+- manage env secrets by spaces and targets;
+- keep sensitive values in secure backend on macOS (Keychain);
+- guard reveal/copy/update/delete behind authentication;
+- persist only non-sensitive metadata in local JSON;
+- apply selected target values to shell/dotenv outputs.
 
 ---
 
 ## Security decision
 
-### Main auth
+### Sensitive data
 
-Use **macOS Keychain** as primary auth/authz mechanism.
+- Secret values must never be stored in plaintext JSON.
+- On macOS, secret values use Keychain-backed adapter.
+- On unsupported platforms, sensitive actions must fail explicitly.
 
-Do not implement custom master password in MVP.
+### Auth-required actions
 
-### Operations that must require authentication
+- reveal secret value;
+- copy hidden secret value;
+- update secret value;
+- delete secret.
 
-- reveal env value;
-- copy value;
-- edit value;
-- delete env;
-- change sensitive settings.
+### Non-auth actions
 
-### Operations that do not need secret reveal
-
-- list env names;
-- list profiles;
-- view enabled/disabled status;
-- view metadata;
-- search by name;
-- switch active profile.
+- list/search metadata;
+- switch spaces/targets;
+- edit non-sensitive labels/colors;
+- toggle tied-target behavior.
 
 ---
 
-## Threat model
-
-### Protected
-
-- secrets at rest on disk;
-- secrets in simple backups;
-- casual editing without authentication;
-- reading by apps not authorized in Keychain.
-
-### Not protected
-
-If secret is exported to shell/process in future CLI phase, process can read it.
-
-Correct message:
-
-> Secrets stay protected in Keychain until loaded at runtime.
-
-Incorrect message:
-
-> You can use a secret without ever being able to access it.
-
----
-
-## Architecture (current phase)
+## Architecture
 
 ```txt
-Native macOS App
-  ├── SwiftUI Screens
-  ├── AppKit Visual Effects / Window Layer
-  ├── Keychain Adapter
-  ├── Profile Store
-  └── App Services (validation, auth gates)
+Electron App
+  ├── Main process (IPC, auth gate, persistence, apply writers)
+  ├── Preload bridge (typed window.brover API)
+  └── Renderer (React UI: spaces, targets, secrets, details)
 
-macOS Keychain
-  └── sensitive values
+Secure store (macOS)
+  └── Keychain service
 
 Local config
-  └── non-sensitive metadata
-
-Future CLI (`brover`)
-  └── roadmap phase for export/list/get/set/enable/disable/doctor
+  └── JSON metadata (spaces, targets, env metadata)
 ```
 
 ---
 
-## Components
+## Domain rules
 
-### Native App Services
+### Spaces and targets
 
-Responsible for:
+- A space may contain zero or more targets.
+- Targets are reorderable and deletable.
+- Space deletion removes all targets and all target-scoped secrets.
 
-- filesystem access;
-- Keychain communication;
-- metadata read/write;
-- auth-gated secret actions;
-- validation of sensitive commands.
+### Tied targets
 
-Keep Keychain access isolated to service layer.
+- Each space has `tiedSecrets` (default `true`).
+- When `true`:
+  - new env names sync across all targets in that space;
+  - deleting an env name removes it from all targets in that space;
+  - creating a target clones env names from peers with empty values.
+- When `false`:
+  - env names are target-local;
+  - delete affects only selected target;
+  - new target starts empty.
 
-### SwiftUI/AppKit UI
+### Values
 
-Responsible for:
-
-- apps allowlist workspace;
-- env list;
-- visual CRUD;
-- enabled/disabled toggles;
-- visual auth state;
-- onboarding.
-
-UI talks to typed service interfaces/protocols.
-
-### Current implementation status
-
-- Native app scaffold exists with SwiftUI navigation and baseline screens.
-- Keychain service exists in service layer using `Security.framework`.
-- JSON metadata store exists for non-sensitive profile/env data.
-- JSON allowlist store exists for authorized apps data.
-- Auth gate abstraction exists for sensitive actions (reveal/copy/edit/delete).
-- Root app wiring uses JSON store at `~/Library/Application Support/brover/config.json`.
-- Root app wiring uses apps allowlist store at `~/Library/Application Support/brover/apps.json`.
-- Local auth gate uses macOS authentication for sensitive operations.
-- Env manager flow is connected for create/edit/reveal/delete.
-- Secrets workspace supports copy action and auto-hide reveal timeout.
-- Sidebar IA now uses `ENV SPACES` tree with default `Glob` and nested targets.
-- Main shell uses 3 columns: sidebar, center list, right detail.
-- Center search bar stays persistent and filters secrets for selected target.
-- Space model supports multiple targets (dev/qa/uat/prod/custom) with unique names and per-target color tag.
-- Secret name schema syncs across targets in same space; value and enabled state remain target-scoped.
-- Global space apply writes managed env exports to `~/.zshrc` and `~/.bashrc` for active target.
-- Directory space apply writes selected target to `.env.<target>` inside space path.
-- Electron rebuild scaffold exists at `electron-app/` for cross-platform migration (React + TailwindCSS + shadcn/ui).
-- Electron macOS path uses Keychain-backed secret adapter; Linux/Windows sensitive secret actions are blocked until secure backend decision.
-
-### Future CLI `brover` (next step)
-
-Planned commands:
-
-```sh
-brover export --profile default
-brover list --profile default
-brover get NAME --profile default
-brover set NAME --profile default
-brover enable NAME --profile default
-brover disable NAME --profile default
-brover doctor
-```
+- Value storage remains target-scoped always.
+- Same env name can hold different values per target.
 
 ---
 
-## Storage
+## Storage conventions
 
-### Sensitive
-
-Env values stay in macOS Keychain.
-
-Suggested service name:
-
-```txt
-com.brover.secret
-```
-
-Account format:
-
-```txt
-profile:name
-```
-
-### Non-sensitive
-
-Metadata can stay in local JSON:
-
-```txt
-~/Library/Application Support/brover/config.json
-```
-
-Never store sensitive values in this JSON.
+- Secret account key format: `targetId:ENV_NAME`.
+- Metadata JSON path: app data directory `brover-electron/config.json` (or `BROVER_DB_PATH` override in tests).
 
 ---
 
-## Name validation
+## Validation
 
-Accept only names compatible with shell env vars:
+Env names must match:
 
 ```regex
 ^[A-Za-z_][A-Za-z0-9_]*$
 ```
 
-Reject:
-
-- spaces;
-- `=`;
-- `;`;
-- `$`;
-- backticks;
-- pipes;
-- redirections;
-- empty names;
-- names starting with numbers.
+Reject spaces, shell metacharacters, empty names, and numeric-leading names.
 
 ---
 
-## MVP UX
+## UI conventions
 
-### Minimum screens
-
-- Onboarding;
-- Apps;
-- Env List;
-- Create/Edit Env;
-- Reveal Secret;
-- Settings;
-- Diagnostics.
-
-### Env List fields
-
-- name;
-- profile;
-- enabled;
-- description;
-- updatedAt;
-- Keychain item status;
-- actions: reveal, copy, edit, disable, delete.
-
-### Create/Edit fields
-
-- name;
-- value;
-- enabled;
-- profile;
-- optional description.
-
-Editing value must require authentication.
-
-### Reveal
-
-- hidden by default;
-- "Reveal" button;
-- auth through Keychain/macOS;
-- auto-hide after timeout.
+- Three-column layout: spaces/targets, secrets list, secret details.
+- Left rail manages spaces; targets panel manages target operations.
+- Prevent text selection for static UI labels.
+- Show destructive actions with confirmation.
 
 ---
 
-## Technologies
+## Testing
 
-### Required in MVP
-
-- Swift;
-- SwiftUI;
-- AppKit (Liquid Glass / visual effects integration);
-- macOS Keychain.
-
-### Recommended
-
-- Swift Package Manager;
-- Swift Testing/XCTest;
-- Keychain Services APIs (`Security.framework`);
-- strict model validation for env names and profile data.
+- Unit tests: Vitest.
+- E2E: Playwright (Electron mode).
+- E2E must run in sandboxed temp DB path and clean up after each test.
 
 ---
 
-## Logs
+## Maintenance rule
 
-Never log secret values.
-
-Allowed to log:
-
-- env name;
-- profile;
-- operation;
-- timestamps;
-- error without sensitive payload;
-- integration status.
-
----
-
-## Required tests
-
-### Unit
-
-- name validation;
-- config parsing;
-- enable/disable;
-- profile selection;
-- auth gate checks.
-
-### Integration
-
-- save secret in Keychain;
-- retrieve secret;
-- delete secret;
-- persist local metadata;
-- auth-gated reveal flow.
-
-### Security
-
-- ensure config JSON has no values;
-- ensure errors do not print secret;
-- ensure invalid names are rejected.
-
----
-
-## MVP acceptance criteria (current phase)
-
-- user installs app on macOS;
-- creates env through UI;
-- value stays in Keychain;
-- user can reveal value through authentication;
-- user can edit/delete env through UI;
-- no secret appears in config JSON or logs.
-
----
-
-## Out of scope for current phase
-
-- Linux;
-- Windows;
-- shell integration install;
-- CLI export pipeline;
-- bash/fish;
-- cloud sync;
-- teams/collaboration;
-- custom master password;
-- mobile;
-- plugins.
-
----
-
-## Next roadmap step
-
-- CLI (`brover`) with `export/list/get/set/enable/disable/doctor`;
-- zsh loader generation and `.zshrc` block install/uninstall;
-- safe export escaping;
-- shell diagnostics;
-- then bash/fish support.
-
----
-
-## Documentation sync rule
-
-When scope, architecture, or roadmap changes, update both `AGENTS.md` and `README.md` in the same change set.
-
----
-
-## React/TypeScript engineering rules (Electron app)
-
-- Avoid nested `if` blocks; prefer guard clauses and early return.
-- Avoid nested ternary expressions.
-- Avoid ternary expressions inside JSX trees; compute values before `return`.
-- Avoid declaring inline callbacks directly in JSX when possible; prefer stable handlers.
-- Use `useMemo`/`useCallback` where repeated computation or callback identity can trigger avoidable rerenders.
-- Prefer screen split into `*-container.tsx` (state/logic) and `*-view.tsx` (presentational tree + props) for new screens or major refactors.
-- Prefer route params for navigation/state transfer when appropriate.
-- For shared cross-screen state, prefer Zustand; use `immer` and `persist` middlewares when mutation ergonomics/persistence are needed.
-- Verification workflow for each change set:
-  1. run `npm --prefix electron-app run tsc` (`tsc --noEmit`)
-  2. if compile passes, run unit tests
-  3. if tests fail, fix before completion
+When architecture/scope changes, update this file and `README.md` in the same change set.

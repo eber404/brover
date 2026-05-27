@@ -1,151 +1,52 @@
 # brover
 
-Native macOS app to manage local environment variables with secure secret storage in macOS Keychain.
+Desktop app to manage local environment variables and secrets with authentication-gated secret actions.
 
-Current phase: **SwiftUI + AppKit GUI-first MVP**, with active **Electron cross-platform rebuild** in `electron-app/`.
-
----
-
-## Current status
-
-- native project bootstrapped with Swift Package Manager;
-- app target (`BroverApp`) with SwiftUI entrypoint;
-- core target (`BroverCore`) for models, validation, and service contracts;
-- native Keychain service implemented with `Security.framework`;
-- JSON-backed profile/env metadata store implemented;
-- env manager service wired to create/edit/reveal/delete flows;
-- real app uses JSON config at `~/Library/Application Support/brover/config.json`;
-- apps allowlist uses JSON config at `~/Library/Application Support/brover/apps.json`;
-- real auth gate uses macOS local authentication (Touch ID/password);
-- sidebar IA now uses `ENV SPACES` tree with default `Glob` space and nested targets;
-- UI now uses 3-column shell: sidebar, searchable list, detail panel;
-- search bar stays persistent in center column and filters secrets for selected target;
-- each space can host multiple targets (e.g. dev/qa/uat/prod) with unique target names and target color tags;
-- secret name schema is auto-synced across targets in same space; value/enable remain target-scoped;
-- `Glob` space can apply active target to user shells (`~/.zshrc`, `~/.bashrc`) via managed block;
-- directory spaces can apply selected target to `.env.<target>` files;
-- `Secrets` workspace supports auth-gated reveal/copy/edit/delete with auto-hide reveal timeout;
-- bundle ID validation added for app authorization workflow;
-- tests cover validation, stores, auth gate checks, and env manager flows.
+Stack: **Electron + React + TypeScript + TailwindCSS**.
 
 ---
 
-## Why native
+## Features
 
-brover prioritizes macOS visual fidelity and platform integration:
-
-- SwiftUI + AppKit for native look and Liquid Glass style effects;
-- direct Keychain integration through Apple frameworks;
-- lower overhead than web-runtime UI stack.
-
----
-
-## Architecture (current phase)
-
-```txt
-Native macOS App
-  ├── SwiftUI screens
-  ├── AppKit visual effect bridge
-  ├── App service layer
-  ├── Apps authorization service/store
-  ├── Profile/env metadata store
-  └── Validation and auth gates
-
-macOS Keychain
-  └── sensitive values (implemented service layer)
-
-Local config
-  ├── non-sensitive profile/env metadata (implemented JSON store)
-  └── app authorization allowlist metadata (implemented JSON store)
-```
+- spaces + targets workflow (dev/qa/prod/custom);
+- target-scoped secret values in macOS Keychain;
+- auth-gated reveal/copy/update/delete for secrets;
+- local JSON persistence for non-sensitive metadata only;
+- apply active target to shell (`~/.zshrc`, `~/.bashrc`) or directory dotenv (`.env.<target>`).
 
 ---
 
-## Repository structure
+## Spaces and targets
 
-```txt
-brover/
-  Sources/
-    BroverApp/
-    BroverCore/
-  Tests/
-    BroverAppTests/
-    BroverCoreTests/
-  docs/
-    plans/
-  electron-app/
-  AGENTS.md
-  Package.swift
-  README.md
-```
+- A space can contain zero or more targets.
+- Targets are reorderable and deletable.
+- Space deletion deletes all its targets and target-scoped secrets.
 
----
+### Tied targets
 
-## Electron rebuild (new)
+Each space has a `Tied targets` toggle (`tiedSecrets`):
 
-- new app lives in `electron-app/`;
-- stack: Electron + React + TypeScript + TailwindCSS + shadcn/ui;
-- UX shape uses 3-column shell with `ENV SPACES` sidebar, secrets list, and details panel;
-- non-sensitive metadata persists in local JSON under Electron app data;
-- on macOS, secrets use Keychain backend;
-- on Linux/Windows, sensitive secret actions are blocked with explicit unsupported message until secure backend is defined.
+- **ON (default)**
+  - env names are synchronized across targets in that space;
+  - deleting an env name removes it from all targets in the space;
+  - creating a target clones env names with empty values.
+- **OFF**
+  - env names are target-local;
+  - deleting an env name only affects selected target;
+  - new targets start empty.
 
-Run Electron app:
-
-```sh
-npm --prefix electron-app install
-npm --prefix electron-app run dev
-```
-
-Build Electron app:
-
-```sh
-npm --prefix electron-app run build
-```
-
----
-
-## Build and test
-
-```sh
-swift build
-swift test
-```
-
-Run app from package:
-
-```sh
-swift run BroverApp
-```
-
-Makefile shortcuts:
-
-```sh
-make build
-make test
-make run
-make run-release
-make open
-```
-
-Run focused test groups:
-
-```sh
-swift test --filter KeychainServiceTests
-swift test --filter JSONProfileStoreTests
-swift test --filter AuthGateTests
-```
+Values remain target-scoped in both modes.
 
 ---
 
 ## Security model
 
-- use macOS Keychain as primary auth/authz mechanism;
-- never store secret values in local JSON;
-- auth required for reveal/copy/edit/delete secret actions;
-- never log secret values.
+- Secret values are never stored in plaintext JSON.
+- On macOS, secrets use Keychain backend.
+- On unsupported platforms, sensitive secret operations fail explicitly.
+- Auth required for reveal/copy(hidden)/update/delete.
 
-Env name validation rule:
+Env name validation:
 
 ```regex
 ^[A-Za-z_][A-Za-z0-9_]*$
@@ -153,17 +54,71 @@ Env name validation rule:
 
 ---
 
-## Roadmap
+## Project structure
 
-Next step after app MVP:
+```txt
+brover/
+  src/
+    main/        # Electron main process (IPC, auth gate, persistence, writers)
+    preload/     # window.brover typed bridge
+    renderer/    # React UI
+    shared/      # shared models/types/contracts
+  tests/
+    electron/    # Playwright Electron E2E
+  docs/
+    plans/
+  AGENTS.md
+  README.md
+```
 
-- implement CLI `brover` (`export/list/get/set/enable/disable/doctor`);
-- add zsh loader generation and `.zshrc` block management;
-- add safe export escaping and shell diagnostics;
-- then expand shell support (bash/fish).
+---
+
+## Run
+
+Install:
+
+```sh
+npm install
+```
+
+Development:
+
+```sh
+npm run dev
+```
+
+Build:
+
+```sh
+npm run build
+```
+
+---
+
+## Test
+
+Typecheck:
+
+```sh
+npm run tsc
+```
+
+Unit tests:
+
+```sh
+npm run test
+```
+
+E2E tests:
+
+```sh
+npm run test:e2e
+```
+
+E2E uses isolated temp DB paths (`BROVER_DB_PATH`) and cleans artifacts after each test.
 
 ---
 
 ## Maintenance rule
 
-When architecture/scope changes, update both `AGENTS.md` and `README.md` in same change set.
+When architecture/scope changes, update both `AGENTS.md` and `README.md` in the same change set.
