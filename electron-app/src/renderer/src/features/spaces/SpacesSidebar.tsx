@@ -427,17 +427,15 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             >
               Rename
             </button>
-            {spaceContextMenu.spaceId !== 'space-global' && (
-              <button
-                className="rounded px-2 py-1.5 text-left text-xs text-rose-300 hover:bg-slate-900"
-                onClick={() => {
-                  setPendingDeleteSpace(spaceContextMenu.spaceId)
-                  setSpaceContextMenu(null)
-                }}
-              >
-                Delete
-              </button>
-            )}
+            <button
+              className="rounded px-2 py-1.5 text-left text-xs text-rose-300 hover:bg-slate-900"
+              onClick={() => {
+                setPendingDeleteSpace(spaceContextMenu.spaceId)
+                setSpaceContextMenu(null)
+              }}
+            >
+              Delete
+            </button>
           </div>
         </div>
       ) : null}
