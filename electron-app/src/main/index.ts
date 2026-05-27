@@ -88,7 +88,7 @@ async function bootstrap() {
     minHeight: 600,
     resizable: true,
     titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 16, y: 16 },
+    trafficLightPosition: { x: 16, y: 24 },
     backgroundColor: '#070b12',
     webPreferences: {
       preload: join(app.getAppPath(), 'dist-electron', 'preload', 'preload.js'),
