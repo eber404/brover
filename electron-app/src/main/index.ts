@@ -30,7 +30,7 @@ function failure(error: unknown): SecretActionResult {
 }
 
 async function bootstrap() {
-  const dbPath = join(app.getPath('appData'), 'brover', 'config.json')
+  const dbPath = join(app.getPath('appData'), 'brover-electron', 'config.json')
   const store = new BroverStore(dbPath, createSecretStore())
 
   ipcMain.handle('apps:list', () => store.listApps())

@@ -69,11 +69,11 @@ export class BroverStore {
   private async readDB(): Promise<DBShape> {
     try {
       const raw = await readFile(this.dbPath, 'utf8')
-      const parsed = JSON.parse(raw) as DBShape
+      const parsed = JSON.parse(raw) as unknown as DBShape
       return {
-        apps: parsed.apps ?? [],
-        profiles: parsed.profiles ?? [{ id: randomUUID(), name: 'default', isActive: true, updatedAt: new Date().toISOString() }],
-        envs: parsed.envs ?? []
+        apps: Array.isArray(parsed.apps) ? parsed.apps : [],
+        profiles: Array.isArray(parsed.profiles) ? parsed.profiles : [{ id: randomUUID(), name: 'default', isActive: true, updatedAt: new Date().toISOString() }],
+        envs: Array.isArray(parsed.envs) ? parsed.envs : []
       }
     } catch {
       return {
