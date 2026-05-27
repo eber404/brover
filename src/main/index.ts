@@ -11,6 +11,8 @@ import {
   type SecretActionResult,
 } from '../shared/models'
 import { createSecretAuthGate } from './secretAuthGate'
+import { createAuthSessionCache } from './authSessionCache'
+import { createMacSecretAuthPrompt } from './authPrompt'
 
 if (!app.isPackaged) {
   app.commandLine.appendSwitch('disable-http-cache')
@@ -44,6 +46,8 @@ async function bootstrap() {
     process.env.BROVER_DB_PATH ??
     join(app.getPath('appData'), 'brover-electron', 'config.json')
   const store = new BroverStore(dbPath, createSecretStore())
+  const authSessionCache = createAuthSessionCache()
+  const macSecretAuthPrompt = createMacSecretAuthPrompt(systemPreferences)
   const authGate = createSecretAuthGate(async (reason: string) => {
     if (process.env.BROVER_SKIP_AUTH === '1') {
       return
@@ -51,11 +55,8 @@ async function bootstrap() {
     if (process.platform !== 'darwin') {
       throw new Error(UNSUPPORTED_SECRET_BACKEND)
     }
-    if (!systemPreferences.canPromptTouchID()) {
-      throw new Error('Authentication unavailable on this Mac')
-    }
-    await systemPreferences.promptTouchID(reason)
-  })
+    await macSecretAuthPrompt(reason)
+  }, authSessionCache)
 
   ipcMain.handle('apps:list', () => store.listApps())
   ipcMain.handle(
@@ -152,7 +153,7 @@ async function bootstrap() {
     'envs:reveal',
     async (_, payload: { profile: string; name: string }) => {
       try {
-        await authGate.authorize('reveal')
+        await authGate.authorize('reveal', { targetId: payload.profile })
         const value = await store.revealEnv(payload.profile, payload.name)
         return ok(value ?? '')
       } catch (error) {
@@ -168,7 +169,7 @@ async function bootstrap() {
       payload: { profile: string; name: string; isRevealed: boolean }
     ) => {
       try {
-        await authGate.authorize('copy', { isRevealed: payload.isRevealed })
+        await authGate.authorize('copy', { isRevealed: payload.isRevealed, targetId: payload.profile })
         const value = await store.revealEnv(payload.profile, payload.name)
         return ok(value ?? '')
       } catch (error) {
@@ -191,7 +192,7 @@ async function bootstrap() {
       }
     ) => {
       try {
-        await authGate.authorize('update')
+        await authGate.authorize('update', { targetId: payload.profile })
         await store.updateEnv(payload)
         return ok()
       } catch (error) {
@@ -204,7 +205,7 @@ async function bootstrap() {
     'envs:delete',
     async (_, payload: { id: string; profile: string; name: string }) => {
       try {
-        await authGate.authorize('delete')
+        await authGate.authorize('delete', { targetId: payload.profile })
         await store.deleteEnv(payload)
         return ok()
       } catch (error) {
