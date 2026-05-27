@@ -25,13 +25,19 @@ export function SecretsDetail({
   const { t } = useI18n()
   const [editValue, setEditValue] = useState('')
   const [isRevealed, setIsRevealed] = useState(false)
-  const revealValueText = isRevealed ? revealValue : '••••••••'
+  const revealValueText = isRevealed && revealValue ? revealValue : '••••••••'
   const revealAriaLabel = isRevealed ? 'Hide secret' : 'Reveal secret'
   const revealIcon = isRevealed ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />
 
   useEffect(() => {
     setIsRevealed(false)
   }, [env?.id])
+
+  useEffect(() => {
+    if (revealValue && revealValue.length > 0) {
+      setIsRevealed(true)
+    }
+  }, [revealValue])
 
   if (!env) {
     return <p className="text-slate-400">{t('secrets.selectSecret')}</p>

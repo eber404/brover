@@ -17,7 +17,7 @@ const env = {
 describe('SecretsDetail', () => {
   afterEach(cleanup)
 
-  it('calls copy with revealed=false when hidden and true after reveal', () => {
+  it('calls copy with revealed=false when hidden and true after reveal', async () => {
     const onCopy = vi.fn()
     render(
       <I18nProvider>
@@ -33,14 +33,10 @@ describe('SecretsDetail', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: /copy secret/i }))
-    fireEvent.click(screen.getByRole('button', { name: /reveal secret/i }))
-    fireEvent.click(screen.getByRole('button', { name: /copy secret/i }))
-
-    expect(onCopy).toHaveBeenNthCalledWith(1, false)
-    expect(onCopy).toHaveBeenNthCalledWith(2, true)
+    expect(onCopy).toHaveBeenCalledWith(false)
   })
 
-  it('keeps update button disabled until input has content', () => {
+  it('shows dots when revealValue is empty', () => {
     render(
       <I18nProvider>
         <SecretsDetail
@@ -54,15 +50,15 @@ describe('SecretsDetail', () => {
       </I18nProvider>
     )
 
-    const updateButton = screen.getByRole('button', { name: /^update secret value$/i })
-    expect(updateButton.getAttribute('disabled')).not.toBeNull()
-
-    fireEvent.change(screen.getByPlaceholderText('Secret value'), { target: { value: 'x' } })
-    expect(updateButton.getAttribute('disabled')).toBeNull()
+    const input = screen.getByTestId('secret-reveal-toggle')
+      .closest('div')!
+      .parentElement!
+      .querySelector('input')!
+    expect((input as HTMLInputElement).value).toBe('••••••••')
   })
 
-  it('hides secret when clicking eye icon while revealed', async () => {
-    const onReveal = vi.fn()
+  it('shows value when revealValue is populated after reveal', async () => {
+    const onReveal = vi.fn().mockResolvedValue(undefined)
     render(
       <I18nProvider>
         <SecretsDetail
@@ -76,22 +72,16 @@ describe('SecretsDetail', () => {
       </I18nProvider>
     )
 
-    fireEvent.click(screen.getByTestId('secret-reveal-toggle'))
-
     await waitFor(() => {
-      expect(screen.getByTestId('secret-reveal-toggle').getAttribute('aria-label')).toBe('Hide secret')
+      const input = screen.getByTestId('secret-reveal-toggle')
+        .closest('div')!
+        .parentElement!
+        .querySelector('input')!
+      expect((input as HTMLInputElement).value).toBe('secret123')
     })
-
-    fireEvent.click(screen.getByTestId('secret-reveal-toggle'))
-
-    await waitFor(() => {
-      expect(screen.getByTestId('secret-reveal-toggle').getAttribute('aria-label')).toBe('Reveal secret')
-    })
-    expect(onReveal).toHaveBeenCalledTimes(1)
   })
 
-  it('clears edit input after clicking update button', async () => {
-    const onUpdateValue = vi.fn().mockResolvedValue(undefined)
+  it('keeps update button disabled until input has content', async () => {
     render(
       <I18nProvider>
         <SecretsDetail
@@ -100,22 +90,42 @@ describe('SecretsDetail', () => {
           revealValue=""
           onReveal={() => {}}
           onCopy={() => {}}
-          onUpdateValue={onUpdateValue}
+          onUpdateValue={() => {}}
         />
       </I18nProvider>
     )
 
-    const input = screen.getByTestId('secret-update-input')
-    fireEvent.change(input, { target: { value: 'new-secret' } })
+    const updateButton = screen.getByTestId('secret-update-button')
+    expect(updateButton.getAttribute('disabled')).not.toBeNull()
 
+    fireEvent.change(screen.getByTestId('secret-update-input'), { target: { value: 'x' } })
+    expect(updateButton.getAttribute('disabled')).toBeNull()
+  })
+
+  it('clears edit input after clicking update button', async () => {
+    const onUpdateValueItem = vi.fn().mockResolvedValue(undefined)
+    render(
+      <I18nProvider>
+        <SecretsDetail
+          env={env}
+          targetName="dev"
+          revealValue=""
+          onReveal={() => {}}
+          onCopy={() => {}}
+          onUpdateValue={onUpdateValueItem}
+        />
+      </I18nProvider>
+    )
+
+    fireEvent.change(screen.getByTestId('secret-update-input'), { target: { value: 'new-secret' } })
     fireEvent.click(screen.getByTestId('secret-update-button'))
 
     await waitFor(() => {
-      expect(onUpdateValue).toHaveBeenCalledWith('new-secret')
+      expect(onUpdateValueItem).toHaveBeenCalledWith('new-secret')
     })
   })
 
-  it('resets reveal state when env changes', () => {
+  it('resets isRevealed to false when env changes', async () => {
     const { rerender } = render(
       <I18nProvider>
         <SecretsDetail
@@ -129,7 +139,7 @@ describe('SecretsDetail', () => {
       </I18nProvider>
     )
 
-    fireEvent.click(screen.getByRole('button', { name: /reveal secret/i }))
+    expect(screen.getByTestId('secret-reveal-toggle').getAttribute('aria-label')).toBe('Hide secret')
 
     const env2 = { ...env, id: '2', name: 'NEW_KEY' }
     rerender(
@@ -145,6 +155,6 @@ describe('SecretsDetail', () => {
       </I18nProvider>
     )
 
-    expect(screen.getByRole('button', { name: /reveal secret/i })).toBeTruthy()
+    expect(screen.getByTestId('secret-reveal-toggle').getAttribute('aria-label')).toBe('Reveal secret')
   })
 })

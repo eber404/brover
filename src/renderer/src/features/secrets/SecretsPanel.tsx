@@ -118,6 +118,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
 
   async function revealEnv() {
     if (!selectedEnv) return
+    setRevealValue('')
     const result = await window.brover.revealEnv({
       profile: selectedEnv.profile,
       name: selectedEnv.name,
@@ -174,6 +175,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       )
       return
     }
+    setRevealValue('')
     toast(t('common.secretUpdated'))
   }
 
@@ -204,6 +206,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     }
     setEnvs(await window.brover.listEnvs())
     setSelectedEnvId('')
+    setRevealValue('')
     toast(t('common.secretDeleted'))
   }
 
