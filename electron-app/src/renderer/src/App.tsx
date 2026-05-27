@@ -68,10 +68,6 @@ function AppShell() {
     () => targets.find((target) => target.id === selectedTargetId) ?? null,
     [targets, selectedTargetId]
   )
-  const selectedSpace = useMemo(
-    () => spaces.find((space) => space.id === selectedSpaceId) ?? null,
-    [spaces, selectedSpaceId]
-  )
 
   const targetEnvs = useMemo(
     () => envs.filter((env) => env.profile === selectedTargetId),
@@ -244,6 +240,17 @@ function AppShell() {
     [targets]
   )
 
+  const reorderTargets = useCallback(
+    async (spaceId: string, orderedTargetIds: string[]) => {
+      const updated = await window.brover.reorderTargets({ spaceId, orderedTargetIds })
+      setTargets((prev) => [
+        ...prev.filter((item) => item.spaceId !== spaceId),
+        ...updated,
+      ])
+    },
+    []
+  )
+
   const setActiveTarget = useCallback(
     async (spaceId: string, targetId: string) => {
       const updated = await window.brover.setActiveTarget({ spaceId, targetId })
@@ -257,15 +264,6 @@ function AppShell() {
     []
   )
 
-  const applyCurrentSelection = useCallback(async () => {
-    if (!selectedTarget || !selectedSpace) return
-    if (selectedSpace.kind === 'global') {
-      await window.brover.applyGlobalShell()
-      return
-    }
-    await window.brover.applyDirectoryTarget({ targetId: selectedTarget.id })
-  }, [selectedSpace, selectedTarget])
-
   const onSearchChange = useCallback((value: string) => {
     setSearchText(value)
   }, [])
@@ -276,11 +274,6 @@ function AppShell() {
       .toggleEnvEnabled(secretsPanel.selectedEnv.id)
       .then(setEnvs)
   }, [secretsPanel.selectedEnv])
-
-  const applyLabel = useMemo(() => {
-    if (selectedSpace?.kind === 'global') return 'Apply to zsh/bash'
-    return 'Apply to .env target'
-  }, [selectedSpace?.kind])
 
   return (
     <div className="relative grid h-screen grid-cols-[320px_1fr_1fr] grid-rows-[52px_1fr] gap-0 text-sm">
@@ -338,6 +331,9 @@ function AppShell() {
           onUpdateTargetColor={(targetId, color) =>
             void updateTargetColor(targetId, color)
           }
+          onReorderTargets={(spaceId, orderedTargetIds) =>
+            void reorderTargets(spaceId, orderedTargetIds)
+          }
           onDeleteTarget={(targetId) => void deleteTarget(targetId)}
         />
       </div>
@@ -369,16 +365,13 @@ function AppShell() {
           enabled={secretsPanel.selectedEnv?.enabled ?? false}
           revealValue={revealValue}
           onReveal={() => void secretsPanel.revealEnv()}
-          onCopy={(isRevealed) => void secretsPanel.copyEnv(isRevealed)}
-          onToggleEnabled={onToggleSelectedEnvEnabled}
-          onUpdateValue={(value) => void secretsPanel.updateEnvValue(value)}
-          onApply={() => void applyCurrentSelection()}
-          applyLabel={applyLabel}
-          canApply={Boolean(selectedTarget)}
-          onDelete={() => void secretsPanel.deleteEnv()}
-          canDelete={Boolean(secretsPanel.selectedEnv)}
-          deleteLabel={t('secrets.deleteSecret')}
-        />
+        onCopy={(isRevealed) => void secretsPanel.copyEnv(isRevealed)}
+        onToggleEnabled={onToggleSelectedEnvEnabled}
+        onUpdateValue={(value) => void secretsPanel.updateEnvValue(value)}
+        onDelete={() => void secretsPanel.deleteEnv()}
+        canDelete={Boolean(secretsPanel.selectedEnv)}
+        deleteLabel={t('secrets.deleteSecret')}
+      />
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Brover",
-    "subtitle": "Panel de control de secretos de escritorio"
+    "subtitle": "Administrador local de secretos"
   },
   "workspaces": {
     "apps": "Aplicaciones",

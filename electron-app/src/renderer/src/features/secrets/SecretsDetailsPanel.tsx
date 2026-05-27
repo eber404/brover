@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { Trash2 } from 'lucide-react'
 import type { EnvMetadata } from '../../../../shared/models'
 import { Button } from '../../components/ui/button'
 import { SecretsDetail } from './SecretsDetail'
@@ -13,9 +14,6 @@ interface SecretsDetailsPanelProps {
   onCopy: (isRevealed: boolean) => void
   onToggleEnabled: () => void
   onUpdateValue: (value: string) => void
-  onApply: () => void
-  applyLabel: string
-  canApply: boolean
   onDelete: () => void
   canDelete: boolean
   deleteLabel: string
@@ -34,9 +32,6 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
     onCopy,
     onToggleEnabled,
     onUpdateValue,
-    onApply,
-    applyLabel,
-    canApply,
     onDelete,
     canDelete,
     deleteLabel,
@@ -59,26 +54,19 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
         </div>
       </div>
 
-      <div className="px-4 pb-4">
-        <Button
-          className="mb-2 shrink-0"
-          variant="outline"
-          onClick={onApply}
-          disabled={!canApply}
-        >
-          {applyLabel}
-        </Button>
-
-        <Button
-          data-testid="secret-delete-bottom"
-          className="mt-4 shrink-0"
-          variant="destructive"
-          onClick={onDelete}
-          disabled={!canDelete}
-        >
-          {deleteLabel}
-        </Button>
-      </div>
+      {canDelete ? (
+        <div className="px-4 pb-4">
+          <Button
+            data-testid="secret-delete-bottom"
+            className="mt-4 w-full shrink-0"
+            variant="destructive"
+            onClick={onDelete}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            {deleteLabel}
+          </Button>
+        </div>
+      ) : null}
     </section>
   )
 })

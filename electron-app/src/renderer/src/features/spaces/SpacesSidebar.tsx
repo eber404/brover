@@ -27,6 +27,7 @@ interface SpacesSidebarProps {
   onSaveRenameTarget: (targetId: string) => void
   onSelectTarget: (spaceId: string, targetId: string) => void
   onUpdateTargetColor: (targetId: string, color: string) => void
+  onReorderTargets: (spaceId: string, orderedTargetIds: string[]) => void
   onDeleteTarget: (targetId: string) => void
 }
 
@@ -58,6 +59,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     onSaveRenameTarget,
     onSelectTarget,
     onUpdateTargetColor,
+    onReorderTargets,
     onDeleteTarget,
   } = props
 
@@ -92,6 +94,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     x: number
     y: number
   } | null>(null)
+  const [draggingTargetId, setDraggingTargetId] = useState<string | null>(null)
   const asideRef = useRef<HTMLElement | null>(null)
 
   function applyTargetColor(targetId: string, color: string) {
@@ -132,7 +135,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     return space.name.slice(0, 2).toUpperCase()
   }
 
-  function renderTargetNameCell(spaceId: string, target: EnvTarget) {
+  function renderTargetNameCell(target: EnvTarget) {
     if (editingTargetId === target.id) {
       return (
         <input
@@ -154,16 +157,19 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     const selectedClass =
       selectedTargetId === target.id ? 'text-accent' : 'text-slate-300'
     return (
-      <button
-        className={`min-w-0 flex-1 rounded px-2 py-1 text-left text-sm ${selectedClass}`}
-        onClick={() => onSelectTarget(spaceId, target.id)}
-        onDoubleClick={() => onStartRenameTarget(target.id, target.name)}
-        onMouseEnter={(event) => showNameTooltip(target.name, event.currentTarget)}
-        onMouseLeave={() => setNameTooltip(null)}
-        title={target.name}
+      <div
+        className={`min-w-0 flex-1 overflow-hidden rounded px-2 py-1 text-left text-sm ${selectedClass}`}
       >
-        <span className="block truncate">{target.name}</span>
-      </button>
+        <span
+          className="inline-block max-w-full overflow-hidden text-ellipsis whitespace-nowrap align-top"
+          onMouseEnter={(event) =>
+            showNameTooltip(target.name, event.currentTarget)
+          }
+          onMouseLeave={() => setNameTooltip(null)}
+        >
+          {target.name}
+        </span>
+      </div>
     )
   }
 
@@ -236,7 +242,38 @@ export const SpacesSidebar = memo(function SpacesSidebar(
           {selectedTargets.map((target) => (
             <div
               key={target.id}
-              className={`group relative flex items-center gap-2 rounded-md px-1 py-1 ${selectedTargetId === target.id ? 'bg-accent/15' : 'hover:bg-slate-900/60'}`}
+              className={`group relative flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded-md border px-1 py-1 ${selectedTargetId === target.id ? 'border-edge/70 bg-accent/15' : 'border-transparent hover:bg-slate-900/60'} ${draggingTargetId === target.id ? 'opacity-50' : ''}`}
+              draggable={editingTargetId !== target.id}
+              onClick={() =>
+                selectedSpace && onSelectTarget(selectedSpace.id, target.id)
+              }
+              onDoubleClick={() => onStartRenameTarget(target.id, target.name)}
+              onDragStart={(event) => {
+                setDraggingTargetId(target.id)
+                event.dataTransfer.effectAllowed = 'move'
+                event.dataTransfer.setData('text/plain', target.id)
+              }}
+              onDragEnd={() => setDraggingTargetId(null)}
+              onDragOver={(event) => {
+                event.preventDefault()
+                event.dataTransfer.dropEffect = 'move'
+              }}
+              onDrop={(event) => {
+                event.preventDefault()
+                const droppedId =
+                  event.dataTransfer.getData('text/plain') || draggingTargetId
+                if (!selectedSpace || !droppedId || droppedId === target.id)
+                  return
+                const ids = selectedTargets.map((item) => item.id)
+                const fromIndex = ids.indexOf(droppedId)
+                const toIndex = ids.indexOf(target.id)
+                if (fromIndex < 0 || toIndex < 0) return
+                const next = [...ids]
+                const [moved] = next.splice(fromIndex, 1)
+                if (!moved) return
+                next.splice(toIndex, 0, moved)
+                onReorderTargets(selectedSpace.id, next)
+              }}
             >
               <button
                 type="button"
@@ -250,12 +287,15 @@ export const SpacesSidebar = memo(function SpacesSidebar(
                   style={{ backgroundColor: target.color }}
                 />
               </button>
-              <div className="min-w-0 flex-1">
-                {renderTargetNameCell(selectedSpace?.id ?? '', target)}
+              <div className="min-w-0 flex-1 pr-2">
+                {renderTargetNameCell(target)}
               </div>
               <button
-                className={`rounded p-1 transition ${selectedTargetId === target.id ? 'text-slate-400 hover:bg-slate-900 hover:text-rose-300' : 'pointer-events-none opacity-0 text-slate-500 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:hover:bg-slate-900 group-hover:hover:text-rose-300'}`}
-                onClick={() => setPendingDeleteTarget(target)}
+                className={`shrink-0 rounded p-1 transition ${selectedTargetId === target.id ? 'text-slate-400 hover:bg-slate-900 hover:text-rose-300' : 'pointer-events-none opacity-0 text-slate-500 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:hover:bg-slate-900 group-hover:hover:text-rose-300'}`}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setPendingDeleteTarget(target)
+                }}
                 title="Delete target"
               >
                 <Trash2 className="h-3.5 w-3.5" />

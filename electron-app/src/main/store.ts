@@ -367,6 +367,24 @@ export class BroverStore {
     return db.targets.filter((item) => item.spaceId === target.spaceId)
   }
 
+  async reorderTargets(payload: { spaceId: string; orderedTargetIds: string[] }): Promise<EnvTarget[]> {
+    const db = await this.readDB()
+    const spaceTargets = db.targets.filter((item) => item.spaceId === payload.spaceId)
+    const idSet = new Set(spaceTargets.map((item) => item.id))
+    const nextOrder = payload.orderedTargetIds.filter((id) => idSet.has(id))
+    const missing = spaceTargets.map((item) => item.id).filter((id) => !nextOrder.includes(id))
+    const finalOrder = [...nextOrder, ...missing]
+    const rank = new Map(finalOrder.map((id, index) => [id, index]))
+
+    db.targets = [
+      ...db.targets.filter((item) => item.spaceId !== payload.spaceId),
+      ...spaceTargets.sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0)),
+    ]
+
+    await this.writeDB(db)
+    return db.targets.filter((item) => item.spaceId === payload.spaceId)
+  }
+
   async renameTarget(payload: { targetId: string; name: string }): Promise<EnvTarget[]> {
     const db = await this.readDB()
     const target = db.targets.find((item) => item.id === payload.targetId)

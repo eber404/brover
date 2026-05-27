@@ -97,6 +97,9 @@ async function bootstrap() {
   ipcMain.handle('targets:delete', (_, payload: { targetId: string }) =>
     store.deleteTarget(payload)
   )
+  ipcMain.handle('targets:reorder', (_, payload: { spaceId: string; orderedTargetIds: string[] }) =>
+    store.reorderTargets(payload)
+  )
   ipcMain.handle('targets:rename', (_, payload: { targetId: string; name: string }) =>
     store.renameTarget(payload)
   )

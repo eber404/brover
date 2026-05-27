@@ -29,6 +29,7 @@ const api: BroverAPI = {
   listTargets: (spaceId) => ipcRenderer.invoke('targets:list', spaceId),
   createTarget: (payload) => ipcRenderer.invoke('targets:create', payload),
   deleteTarget: (payload) => ipcRenderer.invoke('targets:delete', payload),
+  reorderTargets: (payload) => ipcRenderer.invoke('targets:reorder', payload),
   renameTarget: (payload) => ipcRenderer.invoke('targets:rename', payload),
   setTargetColor: (payload) => ipcRenderer.invoke('targets:set-color', payload),
   setActiveTarget: (payload) => ipcRenderer.invoke('targets:set-active', payload),
