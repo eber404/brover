@@ -21,7 +21,9 @@ interface SecretsDetailsPanelProps {
   deleteLabel: string
 }
 
-export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(props: SecretsDetailsPanelProps) {
+export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
+  props: SecretsDetailsPanelProps
+) {
   const {
     title,
     env,
@@ -41,34 +43,42 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(props: Secr
   } = props
 
   return (
-    <section className="flex flex-col rounded-2xl border border-edge bg-panel/80 p-4 pt-6">
-      <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">{title}</div>
+    <section className="flex h-full flex-col bg-panel/80 pt-4">
       <div className="flex-1 overflow-y-auto">
-        <SecretsDetail
-          env={env}
-          targetName={targetName}
-          enabled={enabled}
-          revealValue={revealValue}
-          onReveal={onReveal}
-          onCopy={onCopy}
-          onToggleEnabled={onToggleEnabled}
-          onUpdateValue={onUpdateValue}
-        />
+        <div className="px-4">
+          <SecretsDetail
+            env={env}
+            targetName={targetName}
+            enabled={enabled}
+            revealValue={revealValue}
+            onReveal={onReveal}
+            onCopy={onCopy}
+            onToggleEnabled={onToggleEnabled}
+            onUpdateValue={onUpdateValue}
+          />
+        </div>
       </div>
 
-      <Button className="mb-2 shrink-0" variant="outline" onClick={onApply} disabled={!canApply}>
-        {applyLabel}
-      </Button>
+      <div className="px-4 pb-4">
+        <Button
+          className="mb-2 shrink-0"
+          variant="outline"
+          onClick={onApply}
+          disabled={!canApply}
+        >
+          {applyLabel}
+        </Button>
 
-      <Button
-        data-testid="secret-delete-bottom"
-        className="mt-4 shrink-0"
-        variant="destructive"
-        onClick={onDelete}
-        disabled={!canDelete}
-      >
-        {deleteLabel}
-      </Button>
+        <Button
+          data-testid="secret-delete-bottom"
+          className="mt-4 shrink-0"
+          variant="destructive"
+          onClick={onDelete}
+          disabled={!canDelete}
+        >
+          {deleteLabel}
+        </Button>
+      </div>
     </section>
   )
 })
