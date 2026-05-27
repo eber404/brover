@@ -1,12 +1,25 @@
 # AGENTS.md
 
-## Project
+## Project Overview
 
-**brover**
+Brover is an Electron desktop app for local environment secret management.
 
-Desktop app to manage local environment secrets with secure storage and auth-gated secret actions.
+- Stack: Electron + React + TypeScript + TailwindCSS
+- Sensitive values: macOS Keychain via Electron main process adapters
+- Metadata: local JSON config under app data
 
-Current implementation uses **Electron + React + TypeScript**.
+## Critical Principles
+
+1. Never persist secret values in JSON or logs.
+2. Keep auth gates for reveal/copy(hidden)/update/delete.
+3. Use target-scoped value and enabled state.
+4. Respect per-space `tiedSecrets` toggle (`Tied targets`) behavior.
+5. Global space applies active target to shell files (`.zshrc`, `.bashrc`).
+6. Directory spaces apply selected target to `.env.<target>`.
+7. Prefer early return and avoid nested conditionals/ternaries.
+8. Avoid ternary inside JSX trees.
+9. Use stable handlers and `useMemo`/`useCallback` where useful.
+10. Run `tsc --noEmit` before tests for every change set.
 
 ---
 
@@ -63,6 +76,18 @@ Local config
 
 ---
 
+## Quick Commands
+
+```bash
+npm run lint
+npm run tsc
+npm run test
+npm run test:coverage
+npm run test:e2e
+```
+
+---
+
 ## Domain rules
 
 ### Spaces and targets
@@ -115,6 +140,17 @@ Reject spaces, shell metacharacters, empty names, and numeric-leading names.
 - Left rail manages spaces; targets panel manages target operations.
 - Prevent text selection for static UI labels.
 - Show destructive actions with confirmation.
+
+---
+
+## Code Standards
+
+- Global space applies active target to shell files (`.zshrc`, `.bashrc`).
+- Directory spaces apply selected target to `.env.<target>`.
+- Prefer early return and avoid nested conditionals/ternaries.
+- Avoid ternary inside JSX trees.
+- Use stable handlers and `useMemo`/`useCallback` where useful.
+- Run `tsc --noEmit` before tests for every change set.
 
 ---
 
