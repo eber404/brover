@@ -59,9 +59,9 @@
         "action": "Iniciar importacao"
       },
       "freshStart": {
-        "title": "Fresh start",
+        "title": "Começar do zero",
         "desc": "Configure novos segredos do zero com uma configuracao limpa. Segredos atuais do sistema permanecem intocados.",
-        "action": "Comecar do zero"
+        "action": "Começar do zero"
       }
     },
     "confirmation": {

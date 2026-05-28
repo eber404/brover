@@ -59,8 +59,8 @@
         "action": "Start import"
       },
       "freshStart": {
-        "title": "Fresh start",
-        "desc": "Set up new secrets from scratch with a clean configuration. Current system secrets reamain untouched.",
+        "title": "Start fresh",
+        "desc": "Set up everything from scratch with a clean configuration",
         "action": "Start fresh"
       }
     },
