@@ -13,8 +13,8 @@ function makeSpace(overrides: Partial<EnvSpace> = {}): EnvSpace {
   return {
     id: 's1',
     name: 'my-project',
-    kind: 'directory',
-    path: '/Users/test/dev/my-project',
+    kind: 'dotfile',
+    dotfilePath: '~/.zshrc',
     expanded: true,
     tiedSecrets: true,
     updatedAt: '2024-01-01',
@@ -25,8 +25,7 @@ function makeSpace(overrides: Partial<EnvSpace> = {}): EnvSpace {
 const defaultProps = {
   title: 'Brover',
   subtitle: 'test',
-  shellSpaces: [] as EnvSpace[],
-  dirSpaces: [makeSpace()],
+  spaces: [makeSpace()],
   targetsBySpace: new Map<string, EnvTarget[]>(),
   selectedSpaceId: 's1',
   selectedTargetId: null,
@@ -38,7 +37,6 @@ const defaultProps = {
   onLocaleChange: vi.fn(),
   onEditNameChange: vi.fn(),
   onAddSpace: vi.fn(),
-  onAddDotfileSpace: vi.fn(),
   onStartRenameSpace: vi.fn(),
   onSaveRenameSpace: vi.fn(),
   onEditSpaceNameChange: vi.fn(),
@@ -66,8 +64,8 @@ describe('SpacesSidebar', () => {
   })
 
   it('shows dotfile name for dotfile-imported space', () => {
-    const dotfileSpace = makeSpace({ name: '.zshrc', path: '/Users/test' })
-    render(<SpacesSidebar {...defaultProps} dirSpaces={[dotfileSpace]} selectedSpaceId="s1" />)
+    const dotfileSpace = makeSpace({ name: '.zshrc', dotfilePath: '~/.zshrc' })
+    render(<SpacesSidebar {...defaultProps} spaces={[dotfileSpace]} selectedSpaceId="s1" />)
     expect(screen.getByText('.zshrc')).toBeTruthy()
   })
 })

@@ -24,7 +24,7 @@ describe('BroverStore global space', () => {
     await store.ensureGlobalSpace()
     const spaces = await store.listSpaces()
     expect(spaces).toHaveLength(1)
-    expect(spaces[0].kind).toBe('global')
+    expect(spaces[0].kind).toBe('dotfile')
     const targets = await store.listTargets('space-global')
     expect(targets).toHaveLength(1)
   })
@@ -37,7 +37,7 @@ describe('BroverStore global space', () => {
   })
 
   it('default target name is default not dev', async () => {
-    const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
+    const spaces = await store.createSpace({ name: 'Repo', dotfilePath: '/tmp/repo/.zshrc' })
     const space = spaces.find(s => s.name === 'Repo')!
     const targets = await store.listTargets(space.id)
     expect(targets[0].name).toBe('default')

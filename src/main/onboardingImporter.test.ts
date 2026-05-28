@@ -34,7 +34,7 @@ describe('runRetroactiveImport', () => {
     const spaces = await store.listSpaces()
     const space = spaces.find(s => s.name === '.env')
     expect(space).toBeDefined()
-    expect(space!.path).toBe(root)
+    expect(space!.dotfilePath).toBe(join(root, '.env'))
 
     const targets = await store.listTargets(space!.id)
     expect(targets).toHaveLength(1)
@@ -168,11 +168,11 @@ describe('runRetroactiveImport', () => {
     expect(summary.importedSensitive).toBe(2)
 
     const spaces = await store.listSpaces()
-    const directorySpaces = spaces.filter(s => s.kind === 'directory')
-    expect(directorySpaces).toHaveLength(2)
+    const dotfileSpaces = spaces.filter(s => s.kind === 'dotfile')
+    expect(dotfileSpaces).toHaveLength(2)
 
-    const zshrcSpace = directorySpaces.find(s => s.name === '.zshrc')!
-    const bashrcSpace = directorySpaces.find(s => s.name === '.bashrc')!
+    const zshrcSpace = dotfileSpaces.find(s => s.name === '.zshrc')!
+    const bashrcSpace = dotfileSpaces.find(s => s.name === '.bashrc')!
 
     const zshrcTargets = await store.listTargets(zshrcSpace.id)
     const bashrcTargets = await store.listTargets(bashrcSpace.id)
@@ -271,7 +271,7 @@ describe('runFreshStartImport', () => {
     const spaces = await store.listSpaces()
     const space = spaces.find(s => s.name === '.env')
     expect(space).toBeDefined()
-    expect(space!.path).toBe(root)
+    expect(space!.dotfilePath).toBe(join(root, '.env'))
 
     const targets = await store.listTargets(space!.id)
     expect(targets).toHaveLength(1)
@@ -368,8 +368,8 @@ describe('runFreshStartImport', () => {
     await runFreshStartImport(store, scanResult)
 
     const spaces = await store.listSpaces()
-    const directorySpaces = spaces.filter(s => s.kind === 'directory')
-    expect(directorySpaces).toHaveLength(2)
+    const dotfileSpaces = spaces.filter(s => s.kind === 'dotfile')
+    expect(dotfileSpaces).toHaveLength(2)
   })
 
   it('does not create spaces for files without parseable env entries', async () => {
@@ -391,8 +391,8 @@ describe('runFreshStartImport', () => {
     await runFreshStartImport(store, scanResult)
 
     const spaces = await store.listSpaces()
-    const directorySpaces = spaces.filter(s => s.kind === 'directory')
-    expect(directorySpaces).toHaveLength(0)
+    const dotfileSpaces = spaces.filter(s => s.kind === 'dotfile')
+    expect(dotfileSpaces).toHaveLength(0)
   })
 
   it('throws if onboarding already completed', async () => {

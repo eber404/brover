@@ -9,6 +9,7 @@ import type {
   ScanResult,
   SecretActionResult,
   OnboardingSummary,
+  TerminalApp,
 } from './models'
 
 export interface RetroactivePayload {
@@ -36,12 +37,11 @@ export interface BroverAPI {
   toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>
 
   listSpaces: () => Promise<EnvSpace[]>
-  createSpace: (payload: { name: string; path: string }) => Promise<EnvSpace[]>
+  createSpace: (payload: { name: string; dotfilePath: string }) => Promise<EnvSpace[]>
   renameSpace: (payload: { spaceId: string; name: string }) => Promise<EnvSpace[]>
   deleteSpace: (spaceId: string) => Promise<EnvSpace[]>
   toggleSpaceTiedSecrets: (spaceId: string) => Promise<EnvSpace[]>
-  pickDirectory: () => Promise<{ canceled: boolean; path: string | null }>
-  pickDotfile: () => Promise<{ canceled: boolean; path: string | null }>
+  pickDotfile: () => Promise<{ canceled: boolean; filePath: string | null }>
   toggleSpaceExpanded: (spaceId: string) => Promise<EnvSpace[]>
   listTargets: (spaceId: string) => Promise<EnvTarget[]>
   createTarget: (payload: { spaceId: string; name: string }) => Promise<EnvTarget[]>
@@ -51,8 +51,18 @@ export interface BroverAPI {
   secretExists: (profile: string, name: string) => Promise<boolean>
   setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>
   setActiveTarget: (payload: { spaceId: string; targetId: string }) => Promise<EnvTarget[]>
-  applyGlobalShell: () => Promise<{ applied: number }>
-  applyDirectoryTarget: (payload: { targetId: string }) => Promise<{ applied: number; path: string }>
+  applySpace: (spaceId: string) => Promise<{ applied: number }>
+
+  inject: {
+    activate: (targetId: string, dotfilePath: string) => Promise<{ success: boolean }>
+    deactivate: (targetId: string, dotfilePath: string) => Promise<{ success: boolean }>
+    status: (targetId: string) => Promise<{ active: boolean }>
+    listActive: () => Promise<{ activeTargetIds: string[] }>
+  }
+  launch: {
+    terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }>
+    listTerminals: () => Promise<{ terminals: TerminalApp[] }>
+  }
 
   onboarding: {
     getStatus: () => Promise<OnboardingStatus>

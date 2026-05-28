@@ -31,8 +31,8 @@ describe('onboardingImporter skip space', () => {
     expect(summary.ignoredNonSensitive).toBe(1)
 
     const spaces = await store.listSpaces()
-    const dirSpaces = spaces.filter(s => s.kind === 'directory')
-    expect(dirSpaces).toHaveLength(0)
+    const dotfileSpaces = spaces.filter(s => s.kind === 'dotfile')
+    expect(dotfileSpaces).toHaveLength(0)
   })
 
   it('creates space only for files with selected secrets', async () => {
@@ -69,8 +69,8 @@ describe('onboardingImporter skip space', () => {
     expect(summary.ignoredNonSensitive).toBe(1)
 
     const spaces = await store.listSpaces()
-    const dirSpaces = spaces.filter(s => s.kind === 'directory')
-    expect(dirSpaces).toHaveLength(1)
-    expect(dirSpaces[0].name).toBe('.env')
+    const dotfileSpaces = spaces.filter(s => s.kind === 'dotfile')
+    expect(dotfileSpaces).toHaveLength(1)
+    expect(dotfileSpaces[0].name).toBe('.env')
   })
 })

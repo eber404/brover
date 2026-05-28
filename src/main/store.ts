@@ -1,9 +1,10 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { basename, dirname } from 'node:path'
+import { homedir } from 'node:os'
 import { randomUUID } from 'node:crypto'
 import type { AppAuthorization, EnvMetadata, EnvSpace, EnvTarget, OnboardingStatus, Profile } from '../shared/models'
 import { isValidBundleID, isValidEnvName } from '../shared/validators'
-import { buildDotenvContent, buildManagedShellBlock, upsertManagedShellBlock } from './envWriters'
+import { buildManagedShellBlock, upsertManagedShellBlock } from './envWriters'
 
 export interface SecretStore {
   save(account: string, value: string): Promise<void>
@@ -85,7 +86,8 @@ function createDefaultGlobalSpace(now: string): EnvSpace {
   return {
     id: GLOBAL_SPACE_ID,
     name: 'Glob',
-    kind: 'global',
+    kind: 'dotfile',
+    dotfilePath: '~/.zshrc',
     expanded: true,
     tiedSecrets: true,
     updatedAt: now,
@@ -318,14 +320,14 @@ export class BroverStore {
     return (await this.readDB()).spaces
   }
 
-  async createSpace(payload: { name: string; path: string }): Promise<EnvSpace[]> {
+  async createSpace(payload: { name: string; dotfilePath: string }): Promise<EnvSpace[]> {
     const db = await this.readDB()
     const now = new Date().toISOString()
     const created: EnvSpace = {
       id: randomUUID(),
-      name: payload.name.trim() || basename(payload.path.trim()),
-      kind: 'directory',
-      path: payload.path.trim(),
+      name: payload.name.trim() || basename(payload.dotfilePath.trim()),
+      kind: 'dotfile',
+      dotfilePath: payload.dotfilePath.trim(),
       expanded: true,
       tiedSecrets: true,
       updatedAt: now,
@@ -572,27 +574,28 @@ export class BroverStore {
     return { applied: entries.length }
   }
 
-  async applyDirectoryTarget(payload: { targetId: string }): Promise<{ applied: number; path: string }> {
+  async applySpace(spaceId: string): Promise<{ applied: number }> {
     const db = await this.readDB()
-    const target = db.targets.find((item) => item.id === payload.targetId)
-    if (!target) throw new Error('Target not found')
-    const space = db.spaces.find((item) => item.id === target.spaceId)
-    if (!space || space.kind !== 'directory' || !space.path) {
-      throw new Error('Directory space not found')
-    }
+    const space = db.spaces.find((s) => s.id === spaceId)
+    if (!space) throw new Error(`Space not found: ${spaceId}`)
 
-    const envs = db.envs.filter((env) => env.profile === target.id && env.enabled)
+    const targets = db.targets.filter((t) => t.spaceId === spaceId)
+    const activeTarget = targets.find((t) => t.isActive) ?? targets[0]
+    if (!activeTarget) return { applied: 0 }
+
+    const envs = db.envs.filter((e) => e.profile === activeTarget.id && e.enabled)
     const entries: { name: string; value: string }[] = []
     for (const env of envs) {
-      const value = await this.secrets.get(`${target.id}:${env.name}`)
+      const value = await this.secrets.get(`${activeTarget.id}:${env.name}`)
       if (value != null) {
         entries.push({ name: env.name, value })
       }
     }
 
-    const outPath = `${space.path}/.env.${target.name}`
-    await mkdir(space.path, { recursive: true })
-    await writeFile(outPath, buildDotenvContent(entries), 'utf8')
-    return { applied: entries.length, path: outPath }
+    const dotfilePath = space.dotfilePath.replace(/^~/, homedir())
+    let content = await readFile(dotfilePath, 'utf8')
+    content = upsertManagedShellBlock(content, buildManagedShellBlock(entries))
+    await writeFile(dotfilePath, content, 'utf8')
+    return { applied: entries.length }
   }
 }

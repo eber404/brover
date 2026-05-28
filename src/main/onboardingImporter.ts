@@ -1,5 +1,5 @@
 import { readFile, writeFile, rename } from 'node:fs/promises'
-import { basename, dirname } from 'node:path'
+import { basename } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import type { ScanResult, RetroactiveSelection, OnboardingSummary } from '../shared/models'
 import { BroverStore } from './store'
@@ -25,7 +25,7 @@ export async function runFreshStartImport(
 
       const spaces = await store.createSpace({
         name: basename(file.filePath),
-        path: dirname(file.filePath),
+        dotfilePath: file.filePath,
       })
       const newSpace = spaces[spaces.length - 1]
       if (newSpace) {
@@ -80,7 +80,7 @@ export async function runRetroactiveImport(
 
     const spaces = await store.createSpace({
       name: basename(file.filePath),
-      path: dirname(file.filePath),
+      dotfilePath: file.filePath,
     })
     const newSpace = spaces[spaces.length - 1]
     if (newSpace) createdSpaceIds.push(newSpace.id)

@@ -27,7 +27,6 @@ const api: BroverAPI = {
   renameSpace: (payload) => ipcRenderer.invoke('spaces:rename', payload),
   deleteSpace: (spaceId) => ipcRenderer.invoke('spaces:delete', spaceId),
   toggleSpaceTiedSecrets: (spaceId) => ipcRenderer.invoke('spaces:toggle-tied-secrets', spaceId),
-  pickDirectory: () => ipcRenderer.invoke('system:pick-directory'),
   pickDotfile: () => ipcRenderer.invoke('system:pick-dotfile'),
   toggleSpaceExpanded: (spaceId) => ipcRenderer.invoke('spaces:toggle-expanded', spaceId),
   listTargets: (spaceId) => ipcRenderer.invoke('targets:list', spaceId),
@@ -38,8 +37,18 @@ const api: BroverAPI = {
   setTargetColor: (payload) => ipcRenderer.invoke('targets:set-color', payload),
   setActiveTarget: (payload) => ipcRenderer.invoke('targets:set-active', payload),
   secretExists: (profile, name) => ipcRenderer.invoke('secrets:exists', { profile, name }),
-  applyGlobalShell: () => ipcRenderer.invoke('apply:global-shell'),
-  applyDirectoryTarget: (payload) => ipcRenderer.invoke('apply:directory-target', payload),
+  applySpace: (spaceId) => ipcRenderer.invoke('apply:space', spaceId),
+
+  inject: {
+    activate: (targetId, dotfilePath) => ipcRenderer.invoke('inject:activate', { targetId, dotfilePath }),
+    deactivate: (targetId, dotfilePath) => ipcRenderer.invoke('inject:deactivate', { targetId, dotfilePath }),
+    status: (targetId) => ipcRenderer.invoke('inject:status', { targetId }),
+    listActive: () => ipcRenderer.invoke('inject:list-active'),
+  },
+  launch: {
+    terminal: (targetId, terminalApp) => ipcRenderer.invoke('launch:terminal', { targetId, terminalApp }),
+    listTerminals: () => ipcRenderer.invoke('launch:list-terminals'),
+  },
 
   onboarding: {
     getStatus: () => ipcRenderer.invoke('onboarding:get-status'),

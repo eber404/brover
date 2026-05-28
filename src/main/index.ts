@@ -80,7 +80,7 @@ async function bootstrap() {
   )
 
   ipcMain.handle('spaces:list', () => store.listSpaces())
-  ipcMain.handle('spaces:create', (_, payload: { name: string; path: string }) =>
+  ipcMain.handle('spaces:create', (_, payload: { name: string; dotfilePath: string }) =>
     store.createSpace(payload)
   )
   ipcMain.handle('spaces:rename', (_, payload: { spaceId: string; name: string }) =>
@@ -133,10 +133,7 @@ async function bootstrap() {
     (_, payload: { spaceId: string; targetId: string }) =>
       store.setActiveTarget(payload)
   )
-  ipcMain.handle('apply:global-shell', () => store.applyGlobalShell())
-  ipcMain.handle('apply:directory-target', (_, payload: { targetId: string }) =>
-    store.applyDirectoryTarget(payload)
-  )
+  ipcMain.handle('apply:space', (_, spaceId: string) => store.applySpace(spaceId))
   ipcMain.handle('secrets:exists', (_, payload: { profile: string; name: string }) =>
     store.secretExists(payload.profile, payload.name)
   )

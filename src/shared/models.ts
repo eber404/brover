@@ -1,6 +1,6 @@
 export type RootWorkspace = 'apps' | 'secrets'
 
-export type SpaceKind = 'global' | 'directory'
+export type SpaceKind = 'dotfile'
 
 export interface AppAuthorization {
   id: string
@@ -37,10 +37,17 @@ export interface EnvSpace {
   id: string
   name: string
   kind: SpaceKind
-  path?: string
+  dotfilePath: string
   expanded?: boolean
   tiedSecrets: boolean
   updatedAt: string
+}
+
+export interface TerminalApp {
+  id: string
+  name: string
+  bundlePath: string
+  installed: boolean
 }
 
 export interface EnvTarget {

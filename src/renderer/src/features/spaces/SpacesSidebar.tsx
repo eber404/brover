@@ -8,8 +8,7 @@ import { useI18n } from '../../i18n'
 interface SpacesSidebarProps {
   title: string
   subtitle: string
-  shellSpaces: EnvSpace[]
-  dirSpaces: EnvSpace[]
+  spaces: EnvSpace[]
   targetsBySpace: Map<string, EnvTarget[]>
   selectedSpaceId: string | null
   selectedTargetId: string | null
@@ -21,7 +20,6 @@ interface SpacesSidebarProps {
   onLocaleChange: (locale: 'en' | 'es' | 'pt') => void
   onEditNameChange: (value: string) => void
   onAddSpace: () => void
-  onAddDotfileSpace: () => void
   onStartRenameSpace: (spaceId: string, currentName: string) => void
   onSaveRenameSpace: (spaceId: string) => void
   onEditSpaceNameChange: (value: string) => void
@@ -43,8 +41,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
   const {
     title,
     subtitle,
-    shellSpaces,
-    dirSpaces,
+    spaces,
     targetsBySpace,
     selectedSpaceId,
     selectedTargetId,
@@ -56,7 +53,6 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     onLocaleChange,
     onEditNameChange,
     onAddSpace,
-    onAddDotfileSpace,
     onStartRenameSpace,
     onSaveRenameSpace,
     onEditSpaceNameChange,
@@ -74,10 +70,9 @@ export const SpacesSidebar = memo(function SpacesSidebar(
 
   const { t } = useI18n()
 
-  const allSpaces = [...shellSpaces, ...dirSpaces]
   const selectedSpace =
-    allSpaces.find((space) => space.id === selectedSpaceId) ??
-    allSpaces[0] ??
+    spaces.find((space) => space.id === selectedSpaceId) ??
+    spaces[0] ??
     null
   const selectedTargets = selectedSpace
     ? (targetsBySpace.get(selectedSpace.id) ?? [])
@@ -202,7 +197,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     >
       <div className="flex w-[84px] flex-col items-center border-r border-edge/60 bg-surface-sidebar px-2 py-4">
         <div className="mt-7 flex w-full flex-1 flex-col items-center gap-2">
-          {allSpaces.map((space) => {
+          {spaces.map((space) => {
             const isSelected = selectedSpace?.id === space.id
             return (
               <button
@@ -248,15 +243,6 @@ export const SpacesSidebar = memo(function SpacesSidebar(
                     onClick={() => {
                       setAddMenuOpen(false)
                       onAddSpace()
-                    }}
-                  >
-                    Import directory
-                  </button>
-                  <button
-                    className="flex items-center gap-2 rounded px-3 py-2 text-left text-xs text-text-base hover:bg-surface-hover"
-                    onClick={() => {
-                      setAddMenuOpen(false)
-                      onAddDotfileSpace()
                     }}
                   >
                     Import dotfile
@@ -460,7 +446,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             <button
               className="rounded px-2 py-1.5 text-left text-xs text-text-base hover:bg-surface-hover"
               onClick={() => {
-                const space = allSpaces.find((s) => s.id === spaceContextMenu.spaceId)
+                const space = spaces.find((s) => s.id === spaceContextMenu.spaceId)
                 if (space) onStartRenameSpace(space.id, space.name)
                 setSpaceContextMenu(null)
               }}
