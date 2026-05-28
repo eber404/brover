@@ -330,7 +330,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
                   />
                   <textarea
                     data-testid="add-secret-description"
-                    className="min-h-20 w-full rounded-lg border border-edge bg-slate-900 px-3 py-2 text-sm text-text-emphasis outline-none placeholder:text-text-muted focus-visible:ring-2 focus-visible:ring-accent"
+                    className="min-h-20 w-full rounded-lg border border-edge bg-slate-900 px-3 py-2 text-sm text-text-emphasis outline-none placeholder:text-text-muted"
                     placeholder={t('secrets.description')}
                     value={newEnvDescription}
                     onChange={(event) =>

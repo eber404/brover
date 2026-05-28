@@ -401,7 +401,7 @@ function AppShell() {
           <div className="flex items-center gap-2 px-4">
             <Search className="h-4 w-4 shrink-0 text-text-muted" />
             <input
-              className="h-full w-full bg-transparent text-sm text-text-base outline-none placeholder:text-text-muted focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+              className="h-full w-full bg-transparent text-sm text-text-base outline-none placeholder:text-text-muted"
               placeholder={t('search.secretsPlaceholder')}
               value={searchText}
               onChange={(event) => onSearchChange(event.target.value)}

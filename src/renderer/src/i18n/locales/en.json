@@ -83,6 +83,9 @@
       "selectVariable": "Select as sensitive"
     }
   },
+  "spaces": {
+    "tiedTargetsTooltip": "Keep secret names synced across all targets in this space. Values remain target-specific."
+  },
   "common": {
     "refresh": "Refresh",
     "details": "Details",

@@ -46,6 +46,7 @@
 
   body {
     margin: 0;
+    user-select: none;
     background: radial-gradient(1200px 700px at 20% -10%, #123055 0%, #070b12 55%);
     color: #e7eef9;
   }

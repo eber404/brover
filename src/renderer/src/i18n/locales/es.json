@@ -83,6 +83,9 @@
       "selectVariable": "Seleccionar como sensible"
     }
   },
+  "spaces": {
+    "tiedTargetsTooltip": "Mantener nombres de secretos sincronizados en todos los targets de este espacio. Los valores permanecen especificos de cada target."
+  },
   "common": {
     "refresh": "Actualizar",
     "details": "Detalles",

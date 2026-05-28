@@ -3,6 +3,7 @@ import { Layers, Plus, Trash2 } from 'lucide-react'
 import type { EnvSpace, EnvTarget } from '../../../../shared/models'
 import { ConfirmDialog } from '../../components/ui/confirmDialog'
 import { Switch } from '../../components/ui/switch'
+import { useI18n } from '../../i18n'
 
 interface SpacesSidebarProps {
   title: string
@@ -70,6 +71,8 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     onDeleteSpace,
     onToggleSpaceTiedSecrets,
   } = props
+
+  const { t } = useI18n()
 
   const allSpaces = [...shellSpaces, ...dirSpaces]
   const selectedSpace =
@@ -293,7 +296,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
           <div className="group/tt relative">
             <span className="text-[011px] text-text-base">Tied targets</span>
             <div className="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-30 hidden w-56 rounded-md border border-edge bg-surface-overlay px-2 py-1.5 text-[11px] text-text-base shadow-lg group-hover/tt:block">
-              Keep env names synced across all targets in this space. Values remain target-specific.
+              {t('spaces.tiedTargetsTooltip')}
             </div>
           </div>
           <Switch
