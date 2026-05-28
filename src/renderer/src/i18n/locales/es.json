@@ -86,7 +86,7 @@
     },
     "freshStartReview": {
       "title": "Nuevo inicio — Seleccionar archivos",
-      "subtitle": "Elija qué archivos escanear para crear espacios.",
+      "subtitle": "Selecciona qué dotfiles incorporar en Brover.",
       "loading": "Escaneando dotfiles...",
       "error": "Error al escanear dotfiles",
       "noFiles": "No se encontraron dotfiles",

@@ -86,7 +86,7 @@
     },
     "freshStartReview": {
       "title": "Fresh Start — Select dotfiles",
-      "subtitle": "Choose which files to scan for creating spaces.",
+      "subtitle": "Select which dotfiles to bring into Brover.",
       "loading": "Scanning dotfiles...",
       "error": "Failed to scan dotfiles",
       "noFiles": "No dotfiles found",
