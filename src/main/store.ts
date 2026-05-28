@@ -73,36 +73,11 @@ interface DBShape {
   onboardingCompletedAt?: string
 }
 
-const GLOBAL_SPACE_ID = 'space-global'
 const TARGET_COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
 
 function randomTargetColor(): string {
   const index = Math.floor(Math.random() * TARGET_COLORS.length)
   return TARGET_COLORS[index] ?? '#f59e0b'
-}
-const GLOBAL_TARGET_ID = 'target-global-default'
-
-function createDefaultGlobalSpace(now: string): EnvSpace {
-  return {
-    id: GLOBAL_SPACE_ID,
-    name: 'Glob',
-    kind: 'dotfile',
-    dotfilePath: '~/.zshrc',
-    expanded: true,
-    tiedSecrets: true,
-    updatedAt: now,
-  }
-}
-
-function createDefaultGlobalTarget(now: string): EnvTarget {
-  return {
-    id: GLOBAL_TARGET_ID,
-    spaceId: GLOBAL_SPACE_ID,
-    name: 'default',
-    color: '#38bdf8',
-    isActive: true,
-    updatedAt: now,
-  }
 }
 
 export class BroverStore {
@@ -120,15 +95,30 @@ export class BroverStore {
       const parsed = JSON.parse(raw) as unknown as DBShape
       const now = new Date().toISOString()
       const normalizedSpaces = Array.isArray(parsed.spaces)
-        ? parsed.spaces.map((space) => ({
-            ...space,
-            tiedSecrets:
-              typeof (space as { tiedSecrets?: unknown }).tiedSecrets ===
-              'boolean'
-                ? space.tiedSecrets
-                : true,
-            updatedAt: space.updatedAt ?? now,
-          }))
+        ? parsed.spaces.map((space) => {
+            let normalized = {
+              ...space,
+              tiedSecrets:
+                typeof (space as { tiedSecrets?: unknown }).tiedSecrets ===
+                'boolean'
+                  ? space.tiedSecrets
+                  : true,
+              updatedAt: space.updatedAt ?? now,
+            }
+            // Migrate old space kinds to dotfile
+            if ((space as { kind?: string }).kind === 'global' || (space as { kind?: string }).kind === 'directory') {
+              normalized = {
+                ...normalized,
+                kind: 'dotfile' as const,
+                dotfilePath: '~/.zshrc',
+              }
+            }
+            // Migrate path → dotfilePath if needed
+            if ('path' in space && !('dotfilePath' in space)) {
+              normalized = { ...normalized, dotfilePath: (space as { path: string }).path }
+            }
+            return normalized
+          })
         : []
       return {
         apps: Array.isArray(parsed.apps) ? parsed.apps : [],
@@ -535,43 +525,6 @@ export class BroverStore {
     const home = process.env.BROVER_HOME ?? process.env.HOME
     if (!home) throw new Error('HOME not found')
     return home
-  }
-
-  async ensureGlobalSpace(): Promise<void> {
-    const db = await this.readDB()
-    const exists = db.spaces.some((s) => s.id === GLOBAL_SPACE_ID)
-    if (exists) return
-    const now = new Date().toISOString()
-    db.spaces.push(createDefaultGlobalSpace(now))
-    db.targets.push(createDefaultGlobalTarget(now))
-    await this.writeDB(db)
-  }
-
-  async applyGlobalShell(): Promise<{ applied: number }> {
-    await this.ensureGlobalSpace()
-    const db = await this.readDB()
-    const activeGlobalTarget = db.targets.find((target) => target.spaceId === GLOBAL_SPACE_ID && target.isActive)
-    if (!activeGlobalTarget) throw new Error('No active global target')
-
-    const envs = db.envs.filter((env) => env.profile === activeGlobalTarget.id && env.enabled)
-    const entries: { name: string; value: string }[] = []
-    for (const env of envs) {
-      const value = await this.secrets.get(`${activeGlobalTarget.id}:${env.name}`)
-      if (value != null) {
-        entries.push({ name: env.name, value })
-      }
-    }
-
-    const block = buildManagedShellBlock(entries)
-    const home = this.getHomeDirectory()
-    const zshrc = `${home}/.zshrc`
-    const bashrc = `${home}/.bashrc`
-
-    const zshContent = await this.readTextFile(zshrc)
-    const bashContent = await this.readTextFile(bashrc)
-    await writeFile(zshrc, upsertManagedShellBlock(zshContent, block), 'utf8')
-    await writeFile(bashrc, upsertManagedShellBlock(bashContent, block), 'utf8')
-    return { applied: entries.length }
   }
 
   async applySpace(spaceId: string): Promise<{ applied: number }> {

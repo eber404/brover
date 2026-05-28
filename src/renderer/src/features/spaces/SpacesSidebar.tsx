@@ -286,9 +286,14 @@ export const SpacesSidebar = memo(function SpacesSidebar(
           </button>
         </div>
         {selectedSpace && (
-          <p className="mt-0.5 truncate text-[11px] text-text-muted">
-            {selectedSpace.name}
-          </p>
+          <>
+            <p className="mt-0.5 truncate text-[11px] text-text-muted">
+              {selectedSpace.name}
+            </p>
+            <p className="mt-0.5 truncate text-[10px] text-white/30" title={selectedSpace.dotfilePath}>
+              {selectedSpace.dotfilePath.replace(/^~/, '~')}
+            </p>
+          </>
         )}
         <div className="mt-2 flex items-center justify-between rounded border border-edge/60 bg-surface-base px-2 py-1.5">
           <div className="group/tt relative">
