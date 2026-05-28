@@ -120,7 +120,7 @@ export default function FreshStartReviewStep({
                     {fileName(file.filePath)}
                   </span>
                   <span className="text-xs text-text-muted">
-                    {file.filePath} · {file.variables.length} vars
+                    {file.filePath}
                   </span>
                 </div>
               </Card>
