@@ -367,6 +367,9 @@ function AppShell() {
           onToggleSpaceTiedSecrets={(spaceId) =>
             void toggleSpaceTiedSecrets(spaceId)
           }
+          onInject={(targetId, dotfilePath) => void window.brover.inject.activate(targetId, dotfilePath)}
+          onEject={(targetId, dotfilePath) => void window.brover.inject.deactivate(targetId, dotfilePath)}
+          onLaunch={(targetId, terminalApp) => void window.brover.launch.terminal(targetId, terminalApp)}
         />
       </div>
 

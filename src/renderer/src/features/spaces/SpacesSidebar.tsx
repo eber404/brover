@@ -4,6 +4,7 @@ import type { EnvSpace, EnvTarget } from '../../../../shared/models'
 import { ConfirmDialog } from '../../components/ui/confirmDialog'
 import { Switch } from '../../components/ui/switch'
 import { useI18n } from '../../i18n'
+import { TargetActions } from '../targets/TargetActions'
 
 interface SpacesSidebarProps {
   title: string
@@ -33,6 +34,9 @@ interface SpacesSidebarProps {
   onDeleteTarget: (targetId: string) => void
   onDeleteSpace: (spaceId: string) => void
   onToggleSpaceTiedSecrets: (spaceId: string) => void
+  onInject: (targetId: string, dotfilePath: string) => void
+  onEject: (targetId: string, dotfilePath: string) => void
+  onLaunch: (targetId: string, terminalApp: string) => void
 }
 
 export const SpacesSidebar = memo(function SpacesSidebar(
@@ -66,6 +70,9 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     onDeleteTarget,
     onDeleteSpace,
     onToggleSpaceTiedSecrets,
+    onInject,
+    onEject,
+    onLaunch,
   } = props
 
   const { t } = useI18n()
@@ -366,6 +373,14 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             </div>
           ))}
         </div>
+
+        <TargetActions
+          targetId={selectedTargetId}
+          dotfilePath={selectedSpace?.dotfilePath ?? ''}
+          onInject={onInject}
+          onEject={onEject}
+          onLaunch={onLaunch}
+        />
 
         <p className="mt-auto pt-3 text-xs text-slate-500">
           {title} · {subtitle}
