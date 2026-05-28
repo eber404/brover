@@ -107,7 +107,7 @@ function createDefaultGlobalTarget(now: string): EnvTarget {
 
 export class BroverStore {
   private readonly dbPath: string
-  private readonly secrets: SecretStore
+  readonly secrets: SecretStore
 
   constructor(dbPath: string, secrets: SecretStore) {
     this.dbPath = dbPath
