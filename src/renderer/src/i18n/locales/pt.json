@@ -50,7 +50,7 @@
   "onboarding": {
     "welcome": {
       "title": "Bem-vindo ao Brover",
-      "subtitle": "Escolha como deseja configurar seus segredos locais"
+      "subtitle": "Escolha como deseja configurar seus segredos locais."
     },
     "mode": {
       "retroactive": {
