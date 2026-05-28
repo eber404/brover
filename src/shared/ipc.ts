@@ -3,8 +3,12 @@ import type {
   EnvMetadata,
   EnvSpace,
   EnvTarget,
+  OnboardingStatus,
   Profile,
+  RetroactiveSelection,
+  ScanResult,
   SecretActionResult,
+  OnboardingSummary,
 } from './models'
 
 export interface BroverAPI {
@@ -42,4 +46,12 @@ export interface BroverAPI {
   setActiveTarget: (payload: { spaceId: string; targetId: string }) => Promise<EnvTarget[]>
   applyGlobalShell: () => Promise<{ applied: number }>
   applyDirectoryTarget: (payload: { targetId: string }) => Promise<{ applied: number; path: string }>
+
+  onboarding: {
+    getStatus: () => Promise<OnboardingStatus>
+    scanDotfiles: () => Promise<ScanResult>
+    runRetroactive: (selection: RetroactiveSelection) => Promise<OnboardingSummary>
+    runFreshStart: () => Promise<OnboardingSummary>
+    complete: () => Promise<void>
+  }
 }

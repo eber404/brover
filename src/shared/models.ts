@@ -52,4 +52,42 @@ export interface EnvTarget {
   updatedAt: string
 }
 
+export interface OnboardingStatus {
+  completedAt?: string
+}
+
+export interface ScannedVariable {
+  id: string
+  name: string
+  value: string
+  sourceFile: string
+}
+
+export interface ScanFile {
+  filePath: string
+  variables: ScannedVariable[]
+}
+
+export interface ScanWarning {
+  filePath: string
+  line?: number
+  message: string
+}
+
+export interface ScanResult {
+  files: ScanFile[]
+  warnings: ScanWarning[]
+}
+
+export interface RetroactiveSelection {
+  selectedSensitiveIds: string[]
+}
+
+export interface OnboardingSummary {
+  importedSensitive: number
+  removedFromDotfiles: number
+  ignoredNonSensitive: number
+  ignoredWithReason: { filePath: string; reason: string }[]
+}
+
 export const UNSUPPORTED_SECRET_BACKEND = 'UNSUPPORTED_SECRET_BACKEND'

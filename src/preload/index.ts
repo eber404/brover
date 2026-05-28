@@ -37,7 +37,15 @@ const api: BroverAPI = {
   setTargetColor: (payload) => ipcRenderer.invoke('targets:set-color', payload),
   setActiveTarget: (payload) => ipcRenderer.invoke('targets:set-active', payload),
   applyGlobalShell: () => ipcRenderer.invoke('apply:global-shell'),
-  applyDirectoryTarget: (payload) => ipcRenderer.invoke('apply:directory-target', payload)
+  applyDirectoryTarget: (payload) => ipcRenderer.invoke('apply:directory-target', payload),
+
+  onboarding: {
+    getStatus: () => ipcRenderer.invoke('onboarding:get-status'),
+    scanDotfiles: () => ipcRenderer.invoke('onboarding:scan-dotfiles'),
+    runRetroactive: (selection) => ipcRenderer.invoke('onboarding:run-retroactive', selection),
+    runFreshStart: () => ipcRenderer.invoke('onboarding:run-fresh-start'),
+    complete: () => ipcRenderer.invoke('onboarding:complete'),
+  }
 }
 
 contextBridge.exposeInMainWorld('brover', api)
