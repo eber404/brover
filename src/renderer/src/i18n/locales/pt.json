@@ -83,6 +83,14 @@
       "reveal": "Revelar",
       "hide": "Ocultar",
       "selectVariable": "Selecionar como sensivel"
+    },
+    "freshStartReview": {
+      "title": "Novo início — Selecionar arquivos",
+      "subtitle": "Escolha quais arquivos escanear para criar espaços.",
+      "loading": "Escaneando dotfiles...",
+      "error": "Falha ao escanear dotfiles",
+      "noFiles": "Nenhum dotfile encontrado",
+      "continue": "Continuar"
     }
   },
   "spaces": {

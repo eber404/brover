@@ -55,7 +55,7 @@
     "mode": {
       "retroactive": {
         "title": "Import from dotfiles",
-        "desc": "Scan existing .zshrc / .bashrc and import selected environment variables",
+        "desc": "Scan existing .zshrc / .bashrc and import selected environment variables.",
         "action": "Start import"
       },
       "freshStart": {
@@ -83,6 +83,14 @@
       "reveal": "Reveal",
       "hide": "Hide",
       "selectVariable": "Select as sensitive"
+    },
+    "freshStartReview": {
+      "title": "Fresh Start — Select dotfiles",
+      "subtitle": "Choose which files to scan for creating spaces.",
+      "loading": "Scanning dotfiles...",
+      "error": "Failed to scan dotfiles",
+      "noFiles": "No dotfiles found",
+      "continue": "Continue"
     }
   },
   "spaces": {
