@@ -121,8 +121,8 @@ export class BroverStore {
         apps: Array.isArray(parsed.apps) ? parsed.apps : [],
         profiles: Array.isArray(parsed.profiles) ? parsed.profiles : [{ id: randomUUID(), name: 'default', isActive: true, updatedAt: new Date().toISOString() }],
         envs: Array.isArray(parsed.envs) ? parsed.envs : [],
-        spaces: normalizedSpaces.length > 0 ? normalizedSpaces : [createDefaultGlobalSpace(now)],
-        targets: Array.isArray(parsed.targets) && parsed.targets.length > 0 ? parsed.targets : [createDefaultGlobalTarget(new Date().toISOString())],
+        spaces: Array.isArray(parsed.spaces) ? normalizedSpaces : [],
+        targets: Array.isArray(parsed.targets) ? parsed.targets : [],
         onboardingCompletedAt: typeof (parsed as { onboardingCompletedAt?: unknown }).onboardingCompletedAt === 'string'
           ? (parsed as { onboardingCompletedAt: string }).onboardingCompletedAt
           : undefined
@@ -132,8 +132,8 @@ export class BroverStore {
         apps: [],
         profiles: [{ id: randomUUID(), name: 'default', isActive: true, updatedAt: new Date().toISOString() }],
         envs: [],
-        spaces: [createDefaultGlobalSpace(new Date().toISOString())],
-        targets: [createDefaultGlobalTarget(new Date().toISOString())],
+        spaces: [],
+        targets: [],
         onboardingCompletedAt: undefined
       }
     }
@@ -319,7 +319,7 @@ export class BroverStore {
     db.targets.push({
       id: randomUUID(),
       spaceId: created.id,
-      name: 'dev',
+      name: 'default',
       color: '#34d399',
       isActive: true,
       updatedAt: now,
@@ -520,7 +520,18 @@ export class BroverStore {
     return home
   }
 
+  async ensureGlobalSpace(): Promise<void> {
+    const db = await this.readDB()
+    const exists = db.spaces.some((s) => s.id === GLOBAL_SPACE_ID)
+    if (exists) return
+    const now = new Date().toISOString()
+    db.spaces.push(createDefaultGlobalSpace(now))
+    db.targets.push(createDefaultGlobalTarget(now))
+    await this.writeDB(db)
+  }
+
   async applyGlobalShell(): Promise<{ applied: number }> {
+    await this.ensureGlobalSpace()
     const db = await this.readDB()
     const activeGlobalTarget = db.targets.find((target) => target.spaceId === GLOBAL_SPACE_ID && target.isActive)
     if (!activeGlobalTarget) throw new Error('No active global target')

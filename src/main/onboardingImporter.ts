@@ -73,7 +73,8 @@ export async function runRetroactiveImport(
     const fileSensitiveVars = file.variables.filter(v => sensitiveIds.has(v.id))
     const fileNonSensitiveVars = file.variables.filter(v => !sensitiveIds.has(v.id))
 
-    if (fileSensitiveVars.length === 0 && fileNonSensitiveVars.length === 0) {
+    if (fileSensitiveVars.length === 0) {
+      ignoredNonSensitive += fileNonSensitiveVars.length
       continue
     }
 

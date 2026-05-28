@@ -20,6 +20,7 @@ interface SpacesSidebarProps {
   onLocaleChange: (locale: 'en' | 'es' | 'pt') => void
   onEditNameChange: (value: string) => void
   onAddSpace: () => void
+  onAddDotfileSpace: () => void
   onStartRenameSpace: (spaceId: string, currentName: string) => void
   onSaveRenameSpace: (spaceId: string) => void
   onEditSpaceNameChange: (value: string) => void
@@ -54,6 +55,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
     onLocaleChange,
     onEditNameChange,
     onAddSpace,
+    onAddDotfileSpace,
     onStartRenameSpace,
     onSaveRenameSpace,
     onEditSpaceNameChange,
@@ -109,6 +111,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
   const [pendingDeleteSpace, setPendingDeleteSpace] = useState<string | null>(
     null
   )
+  const [addMenuOpen, setAddMenuOpen] = useState(false)
   const asideRef = useRef<HTMLElement | null>(null)
 
   function applyTargetColor(targetId: string, color: string) {
@@ -225,13 +228,40 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             )
           })}
 
-          <button
-            onClick={onAddSpace}
-            className="mt-1 flex h-11 w-11 items-center justify-center rounded-xl border border-dashed border-edge text-text-base hover:border-slate-400 hover:text-text-emphasis"
-            title="Add directory space"
-          >
-            <Plus className="h-5 w-5" />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setAddMenuOpen(!addMenuOpen)}
+              className="mt-1 flex h-11 w-11 items-center justify-center rounded-xl border border-dashed border-edge text-text-base hover:border-slate-400 hover:text-text-emphasis"
+              title="Add space"
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+            {addMenuOpen && (
+              <>
+                <button type="button" className="fixed inset-0 z-40" onClick={() => setAddMenuOpen(false)} />
+                <div className="absolute left-[calc(100%+8px)] top-0 z-50 flex w-40 flex-col rounded-lg border border-edge bg-surface-overlay p-1 shadow-xl">
+                  <button
+                    className="flex items-center gap-2 rounded px-3 py-2 text-left text-xs text-text-base hover:bg-surface-hover"
+                    onClick={() => {
+                      setAddMenuOpen(false)
+                      onAddSpace()
+                    }}
+                  >
+                    Import directory
+                  </button>
+                  <button
+                    className="flex items-center gap-2 rounded px-3 py-2 text-left text-xs text-text-base hover:bg-surface-hover"
+                    onClick={() => {
+                      setAddMenuOpen(false)
+                      onAddDotfileSpace()
+                    }}
+                  >
+                    Import dotfile
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         <select

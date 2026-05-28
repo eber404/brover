@@ -28,6 +28,7 @@ const api: BroverAPI = {
   deleteSpace: (spaceId) => ipcRenderer.invoke('spaces:delete', spaceId),
   toggleSpaceTiedSecrets: (spaceId) => ipcRenderer.invoke('spaces:toggle-tied-secrets', spaceId),
   pickDirectory: () => ipcRenderer.invoke('system:pick-directory'),
+  pickDotfile: () => ipcRenderer.invoke('system:pick-dotfile'),
   toggleSpaceExpanded: (spaceId) => ipcRenderer.invoke('spaces:toggle-expanded', spaceId),
   listTargets: (spaceId) => ipcRenderer.invoke('targets:list', spaceId),
   createTarget: (payload) => ipcRenderer.invoke('targets:create', payload),

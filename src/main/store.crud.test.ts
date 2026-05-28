@@ -16,22 +16,21 @@ describe('BroverStore', () => {
   })
 
   describe('Spaces', () => {
-    it('listSpaces returns default global space on empty DB', async () => {
+    it('listSpaces returns empty array on empty DB', async () => {
       const spaces = await store.listSpaces()
-      expect(spaces).toHaveLength(1)
-      expect(spaces[0].kind).toBe('global')
+      expect(spaces).toHaveLength(0)
     })
 
-    it('createSpace adds directory space with dev target', async () => {
+    it('createSpace adds directory space with default target', async () => {
       const spaces = await store.createSpace({ name: 'MyRepo', path: '/tmp/repo' })
-      expect(spaces).toHaveLength(2)
+      expect(spaces).toHaveLength(1)
       const newSpace = spaces.find((s) => s.name === 'MyRepo')!
       expect(newSpace.kind).toBe('directory')
       expect(newSpace.tiedSecrets).toBe(true)
 
       const targets = await store.listTargets(newSpace.id)
       expect(targets).toHaveLength(1)
-      expect(targets[0].name).toBe('dev')
+      expect(targets[0].name).toBe('default')
       expect(targets[0].isActive).toBe(true)
     })
 
@@ -60,7 +59,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'ToDelete', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'ToDelete')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createEnv({ name: 'SECRET', profile: devTarget.id, value: 'hunter2' })
 
@@ -122,7 +121,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: devTarget.id, value: 'secret1' })
 
@@ -141,7 +140,7 @@ describe('BroverStore', () => {
       await store.toggleSpaceTiedSecrets(newSpace.id)
 
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: devTarget.id, value: 'secret1' })
 
@@ -157,7 +156,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createEnv({ name: 'SECRET', profile: devTarget.id, value: 'hunter2' })
 
@@ -171,7 +170,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createTarget({ spaceId: newSpace.id, name: 'staging' })
       await store.setActiveTarget({ spaceId: newSpace.id, targetId: devTarget.id })
@@ -186,7 +185,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       const updated = await store.renameTarget({ targetId: devTarget.id, name: 'production' })
       expect(updated.find((t) => t.id === devTarget.id)?.name).toBe('production')
@@ -196,7 +195,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await expect(store.renameTarget({ targetId: devTarget.id, name: '  ' })).rejects.toThrow('Target name required')
     })
@@ -205,7 +204,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createTarget({ spaceId: newSpace.id, name: 'staging' })
       await expect(store.renameTarget({ targetId: devTarget.id, name: 'staging' })).rejects.toThrow('Target name already exists in this space')
@@ -215,7 +214,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       const updated = await store.setTargetColor({ targetId: devTarget.id, color: '#ff0000' })
       expect(updated.find((t) => t.id === devTarget.id)?.color).toBe('#ff0000')
@@ -225,7 +224,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       const stagingTargets = await store.createTarget({ spaceId: newSpace.id, name: 'staging' })
       const stagingTarget = stagingTargets.find((t) => t.name === 'staging')!
@@ -241,7 +240,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
       const stagingTargets = await store.createTarget({ spaceId: newSpace.id, name: 'staging' })
       const stagingTarget = stagingTargets.find((t) => t.name === 'staging')!
 
@@ -260,7 +259,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: devTarget.id, value: 'secret123' })
 
@@ -272,7 +271,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createTarget({ spaceId: newSpace.id, name: 'staging' })
       const stagingTargets = await store.listTargets(newSpace.id)
@@ -291,7 +290,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await expect(store.createEnv({ name: '123invalid', profile: devTarget.id, value: 'x' })).rejects.toThrow('Invalid env name')
     })
@@ -300,7 +299,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await expect(store.createEnv({ name: 'API_KEY', profile: devTarget.id, value: '' })).rejects.toThrow('Secret value required')
     })
@@ -309,7 +308,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: devTarget.id, value: 'secret1' })
       await expect(store.createEnv({ name: 'API_KEY', profile: devTarget.id, value: 'secret2' })).rejects.toThrow('Secret already exists in this target')
@@ -319,7 +318,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: devTarget.id, value: 'old' })
       const envs = await store.listEnvs()
@@ -339,7 +338,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createEnv({ name: 'TO_DELETE', profile: devTarget.id, value: 'secret' })
       const envs = await store.listEnvs()
@@ -355,7 +354,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createTarget({ spaceId: newSpace.id, name: 'staging' })
       await store.createEnv({ name: 'SHARED', profile: devTarget.id, value: 'secret' })
@@ -373,7 +372,7 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.createEnv({ name: 'TOGGLE', profile: devTarget.id, value: 'secret' })
       const envs = await store.listEnvs()
@@ -466,15 +465,14 @@ describe('BroverStore', () => {
       const freshStore = new BroverStore(dbPath, new MemorySecretStore())
       const spaces = await freshStore.listSpaces()
 
-      expect(spaces).toHaveLength(1)
-      expect(spaces[0].tiedSecrets).toBe(true)
+      expect(spaces).toHaveLength(0)
     })
 
     it('deleteEnv removes only local env when tiedSecrets false', async () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
       await store.toggleSpaceTiedSecrets(newSpace.id)
       await store.createEnv({ name: 'LOCAL_ENV', profile: devTarget.id, value: 'secret1' })
@@ -492,8 +490,9 @@ describe('BroverStore', () => {
       const spaces = await store.createSpace({ name: 'Repo', path: '/tmp/repo' })
       const newSpace = spaces.find((s) => s.name === 'Repo')!
       const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'dev')!
+      const devTarget = targets.find((t) => t.name === 'default')!
 
+      await store.ensureGlobalSpace()
       const globalTarget = (await store.listTargets('space-global'))[0]
 
       await expect(store.applyDirectoryTarget({ targetId: globalTarget.id })).rejects.toThrow('Directory space not found')

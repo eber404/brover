@@ -17,6 +17,7 @@ describe('BroverStore apply writers', () => {
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
 
+    await store.ensureGlobalSpace()
     const targets = await store.listTargets('space-global')
     const active = targets.find((target) => target.isActive) ?? targets[0]
 
@@ -45,7 +46,7 @@ describe('BroverStore apply writers', () => {
     const spaces = await store.listSpaces()
     const repoSpace = spaces.find((space) => space.name === 'Repo')!
     const targets = await store.listTargets(repoSpace.id)
-    const devTarget = targets.find((target) => target.name === 'dev')!
+    const devTarget = targets.find((target) => target.name === 'default')!
 
     await store.createEnv({
       name: 'DATABASE_URL',
@@ -54,7 +55,7 @@ describe('BroverStore apply writers', () => {
     })
 
     const result = await store.applyDirectoryTarget({ targetId: devTarget.id })
-    expect(result.path.endsWith('.env.dev')).toBe(true)
+    expect(result.path.endsWith('.env.default')).toBe(true)
 
     const dotenv = await readFile(result.path, 'utf8')
     expect(dotenv).toContain('DATABASE_URL=postgres://local')

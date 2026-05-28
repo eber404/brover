@@ -99,6 +99,16 @@ async function bootstrap() {
       path: result.canceled ? null : (result.filePaths[0] ?? null),
     }
   })
+  ipcMain.handle('system:pick-dotfile', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'Dotfiles', extensions: ['zshrc', 'bashrc', 'env', 'zprofile', 'bash_profile', 'profile'] }],
+    })
+    return {
+      canceled: result.canceled,
+      path: result.canceled ? null : (result.filePaths[0] ?? null),
+    }
+  })
   ipcMain.handle('spaces:toggle-expanded', (_, spaceId: string) =>
     store.toggleSpaceExpanded(spaceId)
   )

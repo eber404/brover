@@ -38,7 +38,7 @@ describe('runRetroactiveImport', () => {
 
     const targets = await store.listTargets(space!.id)
     expect(targets).toHaveLength(1)
-    expect(targets[0].name).toBe('dev')
+    expect(targets[0].name).toBe('default')
   })
 
   it('writes sensitive values to SecretStore', async () => {

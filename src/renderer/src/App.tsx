@@ -128,17 +128,35 @@ function AppShell() {
   const addSpace = useCallback(async () => {
     const picked = await window.brover.pickDirectory()
     if (picked.canceled || !picked.path) return
-    const segments = picked.path.split('/').filter(Boolean)
+    const path = picked.path.trim()
+    if (spaces.some((s) => s.path === path)) return
+    const segments = path.split('/').filter(Boolean)
     const fallbackName = segments[segments.length - 1] ?? 'Space'
     const name = fallbackName.trim()
-    const path = picked.path.trim()
     const nextSpaces = await window.brover.createSpace({ name, path })
     const nextTargets = await Promise.all(
       nextSpaces.map((space) => window.brover.listTargets(space.id))
     )
     setSpaces(nextSpaces)
     setTargets(nextTargets.flat())
-  }, [])
+  }, [spaces])
+
+  const addDotfileSpace = useCallback(async () => {
+    const picked = await window.brover.pickDotfile()
+    if (picked.canceled || !picked.path) return
+    const path = picked.path.trim()
+    if (spaces.some((s) => s.path === path)) return
+    const segments = path.split('/').filter(Boolean)
+    const fallbackName = segments[segments.length - 1] ?? 'Space'
+    const name = fallbackName.trim()
+    const dirPath = segments.slice(0, -1).join('/')
+    const nextSpaces = await window.brover.createSpace({ name, path: `/${dirPath}` })
+    const nextTargets = await Promise.all(
+      nextSpaces.map((space) => window.brover.listTargets(space.id))
+    )
+    setSpaces(nextSpaces)
+    setTargets(nextTargets.flat())
+  }, [spaces])
 
   const startRenameSpace = useCallback(
     (spaceId: string, currentName: string) => {
@@ -341,6 +359,7 @@ function AppShell() {
           onLocaleChange={setLocale}
           onEditNameChange={setEditingName}
           onAddSpace={() => void addSpace()}
+          onAddDotfileSpace={() => void addDotfileSpace()}
           onStartRenameSpace={startRenameSpace}
           onSaveRenameSpace={(spaceId) => void saveRenameSpace(spaceId)}
           onEditSpaceNameChange={onEditSpaceNameChange}
