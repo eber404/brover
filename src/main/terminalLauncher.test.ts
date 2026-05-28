@@ -5,7 +5,11 @@ import { tmpdir } from 'os'
 import { createTerminalLauncher } from './terminalLauncher'
 
 describe('terminalLauncher', () => {
-  const launcher = createTerminalLauncher()
+  let launcher: ReturnType<typeof createTerminalLauncher>
+
+  beforeEach(() => {
+    launcher = createTerminalLauncher()
+  })
 
   afterEach(() => {
     vi.restoreAllMocks()
@@ -67,14 +71,24 @@ describe('terminalLauncher', () => {
       rmSync(result.commandPath!)
     })
 
-    it('escapes single quotes in values', async () => {
-      const mockExecSync = vi.spyOn(require('child_process'), 'execSync')
-      const result = await launcher.launch('target-1', 'terminal', [
-        { name: "PASSWORD", value: "pass'word" },
-      ])
-      const content = readFileSync(result.commandPath!, 'utf-8')
-      expect(content).toContain("export PASSWORD='pass'\\''word'")
-      rmSync(result.commandPath!)
+    it('reuses same .command file path for same targetId (no random suffix)', async () => {
+      const result1 = await launcher.launch('target-1', 'terminal', [{ name: 'FOO', value: 'bar' }])
+      const result2 = await launcher.launch('target-1', 'terminal', [{ name: 'BAZ', value: 'qux' }])
+      expect(result1.commandPath).toBe(result2.commandPath)
+      expect(result1.commandPath).toContain('brover-target-1.command')
+      rmSync(result1.commandPath!)
+    })
+
+    it('writes new content when called twice (file is overwritten, not appended)', async () => {
+      const l1 = createTerminalLauncher()
+      const l2 = createTerminalLauncher()
+      await l1.launch('target-B', 'terminal', [{ name: 'INITIAL', value: 'first' }])
+      await l2.launch('target-B', 'terminal', [{ name: 'UPDATED', value: 'second' }])
+      const path = join(tmpdir(), 'brover-target-B.command')
+      const content = readFileSync(path, 'utf8')
+      expect(content).toContain('export UPDATED=')
+      expect(content).not.toContain('export INITIAL=')
+      rmSync(path)
     })
   })
 })

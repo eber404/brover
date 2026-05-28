@@ -49,8 +49,7 @@ export function createTerminalLauncher() {
       return { success: true }
     }
 
-    const suffix = randomBytes(3).toString('hex')
-    const commandPath = join(tmpdir(), `brover-${targetId}-${suffix}.command`)
+    const commandPath = join(tmpdir(), `brover-${targetId}.command`)
 
     const { writeFileSync, chmodSync } = require('fs')
     const content = buildCommandContent(targetId, entries)
