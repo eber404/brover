@@ -64,7 +64,7 @@
     },
     "summary": {
       "title": "Import complete",
-      "importedSensitive": "Secrets imported",
+      "importedSensitive": "Secrets stored in Keychain",
       "removedFromDotfiles": "Lines removed from dotfiles",
       "ignoredNonSensitive": "Non-sensitive variables ignored",
       "ignoredTitle": "Ignored items",

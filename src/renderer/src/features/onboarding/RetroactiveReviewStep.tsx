@@ -162,11 +162,11 @@ export default function RetroactiveReviewStep({
                   )}
                 </button>
                 {!isCollapsed && (
-                  <div className="mt-2 flex flex-col gap-2">
+                  <div className="mt-2 flex flex-col gap-1.5">
                     {group.variables.map((v) => (
                       <Card
                         key={v.id}
-                        className={`flex cursor-pointer items-center gap-3 p-3 transition-colors ${
+                        className={`flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors ${
                           selectedIds.has(v.id)
                             ? 'border-blue-500 ring-1 ring-blue-500'
                             : 'hover:border-edge/40'
@@ -195,9 +195,9 @@ export default function RetroactiveReviewStep({
                           }
                         >
                           {revealedIds.has(v.id) ? (
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className="h-5 w-5" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-5 w-5" />
                           )}
                         </button>
                       </Card>
