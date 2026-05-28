@@ -55,12 +55,12 @@
     "mode": {
       "retroactive": {
         "title": "Importar de dotfiles",
-        "desc": "Escanea .zshrc / .bashrc existentes e importa variables de entorno",
+        "desc": "Escanea .zshrc / .bashrc existentes e importa variables de entorno seleccionadas",
         "action": "Iniciar importacion"
       },
       "freshStart": {
         "title": "Fresh start",
-        "desc": "Configura todo desde cero con una configuracion limpia",
+        "desc": "Configura nuevos secretos desde cero con una configuracion limpia. Los secretos actuales del sistema permanecen intactos.",
         "action": "Empezar de cero"
       }
     },
