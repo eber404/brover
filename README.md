@@ -18,6 +18,19 @@ Stack: **Electron + React + TypeScript + TailwindCSS**.
 
 ---
 
+## First-Run Onboarding
+
+On first launch, brover offers two onboarding modes:
+
+- **Acesso retroativo** — scans existing dotfiles (`.zshrc`, `.bashrc`, `.env.*`), parses env vars, and presents them grouped by file. User marks which vars are sensitive. Sensitive values are imported to Keychain and removed from dotfiles. Non-sensitive values are left in place.
+- **Fresh start** — scans dotfiles to detect env names and creates spaces/targets from them, but does not import any values. User builds secret entries from scratch.
+
+Onboarding runs once per user. Completion flag persisted in local config metadata.
+
+Duplicate env names across different source files remain separate (one space per file).
+
+---
+
 ## Spaces and targets
 
 - A space can contain zero or more targets.

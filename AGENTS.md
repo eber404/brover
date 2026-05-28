@@ -71,8 +71,24 @@ Secure store (macOS)
   └── Keychain service
 
 Local config
-  └── JSON metadata (spaces, targets, env metadata)
+  └── JSON metadata (spaces, targets, env metadata, onboarding flag)
 ```
+
+### Onboarding
+
+Core modules:
+
+- `onboardingScanner` — discovers dotfiles (`.zshrc`, `.bashrc`, `.env.*`), parses env names and values, groups results by source file.
+- `onboardingImporter` — handles both modes: retroactive import (moves selected sensitive values to Keychain, rewrites source files) and fresh-start space creation (scaffolds spaces/targets from env names, no value import).
+- `onboardingStateStore` — persists onboarding completion flag in local config; subsequent launches skip onboarding.
+
+IPC contracts under `onboarding.*` namespace:
+- `onboarding:check` — returns whether onboarding has been completed.
+- `onboarding:scan` — triggers scanner, returns grouped env vars per file with masked sensitive suggestions.
+- `onboarding:import-retroactive` — receives selected sensitive names per file, imports to Keychain, rewrites files to remove those entries.
+- `onboarding:import-fresh` — receives space/target names derived from dotfiles, creates metadata-only scaffold.
+
+Security: retroactive sensitive selection shows masked values without auth (pre-Keychain stage, no secrets persisted yet). After user confirms selection, values move directly to Keychain. No plaintext secrets touch local JSON at any point.
 
 ---
 
