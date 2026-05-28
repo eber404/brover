@@ -70,7 +70,7 @@
       "toRemove": "Lines to remove from dotfiles",
       "ignoredNonSensitive": "Non-sensitive variables ignored",
       "ignoredTitle": "Ignored items",
-      "action": "Confirm & Start Managing Secrets"
+      "action": "Start Managing Secrets"
     },
     "review": {
       "title": "Review scanned variables",

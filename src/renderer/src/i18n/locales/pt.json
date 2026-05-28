@@ -70,7 +70,7 @@
       "toRemove": "Linhas a remover dos dotfiles",
       "ignoredNonSensitive": "Variaveis nao sensiveis ignoradas",
       "ignoredTitle": "Itens ignorados",
-      "action": "Confirmar e começar a gerenciar segredos"
+      "action": "Começar a gerenciar segredos"
     },
     "review": {
       "title": "Revisar variaveis escaneadas",
