@@ -90,7 +90,7 @@
       "loading": "Scanning dotfiles...",
       "error": "Failed to scan dotfiles",
       "noFiles": "No dotfiles found",
-      "continue": "Continue"
+      "continue": "Start managing secrets →"
     }
   },
   "spaces": {

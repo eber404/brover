@@ -90,7 +90,7 @@
       "loading": "Escaneando dotfiles...",
       "error": "Error al escanear dotfiles",
       "noFiles": "No se encontraron dotfiles",
-      "continue": "Continuar"
+      "continue": "Empezar a gestionar secretos →"
     }
   },
   "spaces": {
