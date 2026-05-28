@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { KeyRound, Plus } from 'lucide-react'
+import { KeyRound, Plus, Terminal } from 'lucide-react'
 import type { EnvMetadata } from '../../../../shared/models'
 import { UNSUPPORTED_SECRET_BACKEND } from '../../../../shared/models'
 import { useI18n } from '../../i18n'
@@ -22,6 +22,7 @@ import { useToast } from '../../components/ui/toaster'
 interface SecretsPanelProps {
   selectedTargetId: string | null
   targetName: string
+  dotfilePath: string
   envs: EnvMetadata[]
   filteredEnvs: EnvMetadata[]
   selectedEnvId: string
@@ -146,6 +147,12 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     setEnvs(await window.brover.listEnvs())
     toast(t('common.secretCreated'))
   }
+
+  const handleLaunch = useCallback(async () => {
+    if (!props.selectedTargetId || !props.dotfilePath) return
+    const terminalApp = localStorage.getItem('brover.terminal') ?? 'Terminal'
+    await window.brover.launch.withEnv(props.selectedTargetId, props.dotfilePath, terminalApp)
+  }, [props.selectedTargetId, props.dotfilePath])
 
   async function revealEnv() {
     if (!selectedEnv) return
@@ -308,55 +315,65 @@ export function useSecretsPanel(props: SecretsPanelProps) {
         <Card className="mb-3 border-transparent bg-transparent p-0">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-text-emphasis">{targetName}</h2>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button data-testid="add-secret-button" className="px-3 py-1.5">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('secrets.addSecret')}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{t('secrets.dialogTitle')}</DialogTitle>
-                  <DialogDescription>
-                    {t('secrets.dialogDescription')}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-2">
-                  <Input
-                    data-testid="add-secret-name"
-                    placeholder={t('secrets.envName')}
-                    value={newEnvName}
-                    onChange={(event) =>
-                      setNewEnvName(normalizeEnvNameInput(event.target.value))
-                    }
-                  />
-                  <Input
-                    data-testid="add-secret-value"
-                    placeholder={t('secrets.secretValue')}
-                    value={newEnvValue}
-                    onChange={(event) => setNewEnvValue(event.target.value)}
-                  />
-                  <textarea
-                    data-testid="add-secret-description"
-                    className="min-h-20 w-full rounded-lg border border-edge bg-slate-900 px-3 py-2 text-sm text-text-emphasis outline-none placeholder:text-text-muted"
-                    placeholder={t('secrets.description')}
-                    value={newEnvDescription}
-                    onChange={(event) =>
-                      setNewEnvDescription(event.target.value)
-                    }
-                  />
-                </div>
-                <div className="mt-4 flex justify-end gap-2">
-                  <DialogClose asChild>
-                    <Button variant="outline">{t('secrets.cancel')}</Button>
-                  </DialogClose>
-                  <Button data-testid="add-secret-submit" onClick={() => void createEnv()}>
-                    {t('secrets.create')}
+<div className="flex items-center gap-2">
+              <Button
+                data-testid="launch-button"
+                className="px-3 py-1.5"
+                onClick={() => void handleLaunch()}
+              >
+                <Terminal className="mr-2 h-4 w-4" />
+                {t('launch.launch')}
+              </Button>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button data-testid="add-secret-button" className="px-3 py-1.5">
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t('secrets.addSecret')}
                   </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{t('secrets.dialogTitle')}</DialogTitle>
+                    <DialogDescription>
+                      {t('secrets.dialogDescription')}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-2">
+                    <Input
+                      data-testid="add-secret-name"
+                      placeholder={t('secrets.envName')}
+                      value={newEnvName}
+                      onChange={(event) =>
+                        setNewEnvName(normalizeEnvNameInput(event.target.value))
+                      }
+                    />
+                    <Input
+                      data-testid="add-secret-value"
+                      placeholder={t('secrets.secretValue')}
+                      value={newEnvValue}
+                      onChange={(event) => setNewEnvValue(event.target.value)}
+                    />
+                    <textarea
+                      data-testid="add-secret-description"
+                      className="min-h-20 w-full rounded-lg border border-edge bg-slate-900 px-3 py-2 text-sm text-text-emphasis outline-none placeholder:text-text-muted"
+                      placeholder={t('secrets.description')}
+                      value={newEnvDescription}
+                      onChange={(event) =>
+                        setNewEnvDescription(event.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="mt-4 flex justify-end gap-2">
+                    <DialogClose asChild>
+                      <Button variant="outline">{t('secrets.cancel')}</Button>
+                    </DialogClose>
+                    <Button data-testid="add-secret-submit" onClick={() => void createEnv()}>
+                      {t('secrets.create')}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </Card>
 
@@ -382,5 +399,6 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     deleteEnvConfirmed,
     deleteConfirmOpen,
     setDeleteConfirmOpen,
+    handleLaunch,
   }
 }

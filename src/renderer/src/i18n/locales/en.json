@@ -96,6 +96,9 @@
   "spaces": {
     "tiedTargetsTooltip": "Keep secret names synced across all targets in this space. Values remain target-specific."
   },
+  "launch": {
+    "launch": "Launch"
+  },
   "common": {
     "refresh": "Refresh",
     "details": "Details",

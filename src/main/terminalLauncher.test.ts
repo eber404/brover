@@ -32,8 +32,9 @@ describe('terminalLauncher', () => {
   })
 
   describe('launch', () => {
-    it('throws when no envs provided', async () => {
-      await expect(launcher.launch('target-1', 'terminal', [])).rejects.toThrow('No enabled envs')
+    it('succeeds even when no envs provided', async () => {
+      const result = await launcher.launch('target-1', 'terminal', [])
+      expect(result.success).toBe(true)
     })
 
     it('creates .command file with correct env vars', async () => {

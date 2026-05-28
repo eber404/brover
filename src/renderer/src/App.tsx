@@ -104,6 +104,7 @@ function AppShell() {
   const secretsPanel = useSecretsPanel({
     selectedTargetId,
     targetName: selectedTarget?.name ?? '',
+    dotfilePath: spaces.find(s => s.id === selectedSpaceId)?.dotfilePath ?? '',
     envs: targetEnvs,
     filteredEnvs,
     selectedEnvId,
@@ -367,9 +368,6 @@ function AppShell() {
           onToggleSpaceTiedSecrets={(spaceId) =>
             void toggleSpaceTiedSecrets(spaceId)
           }
-          onInject={(targetId, dotfilePath) => void window.brover.inject.activate(targetId, dotfilePath)}
-          onEject={(targetId, dotfilePath) => void window.brover.inject.deactivate(targetId, dotfilePath)}
-          onLaunch={(targetId, terminalApp) => void window.brover.launch.terminal(targetId, terminalApp)}
         />
       </div>
 

@@ -96,6 +96,9 @@
   "spaces": {
     "tiedTargetsTooltip": "Manter nomes de segredos sincronizados em todos os targets deste espaco. Valores permanecem especificos de cada target."
   },
+  "launch": {
+    "launch": "Launch"
+  },
   "common": {
     "refresh": "Atualizar",
     "details": "Detalhes",

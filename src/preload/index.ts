@@ -47,6 +47,7 @@ const api: BroverAPI = {
   },
   launch: {
     terminal: (targetId, terminalApp) => ipcRenderer.invoke('launch:terminal', { targetId, terminalApp }),
+    withEnv: (targetId, dotfilePath, terminalApp) => ipcRenderer.invoke('launch:with-env', { targetId, dotfilePath, terminalApp }),
     listTerminals: () => ipcRenderer.invoke('launch:list-terminals'),
   },
 

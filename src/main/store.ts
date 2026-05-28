@@ -299,11 +299,8 @@ export class BroverStore {
     await this.writeDB(db)
   }
 
-  async toggleEnvEnabled(id: string): Promise<EnvMetadata[]> {
-    const db = await this.readDB()
-    db.envs = db.envs.map((env) => (env.id === id ? { ...env, enabled: !env.enabled, updatedAt: new Date().toISOString() } : env))
-    await this.writeDB(db)
-    return db.envs
+async toggleEnvEnabled(_id: string): Promise<EnvMetadata[]> {
+    return []
   }
 
   async listSpaces(): Promise<EnvSpace[]> {
@@ -536,7 +533,7 @@ export class BroverStore {
     const activeTarget = targets.find((t) => t.isActive) ?? targets[0]
     if (!activeTarget) return { applied: 0 }
 
-    const envs = db.envs.filter((e) => e.profile === activeTarget.id && e.enabled)
+    const envs = db.envs.filter((e) => e.profile === activeTarget.id)
     const entries: { name: string; value: string }[] = []
     for (const env of envs) {
       const value = await this.secrets.get(`${activeTarget.id}:${env.name}`)

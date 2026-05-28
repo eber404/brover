@@ -50,9 +50,6 @@ const defaultProps = {
   onDeleteTarget: vi.fn(),
   onDeleteSpace: vi.fn(),
   onToggleSpaceTiedSecrets: vi.fn(),
-  onInject: vi.fn(),
-  onEject: vi.fn(),
-  onLaunch: vi.fn(),
 }
 
 describe('SpacesSidebar', () => {

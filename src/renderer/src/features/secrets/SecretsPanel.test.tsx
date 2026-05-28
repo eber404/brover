@@ -19,6 +19,7 @@ function SecretsTestWrapper(props: Partial<Parameters<typeof useSecretsPanel>[0]
   const panel = useSecretsPanel({
     selectedTargetId: 'target-1',
     targetName: props.targetName ?? 'dev',
+    dotfilePath: props.dotfilePath ?? '/Users/test/.zshrc',
     envs: props.envs ?? [],
     filteredEnvs: props.filteredEnvs ?? [],
     selectedEnvId: props.selectedEnvId ?? '',

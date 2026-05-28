@@ -367,20 +367,6 @@ describe('BroverStore', () => {
       const remaining = await store.listEnvs()
       expect(remaining.find((e) => e.name === 'SHARED')).toBeUndefined()
     })
-
-    it('toggleEnvEnabled flips enabled flag', async () => {
-      const spaces = await store.createSpace({ name: 'Repo', dotfilePath: '/tmp/repo/.zshrc' })
-      const newSpace = spaces.find((s) => s.name === 'Repo')!
-      const targets = await store.listTargets(newSpace.id)
-      const devTarget = targets.find((t) => t.name === 'default')!
-
-      await store.createEnv({ name: 'TOGGLE', profile: devTarget.id, value: 'secret' })
-      const envs = await store.listEnvs()
-      const env = envs.find((e) => e.name === 'TOGGLE')!
-
-      const toggled = await store.toggleEnvEnabled(env.id)
-      expect(toggled.find((e) => e.id === env.id)?.enabled).toBe(false)
-    })
   })
 
   describe('Apps', () => {

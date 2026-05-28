@@ -152,9 +152,9 @@ async function bootstrap() {
   ipcMain.handle('inject:activate', async (_, payload: { targetId: string; dotfilePath: string }) => {
     try {
       const envs = await store.listEnvs()
-      const enabled = envs.filter(e => e.profile === payload.targetId && e.enabled)
+      const targetEnvs = envs.filter(e => e.profile === payload.targetId)
       const entries: { name: string; value: string }[] = []
-      for (const env of enabled) {
+      for (const env of targetEnvs) {
         const value = await store.secrets.get(`${payload.targetId}:${env.name}`)
         if (value != null) entries.push({ name: env.name, value })
       }
@@ -185,12 +185,29 @@ async function bootstrap() {
   ipcMain.handle('launch:terminal', async (_, payload: { targetId: string; terminalApp: string }) => {
     try {
       const envs = await store.listEnvs()
-      const enabled = envs.filter(e => e.profile === payload.targetId && e.enabled)
+      const targetEnvs = envs.filter(e => e.profile === payload.targetId)
       const entries: { name: string; value: string }[] = []
-      for (const env of enabled) {
+      for (const env of targetEnvs) {
         const value = await store.secrets.get(`${payload.targetId}:${env.name}`)
         if (value != null) entries.push({ name: env.name, value })
       }
+      await terminalLauncher.launch(payload.targetId, payload.terminalApp, entries)
+      return { success: true }
+    } catch (e) {
+      return { success: false, error: String(e) }
+    }
+  })
+
+  ipcMain.handle('launch:with-env', async (_, payload: { targetId: string; dotfilePath: string; terminalApp: string }) => {
+    try {
+      const envs = await store.listEnvs()
+      const targetEnvs = envs.filter(e => e.profile === payload.targetId)
+      const entries: { name: string; value: string }[] = []
+      for (const env of targetEnvs) {
+        const value = await store.secrets.get(`${payload.targetId}:${env.name}`)
+        if (value != null) entries.push({ name: env.name, value })
+      }
+      await envInjector.activate(payload.targetId, payload.dotfilePath, entries)
       await terminalLauncher.launch(payload.targetId, payload.terminalApp, entries)
       return { success: true }
     } catch (e) {

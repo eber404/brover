@@ -61,6 +61,7 @@ export interface BroverAPI {
   }
   launch: {
     terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }>
+    withEnv: (targetId: string, dotfilePath: string, terminalApp: string) => Promise<{ success: boolean }>
     listTerminals: () => Promise<{ terminals: TerminalApp[] }>
   }
 

@@ -44,7 +44,10 @@ export function createTerminalLauncher() {
     terminalAppId: string,
     entries: EnvEntry[],
   ): Promise<{ success: boolean; commandPath?: string }> {
-    if (entries.length === 0) throw new Error('No enabled envs')
+    if (entries.length === 0) {
+      console.warn('[terminalLauncher] No envs to inject, skipping launch')
+      return { success: true }
+    }
 
     const suffix = randomBytes(3).toString('hex')
     const commandPath = join(tmpdir(), `brover-${targetId}-${suffix}.command`)
