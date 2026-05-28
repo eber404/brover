@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import WelcomeStep from './WelcomeStep'
 import RetroactiveReviewStep from './RetroactiveReviewStep'
 import SummaryStep from './SummaryStep'
@@ -10,13 +11,11 @@ interface OnboardingFlowProps {
 
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [step, setStep] = useState<'welcome' | 'review' | 'summary'>('welcome')
-  const [mode, setMode] = useState<'retroactive' | 'fresh-start' | null>(null)
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
   const [summaryResult, setSummaryResult] = useState<OnboardingSummary | null>(null)
 
   const handleModeSelect = useCallback(
     async (selectedMode: 'retroactive' | 'fresh-start') => {
-      setMode(selectedMode)
       if (selectedMode === 'retroactive') {
         setStep('review')
       } else {
@@ -45,22 +44,41 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     onComplete()
   }, [onComplete])
 
-  if (step === 'welcome') {
-    return <WelcomeStep onSelectMode={handleModeSelect} />
-  }
+  const handleBack = useCallback(() => {
+    setStep('welcome')
+  }, [])
 
-  if (step === 'review') {
-    return <RetroactiveReviewStep onContinue={handleRetroactiveContinue} />
-  }
+  const dragStyle = { WebkitAppRegion: 'drag' } as React.CSSProperties
 
-  if (step === 'summary') {
-    return (
-      <SummaryStep
-        summary={summaryResult ?? { importedSensitive: 0, removedFromDotfiles: 0, ignoredNonSensitive: 0, ignoredWithReason: [] }}
-        onComplete={handleComplete}
-      />
-    )
-  }
+  const content = (() => {
+    if (step === 'welcome') return <WelcomeStep onSelectMode={handleModeSelect} />
+    if (step === 'review') return <RetroactiveReviewStep onContinue={handleRetroactiveContinue} />
+    if (step === 'summary') {
+      return (
+        <SummaryStep
+          summary={summaryResult ?? { importedSensitive: 0, removedFromDotfiles: 0, ignoredNonSensitive: 0, ignoredWithReason: [] }}
+          onComplete={handleComplete}
+        />
+      )
+    }
+    return null
+  })()
 
-  return null
+  return (
+    <>
+      <div className="absolute inset-x-0 top-0 z-50 h-11 w-20" style={dragStyle} />
+      <div className="absolute inset-x-0 top-0 z-50 h-4" style={dragStyle} />
+      {step !== 'welcome' && (
+        <button
+          type="button"
+          onClick={handleBack}
+          className="absolute left-4 top-4 z-50 flex items-center gap-1 text-sm text-text-muted hover:text-text-base transition-colors"
+          aria-label="back"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+      )}
+      {content}
+    </>
+  )
 }

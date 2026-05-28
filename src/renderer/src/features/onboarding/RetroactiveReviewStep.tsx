@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
@@ -31,6 +32,7 @@ export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewS
   const [error, setError] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set())
+  const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     window.brover.onboarding
@@ -48,11 +50,8 @@ export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewS
   const toggleSelection = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
   }, [])
@@ -60,11 +59,17 @@ export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewS
   const toggleReveal = useCallback((id: string) => {
     setRevealedIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
+
+  const toggleCollapse = useCallback((filePath: string) => {
+    setCollapsedPaths((prev) => {
+      const next = new Set(prev)
+      if (next.has(filePath)) next.delete(filePath)
+      else next.add(filePath)
       return next
     })
   }, [])
@@ -105,63 +110,75 @@ export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewS
           <p className="text-sm text-text-muted">{t('onboarding.review.subtitle')}</p>
         </div>
 
-        {scanResult.warnings.length > 0 && (
-          <Card className="border-amber-action bg-amber-on p-4">
-            <p className="text-sm text-amber-status">{t('onboarding.review.warnings')}</p>
-            <ul className="mt-2 list-inside list-disc text-sm text-text-muted">
-              {scanResult.warnings.map((w, i) => (
-                <li key={i}>{w.message}</li>
-              ))}
-            </ul>
-          </Card>
-        )}
-
         <div className="flex flex-col gap-6">
-          {groups.map((group) => (
-            <div key={group.filePath}>
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-text-muted">
-                {fileName(group.filePath)}
-              </h2>
-              <div className="flex flex-col gap-2">
-                {group.variables.map((v) => (
-                  <Card key={v.id} className="flex items-center gap-3 p-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(v.id)}
-                      onChange={() => toggleSelection(v.id)}
-                      className="h-4 w-4 cursor-pointer accent-accent"
-                      aria-label={`${t('onboarding.review.selectVariable')} ${v.name}`}
-                    />
-                    <div className="flex flex-1 flex-col gap-0.5">
-                      <span className="font-mono text-sm text-text-base">{v.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-text-muted">
-                          {revealedIds.has(v.id) ? v.value : '••••••'}
-                        </span>
+          {groups.map((group) => {
+            const isCollapsed = collapsedPaths.has(group.filePath)
+            return (
+              <div key={group.filePath}>
+                <button
+                  type="button"
+                  onClick={() => toggleCollapse(group.filePath)}
+                  className="flex w-full items-center justify-between py-1 text-sm font-semibold uppercase tracking-wide text-text-muted hover:text-text-base transition-colors"
+                >
+                  <span>{fileName(group.filePath)}</span>
+                  {isCollapsed ? (
+                    <ChevronRight className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+                {!isCollapsed && (
+                  <div className="mt-2 flex flex-col gap-2">
+                    {group.variables.map((v) => (
+                      <Card
+                        key={v.id}
+                        className={`flex cursor-pointer items-center gap-3 p-3 transition-colors ${
+                          selectedIds.has(v.id)
+                            ? 'border-blue-500 ring-1 ring-blue-500'
+                            : 'hover:border-edge/40'
+                        }`}
+                        onClick={() => toggleSelection(v.id)}
+                      >
+                        <div className="flex flex-1 flex-col gap-0.5">
+                          <span className="font-mono text-sm text-text-base">{v.name}</span>
+                          <span className="text-xs text-text-muted">
+                            {revealedIds.has(v.id) ? v.value : '••••••'}
+                          </span>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => toggleReveal(v.id)}
-                          className="text-xs text-accent hover:underline"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleReveal(v.id)
+                          }}
+                          className="text-text-muted hover:text-accent transition-colors"
                           aria-label={
                             revealedIds.has(v.id)
                               ? t('onboarding.review.hide')
                               : t('onboarding.review.reveal')
                           }
                         >
-                          {revealedIds.has(v.id)
-                            ? t('onboarding.review.hide')
-                            : t('onboarding.review.reveal')}
+                          {revealedIds.has(v.id) ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </button>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-text-muted">
-                      {fileName(v.sourceFile)}
-                    </span>
-                  </Card>
-                ))}
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(v.id)}
+                          onChange={() => toggleSelection(v.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="h-4 w-4 cursor-pointer accent-accent"
+                          aria-label={`${t('onboarding.review.selectVariable')} ${v.name}`}
+                        />
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {groups.length === 0 && (
