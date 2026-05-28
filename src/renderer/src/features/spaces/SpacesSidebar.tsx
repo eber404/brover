@@ -261,12 +261,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(
                   >
                     Import dotfile
                   </button>
-        </div>
-        {selectedSpace?.kind === 'directory' && selectedSpace.path && (
-          <p className="mt-1 truncate text-[11px] text-text-muted">
-            {selectedSpace.path.replace(typeof process !== 'undefined' && process.env?.HOME ? process.env.HOME : '', '~')}
-          </p>
-        )}
+                </div>
               </>
             )}
           </div>
@@ -297,6 +292,11 @@ export const SpacesSidebar = memo(function SpacesSidebar(
             <Plus className="h-4 w-4" />
           </button>
         </div>
+        {selectedSpace && (
+          <p className="mt-0.5 truncate text-[11px] text-text-muted">
+            {selectedSpace.name}
+          </p>
+        )}
         <div className="mt-2 flex items-center justify-between rounded border border-edge/60 bg-surface-base px-2 py-1.5">
           <div className="group/tt relative">
             <span className="text-[011px] text-text-base">Tied targets</span>
