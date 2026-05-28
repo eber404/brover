@@ -9,7 +9,11 @@ import {
 import {
   UNSUPPORTED_SECRET_BACKEND,
   type SecretActionResult,
+  type ScanResult,
+  type RetroactiveSelection,
 } from '../shared/models'
+import { scanDotfiles } from './onboardingScanner'
+import { runRetroactiveImport, runFreshStartImport } from './onboardingImporter'
 import { createSecretAuthGate } from './secretAuthGate'
 import { createAuthSessionCache } from './authSessionCache'
 import { createMacSecretAuthPrompt } from './authPrompt'
@@ -221,6 +225,36 @@ async function bootstrap() {
       return failure(error)
     }
   })
+
+  ipcMain.handle('onboarding:get-status', () => store.getOnboardingStatus())
+
+  ipcMain.handle('onboarding:scan-dotfiles', async () => {
+    const home = process.env.BROVER_HOME ?? process.env.HOME
+    if (!home) throw new Error('HOME not found')
+    return scanDotfiles(home)
+  })
+
+  ipcMain.handle(
+    'onboarding:run-retroactive',
+    async (
+      _,
+      payload: {
+        scanResult: ScanResult
+        selection: RetroactiveSelection
+      },
+    ) => {
+      return runRetroactiveImport(store, payload.scanResult, payload.selection)
+    },
+  )
+
+  ipcMain.handle(
+    'onboarding:run-fresh-start',
+    async (_, payload: { scanResult: ScanResult }) => {
+      return runFreshStartImport(store, payload.scanResult)
+    },
+  )
+
+  ipcMain.handle('onboarding:complete', () => store.markOnboardingComplete())
 
   const window = new BrowserWindow({
     width: 1200,
