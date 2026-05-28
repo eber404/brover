@@ -14,8 +14,9 @@ Brover is an Electron desktop app for local environment secret management.
 2. Keep auth gates for reveal/copy(hidden)/update/delete.
 3. Use target-scoped value and enabled state.
 4. Respect per-space `tiedSecrets` toggle (`Tied targets`) behavior.
-5. Global space applies active target to shell files (`.zshrc`, `.bashrc`).
-6. Directory spaces apply selected target to `.env.<target>`.
+5. Dotfile spaces apply active target to their dotfile (via `applySpace`).
+6. Inject feature: creates temp cache file with target envs from Keychain, adds conditional `source` line to dotfile.
+7. Launch feature: creates `.command` file with env vars, opens terminal app (Warp/iTerm2/Terminal).
 7. Prefer early return and avoid nested conditionals/ternaries.
 8. Avoid ternary inside JSX trees.
 9. Use stable handlers and `useMemo`/`useCallback` where useful.
@@ -31,7 +32,9 @@ Deliver a stable local control plane to:
 - keep sensitive values in secure backend on macOS (Keychain);
 - guard reveal/copy/update/delete behind authentication;
 - persist only non-sensitive metadata in local JSON;
-- apply selected target values to shell/dotenv outputs.
+- apply selected target values to shell/dotenv outputs;
+- inject target envs into dotfiles via cache file;
+- launch terminal with target envs pre-loaded.
 
 ---
 
@@ -63,9 +66,9 @@ Deliver a stable local control plane to:
 
 ```txt
 Electron App
-  ├── Main process (IPC, auth gate, persistence, apply writers)
+  ├── Main process (IPC, auth gate, persistence, envInjector, terminalLauncher)
   ├── Preload bridge (typed window.brover API)
-  └── Renderer (React UI: spaces, targets, secrets, details)
+  └── Renderer (React UI: spaces, targets, secrets, details, TargetActions)
 
 Secure store (macOS)
   └── Keychain service
@@ -73,6 +76,23 @@ Secure store (macOS)
 Local config
   └── JSON metadata (spaces, targets, env metadata, onboarding flag)
 ```
+
+### Space model
+
+All spaces are `kind: 'dotfile'`. Each space points to one dotfile (e.g., `~/.zshrc`). No more global/directory distinction.
+
+### Inject feature
+
+- `envInjector` module: manages cache files in `~/Library/Application Support/brover/env-cache/`
+- Each target can be "injected" — creates cache file with envs, adds conditional source line to dotfile
+- Startup cleanup removes all stale caches
+- Dotfile block uses `[ -f path ] && source path` guard so missing cache is silent
+
+### Launch feature
+
+- `terminalLauncher` module: creates `.command` file in `/tmp/`, opens terminal app
+- Supports Warp, iTerm2, Terminal.app
+- User picks terminal from dropdown (persisted in localStorage)
 
 ### Onboarding
 
@@ -161,8 +181,7 @@ Reject spaces, shell metacharacters, empty names, and numeric-leading names.
 
 ## Code Standards
 
-- Global space applies active target to shell files (`.zshrc`, `.bashrc`).
-- Directory spaces apply selected target to `.env.<target>`.
+- Dotfile spaces apply active target to their dotfile (via `applySpace`).
 - Prefer early return and avoid nested conditionals/ternaries.
 - Avoid ternary inside JSX trees.
 - Use stable handlers and `useMemo`/`useCallback` where useful.
