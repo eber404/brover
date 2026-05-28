@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import { useI18n } from '../../i18n'
-import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
 
 interface WelcomeStepProps {
@@ -31,7 +30,10 @@ export default function WelcomeStep({ onSelectMode }: WelcomeStepProps) {
         </div>
 
         <div className="grid w-full grid-cols-2 gap-4">
-          <Card className="flex cursor-pointer flex-col gap-3 p-6 transition hover:border-accent hover:shadow-lg animate-fade-in-up">
+          <Card
+            className="flex cursor-pointer flex-col gap-3 p-6 transition hover:border-accent hover:shadow-lg animate-fade-in-up"
+            onClick={handleRetroactive}
+          >
             <div className="flex flex-col gap-1">
               <h2 className="text-lg font-semibold text-text-base">
                 {t('onboarding.mode.retroactive.title')}
@@ -40,16 +42,15 @@ export default function WelcomeStep({ onSelectMode }: WelcomeStepProps) {
                 {t('onboarding.mode.retroactive.desc')}
               </p>
             </div>
-            <Button
-              variant="outline"
-              className="mt-auto w-full"
-              onClick={handleRetroactive}
-            >
-              {t('onboarding.mode.retroactive.action')}
-            </Button>
+            <span className="mt-auto text-sm font-medium text-accent">
+              {t('onboarding.mode.retroactive.action')} →
+            </span>
           </Card>
 
-          <Card className="flex cursor-pointer flex-col gap-3 p-6 transition hover:border-accent hover:shadow-lg animate-fade-in-up">
+          <Card
+            className="flex cursor-pointer flex-col gap-3 p-6 transition hover:border-accent hover:shadow-lg animate-fade-in-up"
+            onClick={handleFreshStart}
+          >
             <div className="flex flex-col gap-1">
               <h2 className="text-lg font-semibold text-text-base">
                 {t('onboarding.mode.freshStart.title')}
@@ -58,13 +59,9 @@ export default function WelcomeStep({ onSelectMode }: WelcomeStepProps) {
                 {t('onboarding.mode.freshStart.desc')}
               </p>
             </div>
-            <Button
-              variant="outline"
-              className="mt-auto w-full"
-              onClick={handleFreshStart}
-            >
-              {t('onboarding.mode.freshStart.action')}
-            </Button>
+            <span className="mt-auto text-sm font-medium text-accent">
+              {t('onboarding.mode.freshStart.action')} →
+            </span>
           </Card>
         </div>
       </div>
