@@ -1,47 +1,68 @@
 import { useCallback, useState } from 'react'
 import WelcomeStep from './WelcomeStep'
 import RetroactiveReviewStep from './RetroactiveReviewStep'
-import SummaryStep from './SummaryStep'
+import ConfirmationStep from './ConfirmationStep'
 import type { ScanResult, OnboardingSummary, RetroactiveSelection } from '../../../../shared/models'
 
 interface OnboardingFlowProps {
   onComplete: () => void
 }
 
+function computePreviewSummary(scanResult: ScanResult, selectedIds: string[]): OnboardingSummary {
+  const totalVars = scanResult.files.reduce((sum, f) => sum + f.variables.length, 0)
+  return {
+    importedSensitive: selectedIds.length,
+    removedFromDotfiles: selectedIds.length,
+    ignoredNonSensitive: totalVars - selectedIds.length,
+    ignoredWithReason: [],
+  }
+}
+
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
-  const [step, setStep] = useState<'welcome' | 'review' | 'summary'>('welcome')
+  const [step, setStep] = useState<'welcome' | 'review' | 'confirmation'>('welcome')
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
-  const [summaryResult, setSummaryResult] = useState<OnboardingSummary | null>(null)
+  const [retroactivePayload, setRetroactivePayload] = useState<{
+    scanResult: ScanResult
+    selection: RetroactiveSelection
+  } | null>(null)
 
   const handleModeSelect = useCallback(
     async (selectedMode: 'retroactive' | 'fresh-start') => {
       if (selectedMode === 'retroactive') {
         setStep('review')
       } else {
-        const scan = await window.brover.onboarding.scanDotfiles()
-        setScanResult(scan)
-        const summary = await window.brover.onboarding.runFreshStart({ scanResult: scan })
-        setSummaryResult(summary)
-        setStep('summary')
+        try {
+          const scan = await window.brover.onboarding.scanDotfiles()
+          await window.brover.onboarding.runFreshStart({ scanResult: scan })
+          await window.brover.onboarding.complete()
+          onComplete()
+        } catch (err) {
+          console.error('Fresh start failed', err)
+        }
       }
     },
-    []
+    [onComplete]
   )
 
   const handleRetroactiveContinue = useCallback(
-    async (payload: { scanResult: ScanResult; selection: RetroactiveSelection }) => {
+    (payload: { scanResult: ScanResult; selection: RetroactiveSelection }) => {
+      setRetroactivePayload(payload)
       setScanResult(payload.scanResult)
-      const summary = await window.brover.onboarding.runRetroactive(payload)
-      setSummaryResult(summary)
-      setStep('summary')
+      setStep('confirmation')
     },
     []
   )
 
-  const handleComplete = useCallback(async () => {
-    await window.brover.onboarding.complete()
-    onComplete()
-  }, [onComplete])
+  const handleConfirmRetroactive = useCallback(async () => {
+    if (!retroactivePayload) return
+    try {
+      await window.brover.onboarding.runRetroactive(retroactivePayload)
+      await window.brover.onboarding.complete()
+      onComplete()
+    } catch (err) {
+      console.error('Retroactive import failed', err)
+    }
+  }, [retroactivePayload, onComplete])
 
   const handleBack = useCallback(() => {
     setStep('welcome')
@@ -49,14 +70,18 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const dragStyle = { WebkitAppRegion: 'drag' } as React.CSSProperties
 
+  const summary: OnboardingSummary | null = retroactivePayload
+    ? computePreviewSummary(retroactivePayload.scanResult, retroactivePayload.selection.selectedSensitiveIds)
+    : null
+
   const content = (() => {
     if (step === 'welcome') return <WelcomeStep onSelectMode={handleModeSelect} />
     if (step === 'review') return <RetroactiveReviewStep onContinue={handleRetroactiveContinue} onBack={handleBack} />
-    if (step === 'summary') {
+    if (step === 'confirmation') {
       return (
-        <SummaryStep
-          summary={summaryResult ?? { importedSensitive: 0, removedFromDotfiles: 0, ignoredNonSensitive: 0, ignoredWithReason: [] }}
-          onComplete={handleComplete}
+        <ConfirmationStep
+          summary={summary ?? { importedSensitive: 0, removedFromDotfiles: 0, ignoredNonSensitive: 0, ignoredWithReason: [] }}
+          onConfirm={handleConfirmRetroactive}
           onBack={handleBack}
         />
       )

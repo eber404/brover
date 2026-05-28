@@ -1,23 +1,17 @@
 import { ArrowLeft } from 'lucide-react'
-import { useCallback } from 'react'
 import { useI18n } from '../../i18n'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
 import type { OnboardingSummary } from '../../../../shared/models'
 
-interface SummaryStepProps {
+interface ConfirmationStepProps {
   summary: OnboardingSummary
-  onComplete: () => void
+  onConfirm: () => void
   onBack: () => void
 }
 
-export default function SummaryStep({ summary, onComplete, onBack }: SummaryStepProps) {
+export default function ConfirmationStep({ summary, onConfirm, onBack }: ConfirmationStepProps) {
   const { t } = useI18n()
-
-  const handleComplete = useCallback(async () => {
-    await window.brover.onboarding.complete()
-    onComplete()
-  }, [onComplete])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface-base p-6">
@@ -32,14 +26,14 @@ export default function SummaryStep({ summary, onComplete, onBack }: SummaryStep
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-2xl font-bold text-text-base text-left">
-            {t('onboarding.summary.title')}
+            {t('onboarding.confirmation.title')}
           </h1>
         </div>
 
         <div className="flex flex-col gap-3">
           <Card className="flex items-center justify-between p-4">
             <span className="text-sm text-text-muted">
-              {t('onboarding.summary.importedSensitive')}
+              {t('onboarding.confirmation.toStore')}
             </span>
             <span className="text-xl font-bold text-text-base">
               {summary.importedSensitive}
@@ -48,7 +42,7 @@ export default function SummaryStep({ summary, onComplete, onBack }: SummaryStep
 
           <Card className="flex items-center justify-between p-4">
             <span className="text-sm text-text-muted">
-              {t('onboarding.summary.removedFromDotfiles')}
+              {t('onboarding.confirmation.toRemove')}
             </span>
             <span className="text-xl font-bold text-text-base">
               {summary.removedFromDotfiles}
@@ -57,7 +51,7 @@ export default function SummaryStep({ summary, onComplete, onBack }: SummaryStep
 
           <Card className="flex items-center justify-between p-4">
             <span className="text-sm text-text-muted">
-              {t('onboarding.summary.ignoredNonSensitive')}
+              {t('onboarding.confirmation.ignoredNonSensitive')}
             </span>
             <span className="text-xl font-bold text-text-base">
               {summary.ignoredNonSensitive}
@@ -68,7 +62,7 @@ export default function SummaryStep({ summary, onComplete, onBack }: SummaryStep
         {summary.ignoredWithReason.length > 0 && (
           <div className="flex flex-col gap-2">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-text-muted">
-              {t('onboarding.summary.ignoredTitle')}
+              {t('onboarding.confirmation.ignoredTitle')}
             </h2>
             <div className="flex flex-col gap-2">
               {summary.ignoredWithReason.map((item, i) => (
@@ -83,8 +77,8 @@ export default function SummaryStep({ summary, onComplete, onBack }: SummaryStep
           </div>
         )}
 
-        <Button className="w-full" onClick={handleComplete}>
-          {t('onboarding.summary.action')}
+        <Button className="w-full" onClick={onConfirm}>
+          {t('onboarding.confirmation.action')}
         </Button>
       </div>
     </div>

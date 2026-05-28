@@ -1,11 +1,24 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import OnboardingFlow from './OnboardingFlow'
 
 vi.mock('../../i18n', () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }))
+
+const mockScanResult = {
+  files: [
+    {
+      filePath: '/Users/test/.zshrc',
+      variables: [
+        { id: '1', name: 'API_KEY', value: 'secret123', sourceFile: '/Users/test/.zshrc' },
+        { id: '2', name: 'PORT', value: '3000', sourceFile: '/Users/test/.zshrc' },
+      ],
+    },
+  ],
+  warnings: [],
+}
 
 describe('OnboardingFlow', () => {
   afterEach(cleanup)
@@ -13,8 +26,9 @@ describe('OnboardingFlow', () => {
   beforeEach(() => {
     window.brover = {
       onboarding: {
-        scanDotfiles: vi.fn().mockResolvedValue({ files: [], warnings: [] }),
-        runFreshStart: vi.fn().mockResolvedValue({ importedSensitive: 0, removedFromDotfiles: 0, ignoredNonSensitive: 0, ignoredWithReason: [] }),
+        scanDotfiles: vi.fn().mockResolvedValue(mockScanResult),
+        runFreshStart: vi.fn().mockResolvedValue(undefined),
+        runRetroactive: vi.fn().mockResolvedValue(undefined),
         complete: vi.fn().mockResolvedValue(undefined),
         getStatus: vi.fn().mockResolvedValue({}),
       },
@@ -33,5 +47,36 @@ describe('OnboardingFlow', () => {
     expect(subHeadings).toHaveLength(2)
     expect(subHeadings[0].textContent).toMatch(/retroactive/i)
     expect(subHeadings[1].textContent).toMatch(/fresh/i)
+  })
+
+  it('fresh start completes onboarding directly without confirmation', async () => {
+    const onComplete = vi.fn()
+    render(<OnboardingFlow onComplete={onComplete} />)
+    fireEvent.click(screen.getByText(/onboarding\.mode\.freshStart\.action/i))
+    await waitFor(() => {
+      expect(window.brover.onboarding.runFreshStart).toHaveBeenCalled()
+      expect(window.brover.onboarding.complete).toHaveBeenCalled()
+      expect(onComplete).toHaveBeenCalled()
+    })
+  })
+
+  it('retroactive flow goes from review to confirmation', async () => {
+    const onComplete = vi.fn()
+    render(<OnboardingFlow onComplete={onComplete} />)
+    fireEvent.click(screen.getByText(/onboarding\.mode\.retroactive\.action/i))
+    await waitFor(() => {
+      expect(screen.getByText(/onboarding\.review\.title/i)).toBeTruthy()
+    })
+    fireEvent.click(screen.getByText('API_KEY'))
+    fireEvent.click(screen.getByText(/onboarding\.review\.continue/i))
+    await waitFor(() => {
+      expect(screen.getByText(/onboarding\.confirmation\.title/i)).toBeTruthy()
+    })
+    fireEvent.click(screen.getByText(/onboarding\.confirmation\.action/i))
+    await waitFor(() => {
+      expect(window.brover.onboarding.runRetroactive).toHaveBeenCalled()
+      expect(window.brover.onboarding.complete).toHaveBeenCalled()
+      expect(onComplete).toHaveBeenCalled()
+    })
   })
 })

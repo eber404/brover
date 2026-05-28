@@ -62,13 +62,13 @@
         "action": "Start fresh"
       }
     },
-    "summary": {
-      "title": "Import complete",
-      "importedSensitive": "Secrets stored in Keychain",
-      "removedFromDotfiles": "Lines removed from dotfiles",
+    "confirmation": {
+      "title": "Review import plan",
+      "toStore": "Secrets to store in Keychain",
+      "toRemove": "Lines to remove from dotfiles",
       "ignoredNonSensitive": "Non-sensitive variables ignored",
       "ignoredTitle": "Ignored items",
-      "action": "Go to Dashboard"
+      "action": "Confirm"
     },
     "review": {
       "title": "Review scanned variables",

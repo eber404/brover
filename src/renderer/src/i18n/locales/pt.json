@@ -62,13 +62,13 @@
         "action": "Comecar do zero"
       }
     },
-    "summary": {
-      "title": "Importacao concluida",
-      "importedSensitive": "Segredos importados",
-      "removedFromDotfiles": "Linhas removidas dos dotfiles",
+    "confirmation": {
+      "title": "Rever plano de importacao",
+      "toStore": "Segredos a armazenar no Keychain",
+      "toRemove": "Linhas a remover dos dotfiles",
       "ignoredNonSensitive": "Variaveis nao sensiveis ignoradas",
       "ignoredTitle": "Itens ignorados",
-      "action": "Ir para Dashboard"
+      "action": "Confirmar"
     },
     "review": {
       "title": "Revisar variaveis escaneadas",
