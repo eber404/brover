@@ -62,6 +62,14 @@
         "action": "Empezar de cero"
       }
     },
+    "summary": {
+      "title": "Importacion completada",
+      "importedSensitive": "Secretos importados",
+      "removedFromDotfiles": "Lineas eliminadas de dotfiles",
+      "ignoredNonSensitive": "Variables no sensibles ignoradas",
+      "ignoredTitle": "Elementos ignorados",
+      "action": "Ir al Dashboard"
+    },
     "review": {
       "title": "Revisar variables escaneadas",
       "subtitle": "Selecciona que variables contienen valores sensibles para importar de forma segura",

@@ -43,7 +43,7 @@ const api: BroverAPI = {
     getStatus: () => ipcRenderer.invoke('onboarding:get-status'),
     scanDotfiles: () => ipcRenderer.invoke('onboarding:scan-dotfiles'),
     runRetroactive: (selection) => ipcRenderer.invoke('onboarding:run-retroactive', selection),
-    runFreshStart: () => ipcRenderer.invoke('onboarding:run-fresh-start'),
+    runFreshStart: (p) => ipcRenderer.invoke('onboarding:run-fresh-start', p),
     complete: () => ipcRenderer.invoke('onboarding:complete'),
   }
 }

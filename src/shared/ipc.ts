@@ -56,7 +56,7 @@ export interface BroverAPI {
     getStatus: () => Promise<OnboardingStatus>
     scanDotfiles: () => Promise<ScanResult>
     runRetroactive: (payload: RetroactivePayload) => Promise<OnboardingSummary>
-    runFreshStart: () => Promise<OnboardingSummary>
+    runFreshStart: (payload: { scanResult: ScanResult }) => Promise<OnboardingSummary>
     complete: () => Promise<void>
   }
 }

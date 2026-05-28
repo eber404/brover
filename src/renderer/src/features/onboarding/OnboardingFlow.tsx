@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import WelcomeStep from './WelcomeStep'
 import RetroactiveReviewStep from './RetroactiveReviewStep'
+import SummaryStep from './SummaryStep'
 import type { ScanResult, OnboardingSummary, RetroactiveSelection } from '../../../../shared/models'
 
 interface OnboardingFlowProps {
@@ -19,6 +20,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       if (selectedMode === 'retroactive') {
         setStep('review')
       } else {
+        const scan = await window.brover.onboarding.scanDotfiles()
+        setScanResult(scan)
+        const summary = await window.brover.onboarding.runFreshStart({ scanResult: scan })
+        setSummaryResult(summary)
         setStep('summary')
       }
     },
@@ -35,6 +40,11 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     []
   )
 
+  const handleComplete = useCallback(async () => {
+    await window.brover.onboarding.complete()
+    onComplete()
+  }, [onComplete])
+
   if (step === 'welcome') {
     return <WelcomeStep onSelectMode={handleModeSelect} />
   }
@@ -45,9 +55,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   if (step === 'summary') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface-base p-6">
-        <p className="text-text-base">{JSON.stringify(summaryResult)}</p>
-      </div>
+      <SummaryStep
+        summary={summaryResult ?? { importedSensitive: 0, removedFromDotfiles: 0, ignoredNonSensitive: 0, ignoredWithReason: [] }}
+        onComplete={handleComplete}
+      />
     )
   }
 
