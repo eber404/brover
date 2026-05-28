@@ -134,7 +134,7 @@ npm run test:e2e
 ## Storage conventions
 
 - Secret account key format: `targetId:ENV_NAME`.
-- Metadata JSON path: app data directory `brover-electron/config.json` (or `BROVER_DB_PATH` override in tests).
+- Metadata JSON path: app data directory `brover/config.json` (or `BROVER_DB_PATH` override in tests).
 
 ---
 

@@ -48,7 +48,7 @@ function failure(error: unknown): SecretActionResult {
 async function bootstrap() {
   const dbPath =
     process.env.BROVER_DB_PATH ??
-    join(app.getPath('appData'), 'brover-electron', 'config.json')
+    join(app.getPath('appData'), 'brover', 'config.json')
   const store = new BroverStore(dbPath, createSecretStore())
   const authSessionCache = createAuthSessionCache()
   const macSecretAuthPrompt = createMacSecretAuthPrompt(systemPreferences)
