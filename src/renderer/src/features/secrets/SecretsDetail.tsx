@@ -61,7 +61,7 @@ export function SecretsDetail({
             <button
               data-testid="secret-reveal-toggle"
               type="button"
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-text-muted transition hover:text-text-base"
+              className="absolute top-1/2 right-3 -translate-y-1/2 rounded-lg p-1.5 text-text-muted transition-all duration-200 hover:bg-surface-hover hover:text-accent"
               onClick={() => {
                 if (isRevealed) {
                   setIsRevealed(false)
@@ -77,12 +77,13 @@ export function SecretsDetail({
           </div>
           <Button
             data-testid="secret-copy-button"
-            className="w-full"
-            variant="outline"
+            className="group relative w-full overflow-hidden rounded-xl border border-edge border-transparent bg-surface-card px-4 py-2 text-sm font-semibold text-text-base duration-200 hover:border-accent/40 hover:shadow-[0_0_18px_rgba(31,182,255,0.15)] active:scale-[0.98]"
             onClick={() => onCopy(isRevealed)}
           >
-            <Copy className="mr-2 h-4 w-4" />
-            {t('secrets.copySecret')}
+            <span className="flex items-center gap-2">
+              <Copy className="h-4 w-4 text-accent transition-all duration-200 group-hover:text-[#67d0ff] group-hover:scale-110" />
+              {t('secrets.copySecret')}
+            </span>
           </Button>
         </div>
       ) : null}
@@ -99,14 +100,16 @@ export function SecretsDetail({
         />
         <Button
           data-testid="secret-update-button"
-          variant="outline"
+          className="group relative w-full overflow-hidden rounded-xl border border-edge border-transparent bg-surface-card px-4 py-2 text-sm font-semibold text-text-base duration-200 hover:border-accent/40 hover:shadow-[0_0_18px_rgba(31,182,255,0.15)] active:scale-[0.98]"
           onClick={() => {
             onUpdateValue(editValue)
             setEditValue('')
           }}
           disabled={editValue.length === 0}
         >
-          {hasValue ? t('secrets.updateValue') : t('secrets.saveValue')}
+          <span className="flex items-center gap-2">
+            {hasValue ? t('secrets.updateValue') : t('secrets.saveValue')}
+          </span>
         </Button>
       </div>
     </div>
