@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { BroverStore, MemorySecretStore } from './store'
 import type { ScanResult, RetroactiveSelection } from '../shared/models'
-import { runRetroactiveImport } from './onboardingImporter'
+import { runRetroactiveImport, runFreshStartImport } from './onboardingImporter'
 
 async function tempDir(): Promise<string> {
   return mkdtemp(join(tmpdir(), 'brover-importer-'))
@@ -242,5 +242,177 @@ describe('runRetroactiveImport', () => {
       ignoredNonSensitive: 2,
       ignoredWithReason: [],
     })
+  })
+})
+
+describe('runFreshStartImport', () => {
+  it('creates spaces for files with parseable env entries', async () => {
+    const root = await tempDir()
+    const dbPath = join(root, 'config.json')
+    const store = new BroverStore(dbPath, new MemorySecretStore())
+
+    const filePath = join(root, '.env')
+    await writeFile(filePath, 'SECRET=supersecret\nKEY=value\n', 'utf8')
+
+    const scanResult: ScanResult = {
+      files: [{
+        filePath,
+        variables: [
+          { id: 'v1', name: 'SECRET', value: 'supersecret', sourceFile: filePath },
+          { id: 'v2', name: 'KEY', value: 'value', sourceFile: filePath },
+        ],
+      }],
+      warnings: [],
+    }
+
+    const summary = await runFreshStartImport(store, scanResult)
+    expect(summary.importedSensitive).toBe(0)
+
+    const spaces = await store.listSpaces()
+    const space = spaces.find(s => s.name === '.env')
+    expect(space).toBeDefined()
+    expect(space!.path).toBe(root)
+
+    const targets = await store.listTargets(space!.id)
+    expect(targets).toHaveLength(1)
+  })
+
+  it('does not import any variable values', async () => {
+    const root = await tempDir()
+    const dbPath = join(root, 'config.json')
+    const store = new BroverStore(dbPath, new MemorySecretStore())
+
+    const filePath = join(root, '.env')
+    await writeFile(filePath, 'API_KEY=abc123\nDB_URL=postgres://db\n', 'utf8')
+
+    const scanResult: ScanResult = {
+      files: [{
+        filePath,
+        variables: [
+          { id: 'v1', name: 'API_KEY', value: 'abc123', sourceFile: filePath },
+          { id: 'v2', name: 'DB_URL', value: 'postgres://db', sourceFile: filePath },
+        ],
+      }],
+      warnings: [],
+    }
+
+    await runFreshStartImport(store, scanResult)
+
+    const spaces = await store.listSpaces()
+    const space = spaces.find(s => s.name === '.env')!
+    const targets = await store.listTargets(space.id)
+    const target = targets[0]
+
+    const apiKey = await store.revealEnv(target.id, 'API_KEY')
+    expect(apiKey).toBeNull()
+
+    const dbUrl = await store.revealEnv(target.id, 'DB_URL')
+    expect(dbUrl).toBeNull()
+  })
+
+  it('returns summary with importedSensitive: 0 and removedFromDotfiles: 0', async () => {
+    const root = await tempDir()
+    const dbPath = join(root, 'config.json')
+    const store = new BroverStore(dbPath, new MemorySecretStore())
+
+    const filePath = join(root, '.env')
+    await writeFile(filePath, 'SECRET=hidden\nPUBLIC=visible\n', 'utf8')
+
+    const scanResult: ScanResult = {
+      files: [{
+        filePath,
+        variables: [
+          { id: 'v1', name: 'SECRET', value: 'hidden', sourceFile: filePath },
+          { id: 'v2', name: 'PUBLIC', value: 'visible', sourceFile: filePath },
+        ],
+      }],
+      warnings: [],
+    }
+
+    const summary = await runFreshStartImport(store, scanResult)
+    expect(summary).toEqual({
+      importedSensitive: 0,
+      removedFromDotfiles: 0,
+      ignoredNonSensitive: 0,
+      ignoredWithReason: [],
+    })
+  })
+
+  it('keeps duplicate env names across files as separate spaces', async () => {
+    const root = await tempDir()
+    const dbPath = join(root, 'config.json')
+    const store = new BroverStore(dbPath, new MemorySecretStore())
+
+    const dir1 = await tempDir()
+    const dir2 = await tempDir()
+    const file1 = join(dir1, '.zshrc')
+    const file2 = join(dir2, '.bashrc')
+
+    await writeFile(file1, 'TOKEN=secret1\n', 'utf8')
+    await writeFile(file2, 'TOKEN=secret2\n', 'utf8')
+
+    const scanResult: ScanResult = {
+      files: [
+        {
+          filePath: file1,
+          variables: [{ id: 'v1', name: 'TOKEN', value: 'secret1', sourceFile: file1 }],
+        },
+        {
+          filePath: file2,
+          variables: [{ id: 'v2', name: 'TOKEN', value: 'secret2', sourceFile: file2 }],
+        },
+      ],
+      warnings: [],
+    }
+
+    await runFreshStartImport(store, scanResult)
+
+    const spaces = await store.listSpaces()
+    const directorySpaces = spaces.filter(s => s.kind === 'directory')
+    expect(directorySpaces).toHaveLength(2)
+  })
+
+  it('does not create spaces for files without parseable env entries', async () => {
+    const root = await tempDir()
+    const dbPath = join(root, 'config.json')
+    const store = new BroverStore(dbPath, new MemorySecretStore())
+
+    const filePath = join(root, '.env')
+    await writeFile(filePath, '# just a comment\n', 'utf8')
+
+    const scanResult: ScanResult = {
+      files: [{
+        filePath,
+        variables: [],
+      }],
+      warnings: [],
+    }
+
+    await runFreshStartImport(store, scanResult)
+
+    const spaces = await store.listSpaces()
+    const directorySpaces = spaces.filter(s => s.kind === 'directory')
+    expect(directorySpaces).toHaveLength(0)
+  })
+
+  it('throws if onboarding already completed', async () => {
+    const root = await tempDir()
+    const dbPath = join(root, 'config.json')
+    const store = new BroverStore(dbPath, new MemorySecretStore())
+
+    await store.markOnboardingComplete()
+
+    const filePath = join(root, '.env')
+    await writeFile(filePath, 'SECRET=value\n', 'utf8')
+
+    const scanResult: ScanResult = {
+      files: [{
+        filePath,
+        variables: [{ id: 'v1', name: 'SECRET', value: 'value', sourceFile: filePath }],
+      }],
+      warnings: [],
+    }
+
+    await expect(runFreshStartImport(store, scanResult)).rejects.toThrow('Onboarding already completed')
   })
 })

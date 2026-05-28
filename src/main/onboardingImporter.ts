@@ -6,6 +6,51 @@ import { BroverStore } from './store'
 
 const ENV_ASSIGNMENT = /^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=/
 
+export async function runFreshStartImport(
+  store: BroverStore,
+  scanResult: ScanResult,
+): Promise<OnboardingSummary> {
+  const status = await store.getOnboardingStatus()
+  if (status.completedAt) {
+    throw new Error('Onboarding already completed')
+  }
+
+  const createdSpaceIds: string[] = []
+
+  try {
+    for (const file of scanResult.files) {
+      if (file.variables.length === 0) {
+        continue
+      }
+
+      const spaces = await store.createSpace({
+        name: basename(file.filePath),
+        path: dirname(file.filePath),
+      })
+      const newSpace = spaces[spaces.length - 1]
+      if (newSpace) {
+        createdSpaceIds.push(newSpace.id)
+      }
+    }
+
+    return {
+      importedSensitive: 0,
+      removedFromDotfiles: 0,
+      ignoredNonSensitive: 0,
+      ignoredWithReason: [],
+    }
+  } catch (err) {
+    for (const spaceId of createdSpaceIds) {
+      try {
+        await store.deleteSpace(spaceId)
+      } catch {
+        // Best-effort cleanup
+      }
+    }
+    throw err
+  }
+}
+
 export async function runRetroactiveImport(
   store: BroverStore,
   scanResult: ScanResult,
