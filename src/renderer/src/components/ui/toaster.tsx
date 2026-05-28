@@ -70,7 +70,7 @@ function Toaster() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 grid gap-2">
+    <div className="fixed top-4 right-4 z-50 grid gap-2">
       {toasts.map((t) => (
         <div
           key={t.id}

@@ -48,6 +48,7 @@ export interface BroverAPI {
   deleteTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>
   reorderTargets: (payload: { spaceId: string; orderedTargetIds: string[] }) => Promise<EnvTarget[]>
   renameTarget: (payload: { targetId: string; name: string }) => Promise<EnvTarget[]>
+  secretExists: (profile: string, name: string) => Promise<boolean>
   setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>
   setActiveTarget: (payload: { spaceId: string; targetId: string }) => Promise<EnvTarget[]>
   applyGlobalShell: () => Promise<{ applied: number }>

@@ -164,7 +164,7 @@ describe('SecretsPanel', () => {
     const revealEnv = vi.fn().mockResolvedValue({ ok: false, error: 'Failed to reveal' })
     const setRevealValue = vi.fn()
     // @ts-expect-error mock
-    window.brover = { revealEnv }
+    window.brover = { revealEnv, secretExists: vi.fn().mockResolvedValue(true) }
 
     render(
       <I18nProvider>
@@ -189,7 +189,7 @@ describe('SecretsPanel', () => {
   it('shows toast when copyEnv fails', async () => {
     const copyEnv = vi.fn().mockResolvedValue({ ok: false, error: 'Failed to copy' })
     // @ts-expect-error mock
-    window.brover = { copyEnv }
+    window.brover = { copyEnv, secretExists: vi.fn().mockResolvedValue(true) }
 
     render(
       <I18nProvider>
@@ -213,7 +213,7 @@ describe('SecretsPanel', () => {
   it('shows toast when updateEnv fails', async () => {
     const updateEnv = vi.fn().mockResolvedValue({ ok: false, error: 'Failed to update' })
     // @ts-expect-error mock
-    window.brover = { updateEnv }
+    window.brover = { updateEnv, secretExists: vi.fn().mockResolvedValue(true) }
 
     render(
       <I18nProvider>
@@ -239,7 +239,7 @@ describe('SecretsPanel', () => {
     const listEnvs = vi.fn().mockResolvedValue([])
     const setSelectedEnvId = vi.fn()
     // @ts-expect-error mock
-    window.brover = { deleteEnv, listEnvs }
+    window.brover = { deleteEnv, listEnvs, secretExists: vi.fn().mockResolvedValue(true) }
 
     render(
       <I18nProvider>
@@ -266,7 +266,7 @@ describe('SecretsPanel', () => {
     const listEnvs = vi.fn().mockResolvedValue([])
     const setSelectedEnvId = vi.fn()
     // @ts-expect-error mock
-    window.brover = { deleteEnv, listEnvs }
+    window.brover = { deleteEnv, listEnvs, secretExists: vi.fn().mockResolvedValue(true) }
 
     render(
       <I18nProvider>

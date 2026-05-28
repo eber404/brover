@@ -37,6 +37,7 @@ const api: BroverAPI = {
   renameTarget: (payload) => ipcRenderer.invoke('targets:rename', payload),
   setTargetColor: (payload) => ipcRenderer.invoke('targets:set-color', payload),
   setActiveTarget: (payload) => ipcRenderer.invoke('targets:set-active', payload),
+  secretExists: (profile, name) => ipcRenderer.invoke('secrets:exists', { profile, name }),
   applyGlobalShell: () => ipcRenderer.invoke('apply:global-shell'),
   applyDirectoryTarget: (payload) => ipcRenderer.invoke('apply:directory-target', payload),
 

@@ -42,6 +42,8 @@
     "disabled": "Disabled",
     "dialogTitle": "Add Secret",
     "dialogDescription": "Create metadata + store secret value in secure backend.",
+    "defineTitle": "Define Secret",
+    "saveValue": "Save",
     "cancel": "Cancel",
     "create": "Create"
   },

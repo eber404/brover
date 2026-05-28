@@ -137,6 +137,9 @@ async function bootstrap() {
   ipcMain.handle('apply:directory-target', (_, payload: { targetId: string }) =>
     store.applyDirectoryTarget(payload)
   )
+  ipcMain.handle('secrets:exists', (_, payload: { profile: string; name: string }) =>
+    store.secretExists(payload.profile, payload.name)
+  )
 
   ipcMain.handle('envs:list', () => store.listEnvs())
   ipcMain.handle('envs:toggle-enabled', (_, id: string) =>

@@ -9,6 +9,7 @@ interface SecretsDetailsPanelProps {
   env: EnvMetadata | null
   targetName: string
   revealValue: string
+  hasValue: boolean
   onReveal: () => void
   onCopy: (isRevealed: boolean) => void
   onUpdateValue: (value: string) => void
@@ -25,6 +26,7 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
     env,
     targetName,
     revealValue,
+    hasValue,
     onReveal,
     onCopy,
     onUpdateValue,
@@ -41,6 +43,7 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
             env={env}
             targetName={targetName}
             revealValue={revealValue}
+            hasValue={hasValue}
             onReveal={onReveal}
             onCopy={onCopy}
             onUpdateValue={onUpdateValue}

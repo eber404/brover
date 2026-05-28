@@ -9,6 +9,7 @@ export interface SecretStore {
   save(account: string, value: string): Promise<void>
   get(account: string): Promise<string | null>
   delete(account: string): Promise<void>
+  exists(account: string): Promise<boolean>
 }
 
 export class UnsupportedSecretStore implements SecretStore {
@@ -20,6 +21,9 @@ export class UnsupportedSecretStore implements SecretStore {
   }
   async delete(): Promise<void> {
     throw new Error('UNSUPPORTED_SECRET_BACKEND')
+  }
+  async exists(): Promise<boolean> {
+    return false
   }
 }
 
@@ -33,6 +37,9 @@ export class MemorySecretStore implements SecretStore {
   }
   async delete(account: string): Promise<void> {
     this.map.delete(account)
+  }
+  async exists(account: string): Promise<boolean> {
+    return this.map.has(account)
   }
 }
 
@@ -49,6 +56,10 @@ export class MacOSKeytarSecretStore implements SecretStore {
   async delete(account: string): Promise<void> {
     const keytar = await import('keytar')
     await keytar.default.deletePassword(this.service, account)
+  }
+  async exists(account: string): Promise<boolean> {
+    const val = await this.get(account)
+    return val !== null
   }
 }
 
@@ -253,6 +264,10 @@ export class BroverStore {
 
   async revealEnv(profile: string, name: string): Promise<string | null> {
     return this.secrets.get(`${profile}:${name}`)
+  }
+
+  async secretExists(profile: string, name: string): Promise<boolean> {
+    return this.secrets.exists(`${profile}:${name}`)
   }
 
   async updateEnv(payload: { id: string; profile: string; name: string; value: string; description?: string }): Promise<void> {

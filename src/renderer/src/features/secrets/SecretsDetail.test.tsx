@@ -25,6 +25,7 @@ describe('SecretsDetail', () => {
           env={env}
           targetName="dev"
           revealValue=""
+          hasValue={true}
           onReveal={() => {}}
           onCopy={onCopy}
           onUpdateValue={() => {}}
@@ -43,6 +44,7 @@ describe('SecretsDetail', () => {
           env={env}
           targetName="dev"
           revealValue=""
+          hasValue={true}
           onReveal={() => {}}
           onCopy={() => {}}
           onUpdateValue={() => {}}
@@ -65,6 +67,7 @@ describe('SecretsDetail', () => {
           env={env}
           targetName="dev"
           revealValue="secret123"
+          hasValue={true}
           onReveal={onReveal}
           onCopy={() => {}}
           onUpdateValue={() => {}}
@@ -88,6 +91,7 @@ describe('SecretsDetail', () => {
           env={env}
           targetName="dev"
           revealValue=""
+          hasValue={true}
           onReveal={() => {}}
           onCopy={() => {}}
           onUpdateValue={() => {}}
@@ -110,6 +114,7 @@ describe('SecretsDetail', () => {
           env={env}
           targetName="dev"
           revealValue=""
+          hasValue={true}
           onReveal={() => {}}
           onCopy={() => {}}
           onUpdateValue={onUpdateValueItem}
@@ -132,6 +137,7 @@ describe('SecretsDetail', () => {
           env={env}
           targetName="dev"
           revealValue="secret123"
+          hasValue={true}
           onReveal={() => {}}
           onCopy={() => {}}
           onUpdateValue={() => {}}
@@ -148,6 +154,7 @@ describe('SecretsDetail', () => {
           env={env2}
           targetName="dev"
           revealValue=""
+          hasValue={true}
           onReveal={() => {}}
           onCopy={() => {}}
           onUpdateValue={() => {}}
@@ -156,5 +163,27 @@ describe('SecretsDetail', () => {
     )
 
     expect(screen.getByTestId('secret-reveal-toggle').getAttribute('aria-label')).toBe('Reveal secret')
+  })
+
+  it('hides Current Secret card and shows Define Secret when hasValue is false', () => {
+    render(
+      <I18nProvider>
+        <SecretsDetail
+          env={env}
+          targetName="dev"
+          revealValue=""
+          hasValue={false}
+          onReveal={() => {}}
+          onCopy={() => {}}
+          onUpdateValue={() => {}}
+        />
+      </I18nProvider>
+    )
+
+    expect(screen.queryByText('Current Secret')).toBeNull()
+    expect(screen.getByText('Define Secret')).toBeTruthy()
+    expect(screen.getByText('Save')).toBeTruthy()
+    expect(screen.queryByTestId('secret-copy-button')).toBeNull()
+    expect(screen.queryByTestId('secret-reveal-toggle')).toBeNull()
   })
 })

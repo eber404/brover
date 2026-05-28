@@ -99,11 +99,17 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   const [newEnvName, setNewEnvName] = useState('')
   const [newEnvValue, setNewEnvValue] = useState('')
   const [newEnvDescription, setNewEnvDescription] = useState('')
+  const [hasValue, setHasValue] = useState(true)
 
   const selectedEnv = useMemo(
     () => envs.find((item) => item.id === selectedEnvId) ?? null,
     [envs, selectedEnvId]
   )
+
+  useEffect(() => {
+    if (!selectedEnv) return
+    window.brover.secretExists(selectedEnv.profile, selectedEnv.name).then(setHasValue)
+  }, [selectedEnv])
 
   const onSelectEnv = useCallback(
     (id: string) => {
@@ -209,6 +215,9 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     }
     setRevealValue('')
     toast(t('common.secretUpdated'))
+    if (selectedEnv) {
+      window.brover.secretExists(selectedEnv.profile, selectedEnv.name).then(setHasValue)
+    }
   }
 
   async function deleteEnv() {
@@ -365,6 +374,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       </>
     ),
     selectedEnv,
+    hasValue,
     revealEnv,
     copyEnv,
     updateEnvValue,

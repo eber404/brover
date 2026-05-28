@@ -431,6 +431,7 @@ function AppShell() {
           env={secretsPanel.selectedEnv}
           targetName={selectedTarget?.name ?? '-'}
           revealValue={revealValue}
+          hasValue={secretsPanel.hasValue}
           onReveal={() => void secretsPanel.revealEnv()}
           onCopy={(isRevealed) => void secretsPanel.copyEnv(isRevealed)}
           onUpdateValue={(value) => void secretsPanel.updateEnvValue(value)}
