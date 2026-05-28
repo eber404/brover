@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { basename, dirname } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import type { AppAuthorization, EnvMetadata, EnvSpace, EnvTarget, Profile } from '../shared/models'
+import type { AppAuthorization, EnvMetadata, EnvSpace, EnvTarget, OnboardingStatus, Profile } from '../shared/models'
 import { isValidBundleID, isValidEnvName } from '../shared/validators'
 import { buildDotenvContent, buildManagedShellBlock, upsertManagedShellBlock } from './envWriters'
 
@@ -58,6 +58,7 @@ interface DBShape {
   envs: EnvMetadata[]
   spaces: EnvSpace[]
   targets: EnvTarget[]
+  onboardingCompletedAt?: string
 }
 
 const GLOBAL_SPACE_ID = 'space-global'
@@ -121,7 +122,10 @@ export class BroverStore {
         profiles: Array.isArray(parsed.profiles) ? parsed.profiles : [{ id: randomUUID(), name: 'default', isActive: true, updatedAt: new Date().toISOString() }],
         envs: Array.isArray(parsed.envs) ? parsed.envs : [],
         spaces: normalizedSpaces.length > 0 ? normalizedSpaces : [createDefaultGlobalSpace(now)],
-        targets: Array.isArray(parsed.targets) && parsed.targets.length > 0 ? parsed.targets : [createDefaultGlobalTarget(new Date().toISOString())]
+        targets: Array.isArray(parsed.targets) && parsed.targets.length > 0 ? parsed.targets : [createDefaultGlobalTarget(new Date().toISOString())],
+        onboardingCompletedAt: typeof (parsed as { onboardingCompletedAt?: unknown }).onboardingCompletedAt === 'string'
+          ? (parsed as { onboardingCompletedAt: string }).onboardingCompletedAt
+          : undefined
       }
     } catch {
       return {
@@ -129,7 +133,8 @@ export class BroverStore {
         profiles: [{ id: randomUUID(), name: 'default', isActive: true, updatedAt: new Date().toISOString() }],
         envs: [],
         spaces: [createDefaultGlobalSpace(new Date().toISOString())],
-        targets: [createDefaultGlobalTarget(new Date().toISOString())]
+        targets: [createDefaultGlobalTarget(new Date().toISOString())],
+        onboardingCompletedAt: undefined
       }
     }
   }
@@ -137,6 +142,17 @@ export class BroverStore {
   private async writeDB(data: DBShape): Promise<void> {
     await mkdir(dirname(this.dbPath), { recursive: true })
     await writeFile(this.dbPath, JSON.stringify(data, null, 2), 'utf8')
+  }
+
+  async getOnboardingStatus(): Promise<OnboardingStatus> {
+    const db = await this.readDB()
+    return { completedAt: db.onboardingCompletedAt }
+  }
+
+  async markOnboardingComplete(): Promise<void> {
+    const db = await this.readDB()
+    db.onboardingCompletedAt = new Date().toISOString()
+    await this.writeDB(db)
   }
 
   async listApps(): Promise<AppAuthorization[]> {
