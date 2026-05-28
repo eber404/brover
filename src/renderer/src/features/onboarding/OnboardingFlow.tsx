@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import WelcomeStep from './WelcomeStep'
 import RetroactiveReviewStep from './RetroactiveReviewStep'
+import FreshStartReviewStep from './FreshStartReviewStep'
 import ConfirmationStep from './ConfirmationStep'
 import type { ScanResult, OnboardingSummary, RetroactiveSelection } from '../../../../shared/models'
 
@@ -19,7 +20,7 @@ function computePreviewSummary(scanResult: ScanResult, selectedIds: string[]): O
 }
 
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
-  const [step, setStep] = useState<'welcome' | 'review' | 'confirmation'>('welcome')
+  const [step, setStep] = useState<'welcome' | 'review' | 'fresh-start-review' | 'confirmation'>('welcome')
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
   const [retroactivePayload, setRetroactivePayload] = useState<{
     scanResult: ScanResult
@@ -27,18 +28,24 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   } | null>(null)
 
   const handleModeSelect = useCallback(
-    async (selectedMode: 'retroactive' | 'fresh-start') => {
+    (selectedMode: 'retroactive' | 'fresh-start') => {
       if (selectedMode === 'retroactive') {
         setStep('review')
       } else {
-        try {
-          const scan = await window.brover.onboarding.scanDotfiles()
-          await window.brover.onboarding.runFreshStart({ scanResult: scan })
-          await window.brover.onboarding.complete()
-          onComplete()
-        } catch (err) {
-          console.error('Fresh start failed', err)
-        }
+        setStep('fresh-start-review')
+      }
+    },
+    []
+  )
+
+  const handleFreshStartContinue = useCallback(
+    async (payload: { scanResult: ScanResult }) => {
+      try {
+        await window.brover.onboarding.runFreshStart(payload)
+        await window.brover.onboarding.complete()
+        onComplete()
+      } catch (err) {
+        console.error('Fresh start import failed', err)
       }
     },
     [onComplete]
@@ -77,6 +84,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const content = (() => {
     if (step === 'welcome') return <WelcomeStep onSelectMode={handleModeSelect} />
     if (step === 'review') return <RetroactiveReviewStep onContinue={handleRetroactiveContinue} onBack={handleBack} />
+    if (step === 'fresh-start-review') return <FreshStartReviewStep onContinue={handleFreshStartContinue} onBack={handleBack} />
     if (step === 'confirmation') {
       return (
         <ConfirmationStep

@@ -49,12 +49,21 @@ describe('OnboardingFlow', () => {
     expect(subHeadings[1].textContent).toMatch(/fresh/i)
   })
 
-  it('fresh start completes onboarding directly without confirmation', async () => {
+  it('fresh start shows file selection and imports filtered scan result', async () => {
     const onComplete = vi.fn()
     render(<OnboardingFlow onComplete={onComplete} />)
     fireEvent.click(screen.getByText(/onboarding\.mode\.freshStart\.action/i))
     await waitFor(() => {
-      expect(window.brover.onboarding.runFreshStart).toHaveBeenCalled()
+      expect(screen.getByText(/onboarding\.freshStartReview\.title/i)).toBeTruthy()
+    })
+    fireEvent.click(screen.getByText(/Users\/test\/\.zshrc/i))
+    fireEvent.click(screen.getByText(/onboarding\.freshStartReview\.continue/i))
+    await waitFor(() => {
+      expect(window.brover.onboarding.runFreshStart).toHaveBeenCalledWith({
+        scanResult: expect.objectContaining({
+          files: [expect.objectContaining({ filePath: '/Users/test/.zshrc' })],
+        }),
+      })
       expect(window.brover.onboarding.complete).toHaveBeenCalled()
       expect(onComplete).toHaveBeenCalled()
     })
