@@ -261,7 +261,12 @@ export const SpacesSidebar = memo(function SpacesSidebar(
                   >
                     Import dotfile
                   </button>
-                </div>
+        </div>
+        {selectedSpace?.kind === 'directory' && selectedSpace.path && (
+          <p className="mt-1 truncate text-[11px] text-text-muted">
+            {selectedSpace.path.replace(typeof process !== 'undefined' && process.env?.HOME ? process.env.HOME : '', '~')}
+          </p>
+        )}
               </>
             )}
           </div>
