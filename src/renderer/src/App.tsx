@@ -11,6 +11,7 @@ import { Button } from './components/ui/button'
 import { ConfirmDialog } from './components/ui/confirmDialog'
 import { ToastProvider } from './components/ui/toaster'
 import { I18nProvider, useI18n } from './i18n'
+import OnboardingFlow from './features/onboarding/OnboardingFlow'
 import { SecretsDetail } from './features/secrets/SecretsDetail'
 import { useSecretsPanel } from './features/secrets/SecretsPanel'
 import { SpacesSidebar } from './features/spaces/SpacesSidebar'
@@ -424,6 +425,32 @@ function AppShell() {
 }
 
 export default function App() {
+  const [onboardingStatus, setOnboardingStatus] = useState<
+    'loading' | 'pending' | 'done'
+  >('loading')
+
+  useEffect(() => {
+    window.brover.onboarding.getStatus().then((status) => {
+      setOnboardingStatus(status.completedAt ? 'done' : 'pending')
+    })
+  }, [])
+
+  if (onboardingStatus === 'loading') {
+    return null
+  }
+
+  if (onboardingStatus === 'pending') {
+    return (
+      <I18nProvider>
+        <ToastProvider>
+          <OnboardingFlow
+            onComplete={() => setOnboardingStatus('done')}
+          />
+        </ToastProvider>
+      </I18nProvider>
+    )
+  }
+
   return (
     <I18nProvider>
       <ToastProvider>

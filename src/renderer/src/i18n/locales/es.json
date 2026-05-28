@@ -45,6 +45,24 @@
     "cancel": "Cancelar",
     "create": "Crear"
   },
+  "onboarding": {
+    "welcome": {
+      "title": "Bienvenido a Brover",
+      "subtitle": "Elige como configurar tus secretos de entorno"
+    },
+    "mode": {
+      "retroactive": {
+        "title": "Importar de dotfiles",
+        "desc": "Escanea .zshrc / .bashrc existentes e importa variables de entorno",
+        "action": "Iniciar importacion"
+      },
+      "freshStart": {
+        "title": "Fresh start",
+        "desc": "Configura todo desde cero con una configuracion limpia",
+        "action": "Empezar de cero"
+      }
+    }
+  },
   "common": {
     "refresh": "Actualizar",
     "details": "Detalles",

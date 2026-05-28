@@ -45,6 +45,24 @@
     "cancel": "Cancel",
     "create": "Create"
   },
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome to Brover",
+      "subtitle": "Choose how you want to set up your environment secrets"
+    },
+    "mode": {
+      "retroactive": {
+        "title": "Import from dotfiles",
+        "desc": "Scan existing .zshrc / .bashrc and import environment variables",
+        "action": "Start import"
+      },
+      "freshStart": {
+        "title": "Fresh start",
+        "desc": "Set up everything from scratch with a clean configuration",
+        "action": "Start fresh"
+      }
+    }
+  },
   "common": {
     "refresh": "Refresh",
     "details": "Details",
