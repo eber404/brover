@@ -60,7 +60,7 @@
       },
       "freshStart": {
         "title": "Empezar de cero",
-        "desc": "Configura todo desde cero con una configuracion limpia",
+        "desc": "Configura nuevos secretos desde cero con una configuracion limpia. Los secretos actuales del sistema permanecen intactos.",
         "action": "Empezar de cero"
       }
     },

@@ -60,7 +60,7 @@
       },
       "freshStart": {
         "title": "Start fresh",
-        "desc": "Set up everything from scratch with a clean configuration",
+        "desc": "Set up new secrets from scratch with a clean configuration. Current system secrets reamain untouched.",
         "action": "Start fresh"
       }
     },
