@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync, readdirSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync, readdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { homedir } from 'os'
 
@@ -38,11 +38,22 @@ export function createEnvInjector(opts?: { cacheDir?: string }) {
 
   function readDotfile(path: string): string {
     const resolved = resolvePath(path)
-    return existsSync(resolved) ? readFileSync(resolved, 'utf-8') : ''
+    if (!existsSync(resolved)) return ''
+    try {
+      if (!statSync(resolved).isFile()) return ''
+    } catch {
+      return ''
+    }
+    return readFileSync(resolved, 'utf-8')
   }
 
   function writeDotfile(path: string, content: string) {
     const resolved = resolvePath(path)
+    try {
+      if (existsSync(resolved) && !statSync(resolved).isFile()) return
+    } catch {
+      return
+    }
     const dir = dirname(resolved)
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true })
