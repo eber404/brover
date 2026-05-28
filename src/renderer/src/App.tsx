@@ -187,9 +187,9 @@ function AppShell() {
           .filter((item) => item.spaceId === spaceId)
           .map((item) => item.name.trim().toLowerCase())
       )
-      const baseName = existingNames.has('prod') ? 'env' : 'prod'
+      const baseName = 'env'
       let name = baseName
-      let index = 2
+      let index = 1
       while (existingNames.has(name.toLowerCase())) {
         name = `${baseName}-${index}`
         index += 1
