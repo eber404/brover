@@ -12,6 +12,7 @@ vi.mock('lucide-react', () => ({
   ChevronRight: () => <span data-testid="chevron-right" />,
   Eye: () => <span data-testid="eye-icon" />,
   EyeOff: () => <span data-testid="eye-off-icon" />,
+  ArrowLeft: () => <span data-testid="arrow-left" />,
 }))
 
 const mockScanResult = {
@@ -46,70 +47,37 @@ describe('RetroactiveReviewStep', () => {
 
   it('groups variables by source file', async () => {
     const onContinue = vi.fn()
-    render(<RetroactiveReviewStep onContinue={onContinue} />)
+    render(<RetroactiveReviewStep onContinue={onContinue} onBack={vi.fn()} />)
     await waitFor(() => {
       expect(screen.getAllByText(/\.zshrc/i).length).toBeGreaterThan(0)
       expect(screen.getAllByText(/\.bashrc/i).length).toBeGreaterThan(0)
     })
   })
 
-  it('toggles sensitive selection via checkbox', async () => {
-    const onContinue = vi.fn()
-    render(<RetroactiveReviewStep onContinue={onContinue} />)
-    await waitFor(() => {
-      const checkboxes = screen.getAllByRole('checkbox')
-      expect(checkboxes.length).toBeGreaterThan(0)
-    })
-  })
-
   it('masks values by default with reveal toggle via eye icon', async () => {
     const onContinue = vi.fn()
-    render(<RetroactiveReviewStep onContinue={onContinue} />)
+    render(<RetroactiveReviewStep onContinue={onContinue} onBack={vi.fn()} />)
+
     await waitFor(() => {
       expect(screen.getByText(/API_KEY/i)).toBeTruthy()
     })
+
     const maskedValues = screen.getAllByText('••••••')
     expect(maskedValues.length).toBeGreaterThan(0)
   })
 
   it('no auth prompt appears in onboarding review', async () => {
     const onContinue = vi.fn()
-    render(<RetroactiveReviewStep onContinue={onContinue} />)
+    render(<RetroactiveReviewStep onContinue={onContinue} onBack={vi.fn()} />)
+
     await waitFor(() => {
       expect(screen.queryByText(/auth|authenticate|password/i)).toBeNull()
     })
   })
 
-  it('calls onContinue with selected sensitive ids', async () => {
+  it('selects variable by clicking the card and passes to onContinue', async () => {
     const onContinue = vi.fn()
-    render(<RetroactiveReviewStep onContinue={onContinue} />)
-    await waitFor(() => {
-      expect(screen.getByText(/onboarding\.review\.continue/i)).toBeTruthy()
-    })
-    const checkboxes = screen.getAllByRole('checkbox')
-    fireEvent.click(checkboxes[0])
-    fireEvent.click(screen.getByText(/onboarding\.review\.continue/i))
-    expect(onContinue).toHaveBeenCalledWith({
-      scanResult: mockScanResult,
-      selection: { selectedSensitiveIds: ['1'] },
-    })
-  })
-
-  it('groups are collapsible with chevron icons', async () => {
-    const onContinue = vi.fn()
-    render(<RetroactiveReviewStep onContinue={onContinue} />)
-    await waitFor(() => {
-      expect(screen.getAllByTestId('chevron-down').length).toBeGreaterThan(0)
-    })
-    const header = screen.getByText(/\.zshrc/i)
-    fireEvent.click(header)
-    const chevronsRight = screen.getAllByTestId('chevron-right')
-    expect(chevronsRight.length).toBe(1)
-  })
-
-  it('selects variable by clicking the variable name', async () => {
-    const onContinue = vi.fn()
-    render(<RetroactiveReviewStep onContinue={onContinue} />)
+    render(<RetroactiveReviewStep onContinue={onContinue} onBack={vi.fn()} />)
     await waitFor(() => {
       expect(screen.getByText(/API_KEY/i)).toBeTruthy()
     })
@@ -122,20 +90,35 @@ describe('RetroactiveReviewStep', () => {
     )
   })
 
-  it('checkbox is positioned on the far right of card', async () => {
+  it('groups are collapsible with chevron icons', async () => {
     const onContinue = vi.fn()
-    render(<RetroactiveReviewStep onContinue={onContinue} />)
+    render(<RetroactiveReviewStep onContinue={onContinue} onBack={vi.fn()} />)
     await waitFor(() => {
-      const checkboxes = screen.getAllByRole('checkbox')
-      expect(checkboxes.length).toBeGreaterThan(0)
+      expect(screen.getAllByTestId('chevron-down').length).toBeGreaterThan(0)
     })
+    const header = screen.getByText(/\.zshrc/i)
+    fireEvent.click(header)
+    const chevronsRight = screen.getAllByTestId('chevron-right')
+    expect(chevronsRight.length).toBe(1)
   })
 
-  it('shows eye icon for reveal instead of source file label', async () => {
+  it('shows eye icon and no checkboxes in card', async () => {
     const onContinue = vi.fn()
-    render(<RetroactiveReviewStep onContinue={onContinue} />)
+    render(<RetroactiveReviewStep onContinue={onContinue} onBack={vi.fn()} />)
     await waitFor(() => {
       expect(screen.getAllByTestId('eye-icon').length).toBeGreaterThan(0)
     })
+    const checkboxes = screen.queryAllByRole('checkbox')
+    expect(checkboxes.length).toBe(0)
+  })
+
+  it('shows back button inline with title', async () => {
+    const onBack = vi.fn()
+    render(<RetroactiveReviewStep onContinue={vi.fn()} onBack={onBack} />)
+    await waitFor(() => {
+      expect(screen.getByTestId('arrow-left')).toBeTruthy()
+    })
+    fireEvent.click(screen.getByTestId('arrow-left'))
+    expect(onBack).toHaveBeenCalled()
   })
 })

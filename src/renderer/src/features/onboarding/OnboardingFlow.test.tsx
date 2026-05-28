@@ -7,10 +7,6 @@ vi.mock('../../i18n', () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }))
 
-vi.mock('lucide-react', () => ({
-  ArrowLeft: () => <span data-testid="arrow-left" />,
-}))
-
 describe('OnboardingFlow', () => {
   afterEach(cleanup)
 
@@ -37,14 +33,5 @@ describe('OnboardingFlow', () => {
     expect(subHeadings).toHaveLength(2)
     expect(subHeadings[0].textContent).toMatch(/retroactive/i)
     expect(subHeadings[1].textContent).toMatch(/fresh/i)
-  })
-
-  it('shows back button on non-welcome steps', async () => {
-    const onComplete = vi.fn()
-    render(<OnboardingFlow onComplete={onComplete} />)
-    expect(screen.queryByTestId('arrow-left')).toBeNull()
-    const retroBtn = screen.getByText(/onboarding\.mode\.retroactive\.action/i)
-    fireEvent.click(retroBtn)
-    expect(screen.getByTestId('arrow-left')).toBeTruthy()
   })
 })

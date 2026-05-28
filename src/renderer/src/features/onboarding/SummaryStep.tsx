@@ -1,3 +1,4 @@
+import { ArrowLeft } from 'lucide-react'
 import { useCallback } from 'react'
 import { useI18n } from '../../i18n'
 import { Button } from '../../components/ui/button'
@@ -7,9 +8,10 @@ import type { OnboardingSummary } from '../../../../shared/models'
 interface SummaryStepProps {
   summary: OnboardingSummary
   onComplete: () => void
+  onBack: () => void
 }
 
-export default function SummaryStep({ summary, onComplete }: SummaryStepProps) {
+export default function SummaryStep({ summary, onComplete, onBack }: SummaryStepProps) {
   const { t } = useI18n()
 
   const handleComplete = useCallback(async () => {
@@ -20,9 +22,19 @@ export default function SummaryStep({ summary, onComplete }: SummaryStepProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface-base p-6">
       <div className="flex w-full max-w-lg flex-col gap-8">
-        <h1 className="text-center text-2xl font-bold text-text-base">
-          {t('onboarding.summary.title')}
-        </h1>
+        <div className="relative flex items-start gap-1">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex items-center text-text-muted hover:text-text-base transition-colors -ml-1.5 mt-0.5"
+            aria-label="back"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-2xl font-bold text-text-base text-left">
+            {t('onboarding.summary.title')}
+          </h1>
+        </div>
 
         <div className="flex flex-col gap-3">
           <Card className="flex items-center justify-between p-4">

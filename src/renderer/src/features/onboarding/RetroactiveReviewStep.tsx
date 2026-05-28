@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react'
+import { ChevronDown, ChevronRight, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
-import type { RetroactiveSelection, ScanResult, ScannedVariable } from '../../../../shared/models'
+import type {
+  RetroactiveSelection,
+  ScanResult,
+  ScannedVariable,
+} from '../../../../shared/models'
 
 interface RetroactiveReviewStepProps {
-  onContinue: (payload: { scanResult: ScanResult; selection: RetroactiveSelection }) => void
+  onContinue: (payload: {
+    scanResult: ScanResult
+    selection: RetroactiveSelection
+  }) => void
+  onBack: () => void
 }
 
 interface FileGroup {
@@ -25,7 +33,10 @@ function fileName(filePath: string): string {
   return filePath.split('/').pop() ?? filePath
 }
 
-export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewStepProps) {
+export default function RetroactiveReviewStep({
+  onContinue,
+  onBack,
+}: RetroactiveReviewStepProps) {
   const { t } = useI18n()
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
   const [loading, setLoading] = useState(true)
@@ -76,7 +87,10 @@ export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewS
 
   const handleContinue = useCallback(() => {
     if (!scanResult) return
-    onContinue({ scanResult, selection: { selectedSensitiveIds: Array.from(selectedIds) } })
+    onContinue({
+      scanResult,
+      selection: { selectedSensitiveIds: Array.from(selectedIds) },
+    })
   }, [onContinue, scanResult, selectedIds])
 
   if (loading) {
@@ -91,7 +105,9 @@ export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewS
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface-base">
         <Card className="flex flex-col items-center gap-4 p-8">
-          <p className="text-rose-status">{error ?? t('onboarding.review.error')}</p>
+          <p className="text-rose-status">
+            {error ?? t('onboarding.review.error')}
+          </p>
           <Button variant="outline" onClick={() => window.location.reload()}>
             {t('common.refresh')}
           </Button>
@@ -105,9 +121,27 @@ export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewS
   return (
     <div className="flex min-h-screen bg-surface-base p-6">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-text-base">{t('onboarding.review.title')}</h1>
-          <p className="text-sm text-text-muted">{t('onboarding.review.subtitle')}</p>
+        <div className="relative flex items-start gap-1">
+          <div className="absolute -left-8 top-1">
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="flex items-center text-text-muted hover:text-text-base transition-colors -ml-1.5 mt-0.5"
+                aria-label="back"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-bold text-text-base text-left">
+              {t('onboarding.review.title')}
+            </h1>
+            <p className="text-sm text-text-muted">
+              {t('onboarding.review.subtitle')}
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-6">
@@ -140,7 +174,9 @@ export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewS
                         onClick={() => toggleSelection(v.id)}
                       >
                         <div className="flex flex-1 flex-col gap-0.5">
-                          <span className="font-mono text-sm text-text-base">{v.name}</span>
+                          <span className="font-mono text-sm text-text-base">
+                            {v.name}
+                          </span>
                           <span className="text-xs text-text-muted">
                             {revealedIds.has(v.id) ? v.value : '••••••'}
                           </span>
@@ -164,14 +200,6 @@ export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewS
                             <Eye className="h-4 w-4" />
                           )}
                         </button>
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(v.id)}
-                          onChange={() => toggleSelection(v.id)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="h-4 w-4 cursor-pointer accent-accent"
-                          aria-label={`${t('onboarding.review.selectVariable')} ${v.name}`}
-                        />
                       </Card>
                     ))}
                   </div>
@@ -183,7 +211,9 @@ export default function RetroactiveReviewStep({ onContinue }: RetroactiveReviewS
 
         {groups.length === 0 && (
           <Card className="p-8 text-center">
-            <p className="text-text-muted">{t('onboarding.review.noVariables')}</p>
+            <p className="text-text-muted">
+              {t('onboarding.review.noVariables')}
+            </p>
           </Card>
         )}
 

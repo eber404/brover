@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
 import WelcomeStep from './WelcomeStep'
 import RetroactiveReviewStep from './RetroactiveReviewStep'
 import SummaryStep from './SummaryStep'
@@ -52,12 +51,13 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const content = (() => {
     if (step === 'welcome') return <WelcomeStep onSelectMode={handleModeSelect} />
-    if (step === 'review') return <RetroactiveReviewStep onContinue={handleRetroactiveContinue} />
+    if (step === 'review') return <RetroactiveReviewStep onContinue={handleRetroactiveContinue} onBack={handleBack} />
     if (step === 'summary') {
       return (
         <SummaryStep
           summary={summaryResult ?? { importedSensitive: 0, removedFromDotfiles: 0, ignoredNonSensitive: 0, ignoredWithReason: [] }}
           onComplete={handleComplete}
+          onBack={handleBack}
         />
       )
     }
@@ -68,16 +68,6 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     <>
       <div className="absolute inset-x-0 top-0 z-50 h-11 w-20" style={dragStyle} />
       <div className="absolute inset-x-0 top-0 z-50 h-4" style={dragStyle} />
-      {step !== 'welcome' && (
-        <button
-          type="button"
-          onClick={handleBack}
-          className="absolute left-4 top-4 z-50 flex items-center gap-1 text-sm text-text-muted hover:text-text-base transition-colors"
-          aria-label="back"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-      )}
       {content}
     </>
   )
