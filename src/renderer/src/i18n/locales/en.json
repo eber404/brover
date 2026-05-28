@@ -61,6 +61,18 @@
         "desc": "Set up everything from scratch with a clean configuration",
         "action": "Start fresh"
       }
+    },
+    "review": {
+      "title": "Review scanned variables",
+      "subtitle": "Select which variables contain sensitive values to import securely",
+      "loading": "Scanning dotfiles...",
+      "error": "Failed to scan dotfiles",
+      "warnings": "Scan completed with warnings:",
+      "noVariables": "No variables found in dotfiles",
+      "continue": "Continue",
+      "reveal": "Reveal",
+      "hide": "Hide",
+      "selectVariable": "Select as sensitive"
     }
   },
   "common": {

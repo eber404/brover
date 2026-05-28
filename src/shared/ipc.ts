@@ -11,6 +11,11 @@ import type {
   OnboardingSummary,
 } from './models'
 
+export interface RetroactivePayload {
+  scanResult: ScanResult
+  selection: RetroactiveSelection
+}
+
 export interface BroverAPI {
   listApps: () => Promise<AppAuthorization[]>
   createApp: (payload: { displayName: string; bundleID: string }) => Promise<AppAuthorization[]>
@@ -50,7 +55,7 @@ export interface BroverAPI {
   onboarding: {
     getStatus: () => Promise<OnboardingStatus>
     scanDotfiles: () => Promise<ScanResult>
-    runRetroactive: (selection: RetroactiveSelection) => Promise<OnboardingSummary>
+    runRetroactive: (payload: RetroactivePayload) => Promise<OnboardingSummary>
     runFreshStart: () => Promise<OnboardingSummary>
     complete: () => Promise<void>
   }

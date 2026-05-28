@@ -61,6 +61,18 @@
         "desc": "Configure tudo do zero com uma configuracao limpa",
         "action": "Comecar do zero"
       }
+    },
+    "review": {
+      "title": "Revisar variaveis escaneadas",
+      "subtitle": "Selecione quais variaveis contem valores sensiveis para importar com seguranca",
+      "loading": "Escaneando dotfiles...",
+      "error": "Falha ao escanear dotfiles",
+      "warnings": "Escaneamento concluido com avisos:",
+      "noVariables": "Nenhuma variavel encontrada nos dotfiles",
+      "continue": "Continuar",
+      "reveal": "Revelar",
+      "hide": "Ocultar",
+      "selectVariable": "Selecionar como sensivel"
     }
   },
   "common": {
