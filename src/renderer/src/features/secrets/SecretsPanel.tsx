@@ -318,8 +318,8 @@ export function useSecretsPanel(props: SecretsPanelProps) {
 <div className="flex items-center gap-2">
               <Button
                 data-testid="launch-button"
-                variant="outline"
-                className="group relative rounded-xl px-4 py-2 text-sm font-semibold duration-200 hover:shadow-[0_0_18px_rgba(31,182,255,0.15)]"
+                variant="card"
+                className="px-4 py-2 text-sm font-semibold"
                 onClick={() => void handleLaunch()}
               >
                 <span className="flex items-center gap-2">
@@ -331,8 +331,8 @@ export function useSecretsPanel(props: SecretsPanelProps) {
                 <DialogTrigger asChild>
                   <Button
                     data-testid="add-secret-button"
-                    variant="outline"
-                    className="group relative rounded-xl px-4 py-2 text-sm font-semibold duration-200 hover:shadow-[0_0_18px_rgba(31,182,255,0.15)]"
+                    variant="card"
+                    className="px-4 py-2 text-sm font-semibold"
                   >
                     <span className="flex items-center gap-2">
                       <Plus className="h-4 w-4 text-accent transition-all duration-200 group-hover:scale-110" />

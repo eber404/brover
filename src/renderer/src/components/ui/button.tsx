@@ -2,7 +2,7 @@ import * as React from 'react'
 import { cn } from '../../lib/utils'
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'outline' | 'destructive'
+  variant?: 'default' | 'outline' | 'destructive' | 'card'
 }
 
 const HOVER_CYAN = '#67d0ff'
@@ -17,8 +17,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       className={cn(
         'inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-50',
         variant === 'default' && 'bg-accent text-slate-950 hover:bg-[#67d0ff]',
-        variant === 'outline' && 'border border-edge bg-surface-base text-text-base hover:bg-surface-active',
+        variant === 'outline' && 'border border-edge bg-transparent text-text-base hover:bg-surface-overlay',
         variant === 'destructive' && 'border border-rose-action bg-rose-on text-rose-status hover:bg-rose-hover',
+        variant === 'card' && 'border border-edge bg-surface-card text-text-base hover:border-accent/40 hover:shadow-[0_0_18px_rgba(31,182,255,0.15)]',
         className
       )}
       {...props}

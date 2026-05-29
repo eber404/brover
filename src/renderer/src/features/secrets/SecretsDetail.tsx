@@ -77,7 +77,8 @@ export function SecretsDetail({
           </div>
           <Button
             data-testid="secret-copy-button"
-            className="group relative w-full overflow-hidden rounded-xl border border-edge border-transparent bg-surface-card px-4 py-2 text-sm font-semibold text-text-base duration-200 hover:border-accent/40 hover:shadow-[0_0_18px_rgba(31,182,255,0.15)] active:scale-[0.98]"
+            variant="card"
+            className="w-full px-4 py-2 text-sm font-semibold active:scale-[0.98]"
             onClick={() => onCopy(isRevealed)}
           >
             <span className="flex items-center gap-2">
@@ -100,7 +101,8 @@ export function SecretsDetail({
         />
         <Button
           data-testid="secret-update-button"
-          className="group relative w-full overflow-hidden rounded-xl border border-edge border-transparent bg-surface-card px-4 py-2 text-sm font-semibold text-text-base duration-200 hover:border-accent/40 hover:shadow-[0_0_18px_rgba(31,182,255,0.15)] active:scale-[0.98]"
+          variant="card"
+          className="w-full px-4 py-2 text-sm font-semibold active:scale-[0.98]"
           onClick={() => {
             onUpdateValue(editValue)
             setEditValue('')
