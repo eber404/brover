@@ -19,6 +19,7 @@ import { createAuthSessionCache } from './authSessionCache'
 import { createMacSecretAuthPrompt } from './authPrompt'
 import { createEnvInjector } from './envInjector'
 import { createTerminalLauncher } from './terminalLauncher'
+import { getDevStorageClearOptions } from './devSession'
 
 if (!app.isPackaged) {
   app.commandLine.appendSwitch('disable-http-cache')
@@ -289,7 +290,32 @@ async function bootstrap() {
       }
     ) => {
       try {
+        const cached = authSessionCache.isAuthorized(payload.profile)
+        if (cached) {
+          return { ok: true, value: 'needs-confirmation' }
+        }
         await authGate.authorize('update', { targetId: payload.profile })
+        await store.updateEnv(payload)
+        return ok()
+      } catch (error) {
+        return failure(error)
+      }
+    }
+  )
+
+  ipcMain.handle(
+    'envs:update-confirmed',
+    async (
+      _,
+      payload: {
+        id: string
+        profile: string
+        name: string
+        value: string
+        description?: string
+      }
+    ) => {
+      try {
         await store.updateEnv(payload)
         return ok()
       } catch (error) {
@@ -376,18 +402,9 @@ async function bootstrap() {
     console.log(
       '[main] Clearing Electron storage (cache, cookies, service workers)...'
     )
-    await window.webContents.session.clearStorageData({
-      storages: [
-        'cookies',
-        'filesystem',
-        'indexdb',
-        'localstorage',
-        'shadercache',
-        'websql',
-        'serviceworkers',
-        'cachestorage',
-      ],
-    })
+    await window.webContents.session.clearStorageData(
+      getDevStorageClearOptions()
+    )
     await window.webContents.session.clearCache()
     console.log('[main] Loading dev server...')
     await window.loadURL(

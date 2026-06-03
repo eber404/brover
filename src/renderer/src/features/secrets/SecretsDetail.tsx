@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { EnvMetadata } from '../../../../shared/models'
-import { Copy, Eye, EyeOff } from 'lucide-react'
+import { Copy, Eye, EyeOff, RotateCw } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
@@ -33,9 +33,7 @@ export function SecretsDetail({
   }, [env?.id])
 
   useEffect(() => {
-    if (revealValue) {
-      setIsRevealed(true)
-    }
+    setIsRevealed(Boolean(revealValue))
   }, [revealValue])
 
   if (!env) {
@@ -68,7 +66,6 @@ export function SecretsDetail({
                   return
                 }
                 onReveal()
-                setIsRevealed(true)
               }}
               aria-label={isRevealed ? 'Hide secret' : 'Reveal secret'}
             >
@@ -110,6 +107,7 @@ export function SecretsDetail({
           disabled={editValue.length === 0}
         >
           <span className="flex items-center gap-2">
+            <RotateCw className="h-4 w-4 text-accent transition-all duration-200 group-hover:text-[#67d0ff] group-hover:scale-110" />
             {hasValue ? t('secrets.updateValue') : t('secrets.saveValue')}
           </span>
         </Button>

@@ -3,7 +3,10 @@ import WelcomeStep from './WelcomeStep'
 import RetroactiveReviewStep from './RetroactiveReviewStep'
 import FreshStartReviewStep from './FreshStartReviewStep'
 import ConfirmationStep from './ConfirmationStep'
+import TerminalPreferencesStep from './TerminalPreferencesStep'
 import type { ScanResult, OnboardingSummary, RetroactiveSelection } from '../../../../shared/models'
+import type { LaunchPreferences } from '../launch/preferences'
+import { saveLaunchPreferences } from '../launch/preferences'
 
 interface OnboardingFlowProps {
   onComplete: () => void
@@ -20,15 +23,22 @@ function computePreviewSummary(scanResult: ScanResult, selectedIds: string[]): O
 }
 
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
-  const [step, setStep] = useState<'welcome' | 'review' | 'fresh-start-review' | 'confirmation'>('welcome')
+  const [step, setStep] = useState<'welcome' | 'review' | 'fresh-start-review' | 'confirmation' | 'terminal-preferences'>('welcome')
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
   const [retroactivePayload, setRetroactivePayload] = useState<{
     scanResult: ScanResult
     selection: RetroactiveSelection
   } | null>(null)
+  const [freshStartPayload, setFreshStartPayload] = useState<{ scanResult: ScanResult } | null>(null)
+  const [terminalPreferencesOrigin, setTerminalPreferencesOrigin] = useState<
+    'fresh-start' | 'retroactive' | null
+  >(null)
 
   const handleModeSelect = useCallback(
     (selectedMode: 'retroactive' | 'fresh-start') => {
+      setFreshStartPayload(null)
+      setRetroactivePayload(null)
+      setTerminalPreferencesOrigin(null)
       if (selectedMode === 'retroactive') {
         setStep('review')
       } else {
@@ -40,15 +50,11 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const handleFreshStartContinue = useCallback(
     async (payload: { scanResult: ScanResult }) => {
-      try {
-        await window.brover.onboarding.runFreshStart(payload)
-        await window.brover.onboarding.complete()
-        onComplete()
-      } catch (err) {
-        console.error('Fresh start import failed', err)
-      }
+      setFreshStartPayload(payload)
+      setTerminalPreferencesOrigin('fresh-start')
+      setStep('terminal-preferences')
     },
-    [onComplete]
+    []
   )
 
   const handleRetroactiveContinue = useCallback(
@@ -62,16 +68,40 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const handleConfirmRetroactive = useCallback(async () => {
     if (!retroactivePayload) return
-    try {
-      await window.brover.onboarding.runRetroactive(retroactivePayload)
-      await window.brover.onboarding.complete()
-      onComplete()
-    } catch (err) {
-      console.error('Retroactive import failed', err)
+    setTerminalPreferencesOrigin('retroactive')
+    setStep('terminal-preferences')
+  }, [retroactivePayload])
+
+  const handleTerminalPreferencesContinue = useCallback(
+    async (preferences: LaunchPreferences) => {
+      try {
+        saveLaunchPreferences(preferences)
+        if (freshStartPayload) {
+          await window.brover.onboarding.runFreshStart(freshStartPayload)
+        } else if (retroactivePayload) {
+          await window.brover.onboarding.runRetroactive(retroactivePayload)
+        }
+        await window.brover.onboarding.complete()
+        onComplete()
+      } catch (err) {
+        console.error('Onboarding terminal preferences failed', err)
+      }
+    },
+    [freshStartPayload, onComplete, retroactivePayload]
+  )
+
+  const handleTerminalPreferencesBack = useCallback(() => {
+    if (terminalPreferencesOrigin === 'fresh-start') {
+      setStep('fresh-start-review')
+      return
     }
-  }, [retroactivePayload, onComplete])
+    setStep('confirmation')
+  }, [terminalPreferencesOrigin])
 
   const handleBack = useCallback(() => {
+    setFreshStartPayload(null)
+    setRetroactivePayload(null)
+    setTerminalPreferencesOrigin(null)
     setStep('welcome')
   }, [])
 
@@ -91,6 +121,14 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           summary={summary ?? { importedSensitive: 0, removedFromDotfiles: 0, ignoredNonSensitive: 0, ignoredWithReason: [] }}
           onConfirm={handleConfirmRetroactive}
           onBack={handleBack}
+        />
+      )
+    }
+    if (step === 'terminal-preferences') {
+      return (
+        <TerminalPreferencesStep
+          onBack={handleTerminalPreferencesBack}
+          onContinue={handleTerminalPreferencesContinue}
         />
       )
     }

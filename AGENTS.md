@@ -92,7 +92,7 @@ All spaces are `kind: 'dotfile'`. Each space points to one dotfile (e.g., `~/.zs
 
 - `terminalLauncher` module: creates `.command` file in `/tmp/`, opens terminal app
 - Supports Warp, iTerm2, Terminal.app
-- User picks terminal from dropdown (persisted in localStorage)
+- Terminal preferences persist in renderer storage; onboarding collects favorites + order, first favorite becomes default launch terminal
 
 ### Onboarding
 
@@ -109,6 +109,8 @@ IPC contracts under `onboarding.*` namespace:
 - `onboarding:import-fresh` — receives space/target names derived from dotfiles, creates metadata-only scaffold.
 
 Security: retroactive sensitive selection shows masked values without auth (pre-Keychain stage, no secrets persisted yet). After user confirms selection, values move directly to Keychain. No plaintext secrets touch local JSON at any point.
+
+Flow: both onboarding modes route through final terminal-preferences step before completion flag is written.
 
 ---
 

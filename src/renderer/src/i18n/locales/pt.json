@@ -91,13 +91,22 @@
       "error": "Falha ao escanear dotfiles",
       "noFiles": "Nenhum dotfile encontrado",
       "continue": "Começar a gerenciar segredos →"
+    },
+    "terminalPreferences": {
+      "title": "Escolha terminais de launch",
+      "subtitle": "Marque favoritos, ajuste ordem e use primeiro como padrao.",
+      "loading": "Carregando terminais instalados...",
+      "error": "Falha ao carregar terminais instalados",
+      "continue": "Salvar preferencias e concluir"
     }
   },
   "spaces": {
     "tiedTargetsTooltip": "Manter nomes de segredos sincronizados em todos os targets deste espaco. Valores permanecem especificos de cada target."
   },
   "launch": {
-    "launch": "Launch"
+    "launch": "Launch",
+    "openMenu": "Abrir menu de launch",
+    "closeMenu": "Fechar menu de launch"
   },
   "common": {
     "refresh": "Atualizar",

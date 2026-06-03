@@ -299,8 +299,16 @@ export class BroverStore {
     await this.writeDB(db)
   }
 
-async toggleEnvEnabled(_id: string): Promise<EnvMetadata[]> {
-    return []
+  async toggleEnvEnabled(id: string): Promise<EnvMetadata[]> {
+    const db = await this.readDB()
+    const now = new Date().toISOString()
+    db.envs = db.envs.map((env) =>
+      env.id === id
+        ? { ...env, enabled: !env.enabled, updatedAt: now }
+        : env
+    )
+    await this.writeDB(db)
+    return db.envs
   }
 
   async listSpaces(): Promise<EnvSpace[]> {

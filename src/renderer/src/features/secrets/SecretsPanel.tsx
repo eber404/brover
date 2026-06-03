@@ -1,9 +1,15 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { KeyRound, Plus, Terminal } from 'lucide-react'
-import type { EnvMetadata } from '../../../../shared/models'
+import { Check, ChevronDown, KeyRound, Plus, Terminal } from 'lucide-react'
+import type { EnvMetadata, TerminalApp } from '../../../../shared/models'
 import { UNSUPPORTED_SECRET_BACKEND } from '../../../../shared/models'
 import { useI18n } from '../../i18n'
+import {
+  getLaunchPreferences,
+  getPreferredTerminalId,
+  promoteLaunchDefault,
+  saveLaunchPreferences,
+} from '../launch/preferences'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
 import {
@@ -97,10 +103,17 @@ export function useSecretsPanel(props: SecretsPanelProps) {
 
   const [open, setOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false)
+  const [pendingUpdateValue, setPendingUpdateValue] = useState('')
   const [newEnvName, setNewEnvName] = useState('')
   const [newEnvValue, setNewEnvValue] = useState('')
   const [newEnvDescription, setNewEnvDescription] = useState('')
   const [hasValue, setHasValue] = useState(true)
+  const [installedTerminals, setInstalledTerminals] = useState<TerminalApp[]>([])
+  const [launchMenuOpen, setLaunchMenuOpen] = useState(false)
+  const [launchPreferences, setLaunchPreferences] = useState(() =>
+    getLaunchPreferences()
+  )
 
   const selectedEnv = useMemo(
     () => envs.find((item) => item.id === selectedEnvId) ?? null,
@@ -111,6 +124,29 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     if (!selectedEnv) return
     window.brover.secretExists(selectedEnv.profile, selectedEnv.name).then(setHasValue)
   }, [selectedEnv])
+
+  useEffect(() => {
+    if (!window.brover.launch?.listTerminals) return
+
+    let cancelled = false
+
+    window.brover.launch
+      .listTerminals()
+      .then(({ terminals }) => {
+        if (cancelled) return
+        const installed = terminals.filter((terminal) => terminal.installed)
+        setInstalledTerminals(installed)
+        setLaunchPreferences(getLaunchPreferences(installed.map((terminal) => terminal.id)))
+      })
+      .catch(() => {
+        if (cancelled) return
+        setInstalledTerminals([])
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const onSelectEnv = useCallback(
     (id: string) => {
@@ -148,11 +184,43 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     toast(t('common.secretCreated'))
   }
 
+  const favoriteTerminals = useMemo(() => {
+    if (installedTerminals.length === 0) return []
+
+    return launchPreferences.favoriteTerminalIds
+      .map((terminalId) =>
+        installedTerminals.find((terminal) => terminal.id === terminalId) ?? null
+      )
+      .filter((terminal): terminal is TerminalApp => terminal !== null)
+  }, [installedTerminals, launchPreferences.favoriteTerminalIds])
+
+  const launchWithTerminal = useCallback(
+    async (terminalApp: string) => {
+      if (!props.selectedTargetId || !props.dotfilePath) return
+      await window.brover.launch.withEnv(
+        props.selectedTargetId,
+        props.dotfilePath,
+        terminalApp
+      )
+    },
+    [props.selectedTargetId, props.dotfilePath]
+  )
+
   const handleLaunch = useCallback(async () => {
-    if (!props.selectedTargetId || !props.dotfilePath) return
-    const terminalApp = localStorage.getItem('brover.terminal') ?? 'Terminal'
-    await window.brover.launch.withEnv(props.selectedTargetId, props.dotfilePath, terminalApp)
-  }, [props.selectedTargetId, props.dotfilePath])
+    const terminalApp = launchPreferences.defaultTerminalId || getPreferredTerminalId()
+    await launchWithTerminal(terminalApp)
+  }, [launchPreferences.defaultTerminalId, launchWithTerminal])
+
+  const handleLaunchFromMenu = useCallback(
+    async (terminalId: string) => {
+      const nextPreferences = promoteLaunchDefault(launchPreferences, terminalId)
+      setLaunchPreferences(nextPreferences)
+      saveLaunchPreferences(nextPreferences)
+      setLaunchMenuOpen(false)
+      await launchWithTerminal(terminalId)
+    },
+    [launchPreferences, launchWithTerminal]
+  )
 
   async function revealEnv() {
     if (!selectedEnv) return
@@ -220,11 +288,41 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       )
       return
     }
+    if (result.value === 'needs-confirmation') {
+      setPendingUpdateValue(editedValue)
+      setUpdateConfirmOpen(true)
+      return
+    }
     setRevealValue('')
     toast(t('common.secretUpdated'))
     if (selectedEnv) {
       window.brover.secretExists(selectedEnv.profile, selectedEnv.name).then(setHasValue)
     }
+  }
+
+  async function updateEnvConfirmed() {
+    if (!selectedEnv || !pendingUpdateValue) return
+    const result = await window.brover.updateEnvConfirmed({
+      id: selectedEnv.id,
+      profile: selectedEnv.profile,
+      name: selectedEnv.name,
+      value: pendingUpdateValue,
+      description: selectedEnv.description,
+    })
+    if (!result.ok) {
+      toast(
+        result.error === UNSUPPORTED_SECRET_BACKEND
+          ? t('common.unsupportedBackend')
+          : (result.error ?? 'Failed to update secret'),
+        'error'
+      )
+      return
+    }
+    setUpdateConfirmOpen(false)
+    setPendingUpdateValue('')
+    setRevealValue('')
+    toast(t('common.secretUpdated'))
+    window.brover.secretExists(selectedEnv.profile, selectedEnv.name).then(setHasValue)
   }
 
   async function deleteEnv() {
@@ -315,18 +413,59 @@ export function useSecretsPanel(props: SecretsPanelProps) {
         <Card className="mb-3 border-transparent bg-transparent p-0">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-text-emphasis">{targetName}</h2>
-<div className="flex items-center gap-2">
-              <Button
-                data-testid="launch-button"
-                variant="card"
-                className="px-4 py-2 text-sm font-semibold"
-                onClick={() => void handleLaunch()}
-              >
-                <span className="flex items-center gap-2">
-                  <Terminal className="h-4 w-4 text-accent transition-all duration-200 group-hover:scale-110 group-hover:text-[#67d0ff]" />
-                  {t('launch.launch')}
-                </span>
-              </Button>
+            <div className="flex items-center gap-2">
+              <div className="relative flex items-stretch">
+                <Button
+                  data-testid="launch-button"
+                  variant="card"
+                  className="rounded-r-none px-4 py-2 text-sm font-semibold"
+                  onClick={() => void handleLaunch()}
+                >
+                  <span className="flex items-center gap-2">
+                    <Terminal className="h-4 w-4 text-accent transition-all duration-200 group-hover:scale-110 group-hover:text-[#67d0ff]" />
+                    {t('launch.launch')}
+                  </span>
+                </Button>
+                {favoriteTerminals.length > 1 ? (
+                  <>
+                    <Button
+                      data-testid="launch-menu-button"
+                      variant="card"
+                      className="rounded-l-none border-l-0 px-2 py-2"
+                      aria-label={t('launch.openMenu')}
+                      onClick={() => setLaunchMenuOpen((current) => !current)}
+                    >
+                      <ChevronDown className="h-4 w-4 text-text-base" />
+                    </Button>
+                    {launchMenuOpen ? (
+                      <>
+                        <button
+                          type="button"
+                          className="fixed inset-0 z-40 cursor-default"
+                          aria-label={t('launch.closeMenu')}
+                          onClick={() => setLaunchMenuOpen(false)}
+                        />
+                        <div className="absolute right-0 top-[calc(100%+8px)] z-50 min-w-44 rounded-lg border border-edge bg-surface-overlay p-1 shadow-xl">
+                          {favoriteTerminals.map((terminal) => (
+                            <button
+                              key={terminal.id}
+                              type="button"
+                              role="menuitem"
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-text-base transition hover:bg-surface-hover"
+                              onClick={() => void handleLaunchFromMenu(terminal.id)}
+                            >
+                              <span className="flex-1">{terminal.name}</span>
+                              {terminal.id === launchPreferences.defaultTerminalId ? (
+                                <Check className="h-4 w-4 text-accent" />
+                              ) : null}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    ) : null}
+                  </>
+                ) : null}
+              </div>
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button
@@ -389,6 +528,16 @@ export function useSecretsPanel(props: SecretsPanelProps) {
         {listContent}
 
         <ConfirmDialog
+          open={updateConfirmOpen}
+          onOpenChange={setUpdateConfirmOpen}
+          title={`Update "${selectedEnv?.name}"?`}
+          description="This will replace the current secret value."
+          confirmLabel="Update"
+          cancelLabel="Cancel"
+          onConfirm={() => void updateEnvConfirmed()}
+        />
+
+        <ConfirmDialog
           open={deleteConfirmOpen}
           onOpenChange={setDeleteConfirmOpen}
           title={`Delete "${selectedEnv?.name}"?`}
@@ -404,6 +553,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     revealEnv,
     copyEnv,
     updateEnvValue,
+    updateEnvConfirmed,
     deleteEnv,
     deleteEnvConfirmed,
     deleteConfirmOpen,

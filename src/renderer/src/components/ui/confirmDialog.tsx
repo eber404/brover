@@ -20,6 +20,7 @@ export function ConfirmDialog({
   description,
   confirmLabel = 'Delete',
   cancelLabel = 'Cancel',
+  destructive = false,
   onConfirm,
 }: ConfirmDialogProps) {
   return (
@@ -32,7 +33,7 @@ export function ConfirmDialog({
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>{cancelLabel}</Button>
           <Button
-            variant="destructive"
+            variant={destructive ? 'destructive' : 'success'}
             onClick={() => {
               onConfirm?.()
               onOpenChange(false)

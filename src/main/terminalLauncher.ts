@@ -1,6 +1,5 @@
 import { execSync } from 'child_process'
 import { existsSync } from 'fs'
-import { randomBytes } from 'crypto'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
@@ -16,13 +15,21 @@ export interface TerminalApp {
   installed: boolean
 }
 
+interface TerminalLauncherDeps {
+  openTerminal?: (terminalName: string, commandPath: string) => void
+}
+
 const TERMINAL_APPS: Omit<TerminalApp, 'installed'>[] = [
   { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app' },
   { id: 'iterm2', name: 'iTerm2', bundlePath: '/Applications/iTerm.app' },
   { id: 'terminal', name: 'Terminal', bundlePath: '/System/Applications/Utilities/Terminal.app' },
 ]
 
-export function createTerminalLauncher() {
+export function createTerminalLauncher(deps: TerminalLauncherDeps = {}) {
+  const openTerminal = deps.openTerminal ?? ((terminalName: string, commandPath: string) => {
+    execSync(`open -a "${terminalName}" "${commandPath}"`, { timeout: 5000 })
+  })
+
   function listTerminals(): TerminalApp[] {
     return TERMINAL_APPS.map(app => ({
       ...app,
@@ -36,7 +43,8 @@ export function createTerminalLauncher() {
 
   function buildCommandContent(targetId: string, entries: EnvEntry[]): string {
     const exports = entries.map(e => `export ${e.name}=${escapeShellValue(e.value)}`).join('\n')
-    return `#!/bin/bash\n# Brover envs — target: ${targetId}\n${exports}\necho "Brover — target '${targetId}' active"\nexec $SHELL\n`
+    const exportBlock = exports ? `${exports}\n` : ''
+    return `#!/bin/bash\n# Brover envs — target: ${targetId}\n${exportBlock}exec $SHELL\n`
   }
 
   async function launch(
@@ -44,11 +52,6 @@ export function createTerminalLauncher() {
     terminalAppId: string,
     entries: EnvEntry[],
   ): Promise<{ success: boolean; commandPath?: string }> {
-    if (entries.length === 0) {
-      console.warn('[terminalLauncher] No envs to inject, skipping launch')
-      return { success: true }
-    }
-
     const commandPath = join(tmpdir(), `brover-${targetId}.command`)
 
     const { writeFileSync, chmodSync } = require('fs')
@@ -58,7 +61,7 @@ export function createTerminalLauncher() {
     const terminal = TERMINAL_APPS.find(t => t.id === terminalAppId) ?? TERMINAL_APPS[2]
 
     try {
-      execSync(`open -a "${terminal.name}" "${commandPath}"`, { timeout: 5000 })
+      openTerminal(terminal.name, commandPath)
     } catch {
       // open may fail if no terminal installed, but file is created
     }

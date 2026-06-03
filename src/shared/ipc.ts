@@ -32,6 +32,7 @@ export interface BroverAPI {
   revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>
   copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>
   updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>
+  updateEnvConfirmed: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>
   deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>
   deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>
   toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>

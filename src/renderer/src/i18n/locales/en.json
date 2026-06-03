@@ -91,13 +91,22 @@
       "error": "Failed to scan dotfiles",
       "noFiles": "No dotfiles found",
       "continue": "Start managing secrets →"
+    },
+    "terminalPreferences": {
+      "title": "Choose launch terminals",
+      "subtitle": "Pick favorites, set order, and use first item as default.",
+      "loading": "Loading installed terminals...",
+      "error": "Failed to load installed terminals",
+      "continue": "Save preferences and finish"
     }
   },
   "spaces": {
     "tiedTargetsTooltip": "Keep secret names synced across all targets in this space. Values remain target-specific."
   },
   "launch": {
-    "launch": "Launch"
+    "launch": "Launch",
+    "openMenu": "Open launch menu",
+    "closeMenu": "Close launch menu"
   },
   "common": {
     "refresh": "Refresh",
