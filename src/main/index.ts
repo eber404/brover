@@ -68,6 +68,15 @@ async function bootstrap() {
   const envInjector = createEnvInjector()
   const terminalLauncher = createTerminalLauncher()
 
+  async function listActiveTargetIds(): Promise<string[]> {
+    const spaces = await store.listSpaces()
+    const targetsBySpace = await Promise.all(spaces.map(space => store.listTargets(space.id)))
+    return targetsBySpace
+      .flat()
+      .filter(target => target.isActive)
+      .map(target => target.id)
+  }
+
   // Startup cleanup: remove stale caches and dotfile blocks
   const spaces = await store.listSpaces()
   for (const space of spaces) {
@@ -76,6 +85,17 @@ async function bootstrap() {
     }
   }
   envInjector.startupCleanup()
+  terminalLauncher.startupCleanup(await listActiveTargetIds())
+
+  app.on('will-quit', () => {
+    void listActiveTargetIds()
+      .then(activeTargetIds => {
+        terminalLauncher.shutdownCleanup(activeTargetIds)
+      })
+      .catch(() => {
+        terminalLauncher.shutdownCleanup([])
+      })
+  })
 
   ipcMain.handle('apps:list', () => store.listApps())
   ipcMain.handle(

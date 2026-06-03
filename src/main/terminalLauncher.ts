@@ -1,5 +1,5 @@
 import { execSync } from 'child_process'
-import { existsSync } from 'fs'
+import { existsSync, readdirSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
@@ -17,6 +17,7 @@ export interface TerminalApp {
 
 interface TerminalLauncherDeps {
   openTerminal?: (terminalName: string, commandPath: string) => void
+  commandDir?: string
 }
 
 const TERMINAL_APPS: Omit<TerminalApp, 'installed'>[] = [
@@ -26,9 +27,11 @@ const TERMINAL_APPS: Omit<TerminalApp, 'installed'>[] = [
 ]
 
 export function createTerminalLauncher(deps: TerminalLauncherDeps = {}) {
+  const commandDir = deps.commandDir ?? tmpdir()
   const openTerminal = deps.openTerminal ?? ((terminalName: string, commandPath: string) => {
     execSync(`open -a "${terminalName}" "${commandPath}"`, { timeout: 5000 })
   })
+  const sessionCommandPaths = new Set<string>()
 
   function listTerminals(): TerminalApp[] {
     return TERMINAL_APPS.map(app => ({
@@ -47,16 +50,52 @@ export function createTerminalLauncher(deps: TerminalLauncherDeps = {}) {
     return `#!/bin/bash\n# Brover envs — target: ${targetId}\n${exportBlock}exec $SHELL\n`
   }
 
+  function commandPathForTarget(targetId: string): string {
+    return join(commandDir, `brover-${targetId}.command`)
+  }
+
+  function preservedCommandPaths(preserveTargetIds: string[]): Set<string> {
+    return new Set(preserveTargetIds.map(commandPathForTarget))
+  }
+
+  function startupCleanup(preserveTargetIds: string[]): void {
+    const preservedPaths = preservedCommandPaths(preserveTargetIds)
+    for (const entry of readdirSync(commandDir)) {
+      if (!entry.startsWith('brover-') || !entry.endsWith('.command')) {
+        continue
+      }
+
+      const commandPath = join(commandDir, entry)
+      if (preservedPaths.has(commandPath)) {
+        continue
+      }
+
+      rmSync(commandPath, { force: true })
+    }
+  }
+
+  function shutdownCleanup(preserveTargetIds: string[]): void {
+    const preservedPaths = preservedCommandPaths(preserveTargetIds)
+    for (const commandPath of sessionCommandPaths) {
+      if (preservedPaths.has(commandPath)) {
+        continue
+      }
+
+      rmSync(commandPath, { force: true })
+      sessionCommandPaths.delete(commandPath)
+    }
+  }
+
   async function launch(
     targetId: string,
     terminalAppId: string,
     entries: EnvEntry[],
   ): Promise<{ success: boolean; commandPath?: string }> {
-    const commandPath = join(tmpdir(), `brover-${targetId}.command`)
+    const commandPath = commandPathForTarget(targetId)
 
-    const { writeFileSync, chmodSync } = require('fs')
     const content = buildCommandContent(targetId, entries)
     writeFileSync(commandPath, content, { mode: 0o755 })
+    sessionCommandPaths.add(commandPath)
 
     const terminal = TERMINAL_APPS.find(t => t.id === terminalAppId) ?? TERMINAL_APPS[2]
 
@@ -69,5 +108,5 @@ export function createTerminalLauncher(deps: TerminalLauncherDeps = {}) {
     return { success: true, commandPath }
   }
 
-  return { listTerminals, launch }
+  return { listTerminals, launch, startupCleanup, shutdownCleanup }
 }

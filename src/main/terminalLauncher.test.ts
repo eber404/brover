@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { mkdtempSync, readFileSync, existsSync, rmSync } from 'fs'
+import { mkdtempSync, readFileSync, existsSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { createTerminalLauncher } from './terminalLauncher'
@@ -7,14 +7,17 @@ import { createTerminalLauncher } from './terminalLauncher'
 describe('terminalLauncher', () => {
   let launcher: ReturnType<typeof createTerminalLauncher>
   let openTerminal: ReturnType<typeof vi.fn<(terminalName: string, commandPath: string) => void>>
+  let commandDir: string
 
   beforeEach(() => {
+    commandDir = mkdtempSync(join(tmpdir(), 'brover-command-'))
     openTerminal = vi.fn<(terminalName: string, commandPath: string) => void>()
-    launcher = createTerminalLauncher({ openTerminal })
+    launcher = createTerminalLauncher({ openTerminal, commandDir })
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
+    rmSync(commandDir, { recursive: true, force: true })
   })
 
   describe('listTerminals', () => {
@@ -88,19 +91,47 @@ describe('terminalLauncher', () => {
       const result2 = await launcher.launch('target-1', 'terminal', [{ name: 'BAZ', value: 'qux' }])
       expect(result1.commandPath).toBe(result2.commandPath)
       expect(result1.commandPath).toContain('brover-target-1.command')
-      rmSync(result1.commandPath!)
     })
 
     it('writes new content when called twice (file is overwritten, not appended)', async () => {
-      const l1 = createTerminalLauncher({ openTerminal })
-      const l2 = createTerminalLauncher({ openTerminal })
+      const l1 = createTerminalLauncher({ openTerminal, commandDir })
+      const l2 = createTerminalLauncher({ openTerminal, commandDir })
       await l1.launch('target-B', 'terminal', [{ name: 'INITIAL', value: 'first' }])
       await l2.launch('target-B', 'terminal', [{ name: 'UPDATED', value: 'second' }])
-      const path = join(tmpdir(), 'brover-target-B.command')
+      const path = join(commandDir, 'brover-target-B.command')
       const content = readFileSync(path, 'utf8')
       expect(content).toContain('export UPDATED=')
       expect(content).not.toContain('export INITIAL=')
-      rmSync(path)
+    })
+
+    it('startupCleanup removes stale Brover command files and preserves active targets', () => {
+      const stalePath = join(commandDir, 'brover-stale.command')
+      const activePath = join(commandDir, 'brover-active.command')
+      const otherPath = join(commandDir, 'not-brover.command')
+
+      writeFileSync(stalePath, '# stale\n', 'utf8')
+      writeFileSync(activePath, '# active\n', 'utf8')
+      writeFileSync(otherPath, '# keep\n', 'utf8')
+
+      launcher.startupCleanup(['active'])
+
+      expect(existsSync(stalePath)).toBe(false)
+      expect(existsSync(activePath)).toBe(true)
+      expect(existsSync(otherPath)).toBe(true)
+    })
+
+    it('shutdownCleanup removes session-managed files and preserves active targets', async () => {
+      const keepResult = await launcher.launch('target-1', 'terminal', [{ name: 'KEEP', value: 'yes' }])
+      const removeResult = await launcher.launch('target-2', 'terminal', [{ name: 'DROP', value: 'no' }])
+      const unrelatedPath = join(commandDir, 'manual.command')
+
+      writeFileSync(unrelatedPath, '# keep\n', 'utf8')
+
+      launcher.shutdownCleanup(['target-1'])
+
+      expect(existsSync(keepResult.commandPath!)).toBe(true)
+      expect(existsSync(removeResult.commandPath!)).toBe(false)
+      expect(existsSync(unrelatedPath)).toBe(true)
     })
   })
 })
