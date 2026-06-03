@@ -29,7 +29,7 @@ test.describe('Secret Delete Confirmation', () => {
     rmSync(dbDir, { recursive: true, force: true })
   })
 
-  test('returns needs-confirmation when auth cache exists', async () => {
+  test('deletes directly when auth cache exists', async () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
@@ -61,20 +61,13 @@ test.describe('Secret Delete Confirmation', () => {
       await window.brover.revealEnv({ profile: targetId, name })
     }, { targetId: target.id, name: secretName })
 
-    // Now auth cache exists → delete returns needs-confirmation
+    // Cached auth should allow delete without extra confirmation
     const deleteResult = await window.evaluate(async ({ id, targetId, name }) => {
       return window.brover.deleteEnv({ id, profile: targetId, name })
     }, { id: env.id, targetId: target.id, name: secretName })
 
     expect(deleteResult.ok).toBe(true)
-    expect(deleteResult.value).toBe('needs-confirmation')
-
-    // Confirm the deletion
-    const confirmedResult = await window.evaluate(async ({ id, targetId, name }) => {
-      return window.brover.deleteEnvConfirmed({ id, profile: targetId, name })
-    }, { id: env.id, targetId: target.id, name: secretName })
-
-    expect(confirmedResult.ok).toBe(true)
+    expect(deleteResult.value).toBeUndefined()
 
     // Verify deleted
     const remaining = await window.evaluate(async ({ name }) => {

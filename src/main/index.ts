@@ -310,10 +310,9 @@ async function bootstrap() {
     ) => {
       try {
         const cached = authSessionCache.isAuthorized(payload.profile)
-        if (cached) {
-          return { ok: true, value: 'needs-confirmation' }
+        if (!cached) {
+          await authGate.authorize('update', { targetId: payload.profile })
         }
-        await authGate.authorize('update', { targetId: payload.profile })
         await store.updateEnv(payload)
         return ok()
       } catch (error) {
@@ -346,10 +345,9 @@ async function bootstrap() {
   ipcMain.handle('envs:delete', async (_, payload: { id: string; profile: string; name: string }) => {
     try {
       const cached = authSessionCache.isAuthorized(payload.profile)
-      if (cached) {
-        return { ok: true, value: 'needs-confirmation' }
+      if (!cached) {
+        await authGate.authorize('delete', { targetId: payload.profile })
       }
-      await authGate.authorize('delete', { targetId: payload.profile })
       await store.deleteEnv(payload)
       return { ok: true }
     } catch (error) {
