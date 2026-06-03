@@ -53,6 +53,8 @@ Deliver a stable local control plane to:
 - update secret value;
 - delete secret.
 
+Auth session is shared across targets for the current in-memory TTL window. Re-auth is not required when switching targets until that TTL expires.
+
 ### Non-auth actions
 
 - list/search metadata;

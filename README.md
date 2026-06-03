@@ -62,6 +62,7 @@ Values remain target-scoped in both modes.
 - On macOS, secrets use Keychain backend.
 - On unsupported platforms, sensitive secret operations fail explicitly.
 - Auth required for reveal/copy(hidden)/update/delete.
+- One successful auth unlocks those sensitive actions across targets until the current in-memory auth TTL expires.
 
 Env name validation:
 
