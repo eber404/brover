@@ -67,7 +67,7 @@ describe('envInjector', () => {
   })
 
   it('deactivate on inactive target is no-op', async () => {
-    await expect(injector.deactivate('nonexistent', dotfilePath)).resolves.not.toThrow()
+    await injector.deactivate('nonexistent', dotfilePath)
     expect(existsSync(join(cacheDir, 'nonexistent.sh'))).toBe(false)
   })
 

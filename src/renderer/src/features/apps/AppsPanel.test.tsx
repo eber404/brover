@@ -3,8 +3,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach } from 'vitest'
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { I18nProvider } from '../../i18n'
 import { useAppsPanel } from './AppsPanel'
+
+vi.mock('../../i18n', () => ({
+  I18nProvider: ({ children }: { children: ReactNode }) => children,
+  useI18n: () => ({
+    t: (key: string) =>
+      ({
+        'apps.displayName': 'Display name',
+        'apps.bundleId': 'Bundle ID (com.apple.Terminal)',
+        'apps.addApp': 'Add App',
+        'apps.noApps': 'No apps yet',
+        'secrets.enabled': 'Enabled',
+      })[key] ?? key,
+  }),
+}))
 
 function AppsTestWrapper(props: Partial<Parameters<typeof useAppsPanel>[0]> = {}) {
   const [apps, setApps] = useState([

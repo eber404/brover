@@ -38,7 +38,7 @@ test.describe('Targets Delete All Flow', () => {
       async ({ spaceName }) => {
         const spaces = await window.brover.createSpace({
           name: spaceName,
-          path: `/tmp/${spaceName}`,
+          dotfilePath: `/tmp/${spaceName}.zshrc`,
         })
         const created = spaces.find((item) => item.name === spaceName)
         if (!created) throw new Error('Failed to create space')

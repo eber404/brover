@@ -40,7 +40,7 @@ test.describe('Space Operations Flow', () => {
       async ({ spaceName, renamed }) => {
         const spaces = await window.brover.createSpace({
           name: spaceName,
-          path: `/tmp/${spaceName}`,
+          dotfilePath: `/tmp/${spaceName}.zshrc`,
         })
         const created = spaces.find((item) => item.name === spaceName)
         if (!created) throw new Error('Failed to create space')
@@ -73,7 +73,7 @@ test.describe('Space Operations Flow', () => {
       async ({ spaceName }) => {
         const spaces = await window.brover.createSpace({
           name: spaceName,
-          path: `/tmp/${spaceName}`,
+          dotfilePath: `/tmp/${spaceName}.zshrc`,
         })
         const created = spaces.find((item) => item.name === spaceName)
         if (!created) throw new Error('Failed to create space')
@@ -110,7 +110,7 @@ test.describe('Space Operations Flow', () => {
       async ({ spaceName }) => {
         const spaces = await window.brover.createSpace({
           name: spaceName,
-          path: `/tmp/${spaceName}`,
+          dotfilePath: `/tmp/${spaceName}.zshrc`,
         })
         const created = spaces.find((item) => item.name === spaceName)
         if (!created) throw new Error('Failed to create space')
@@ -141,7 +141,7 @@ test.describe('Space Operations Flow', () => {
     const result = await window.evaluate(async ({ spaceName }) => {
       const spaces = await window.brover.createSpace({
         name: spaceName,
-        path: `/tmp/${spaceName}`,
+        dotfilePath: `/tmp/${spaceName}.zshrc`,
       })
       const created = spaces.find((item) => item.name === spaceName)
       if (!created) throw new Error('Failed to create space')

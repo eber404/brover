@@ -35,8 +35,13 @@ test.describe('Secrets Auth Flow', () => {
     await window.waitForFunction(() => Boolean(window.brover))
 
     const target = await window.evaluate(async () => {
-      const spaces = await window.brover.listSpaces()
-      const globalSpace = spaces.find((space) => space.id === 'space-global') ?? spaces[0]
+      const spaceName = `secret-space-${Date.now()}`
+      const spaces = await window.brover.createSpace({
+        name: spaceName,
+        dotfilePath: `/tmp/${spaceName}.zshrc`,
+      })
+      const globalSpace = spaces.find((space) => space.name === spaceName)
+      if (!globalSpace) throw new Error('No space available')
       const targets = await window.brover.listTargets(globalSpace.id)
       return targets.find((item) => item.isActive) ?? targets[0]
     })

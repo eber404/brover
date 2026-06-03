@@ -40,7 +40,7 @@ test.describe('Spaces CRUD Flow', () => {
       async ({ spaceName, secretName }) => {
         const spaces = await window.brover.createSpace({
           name: spaceName,
-          path: `/tmp/${spaceName}`,
+          dotfilePath: `/tmp/${spaceName}.zshrc`,
         })
         const createdSpace = spaces.find((item) => item.name === spaceName)
         if (!createdSpace) throw new Error('Failed to create space')

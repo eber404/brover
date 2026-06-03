@@ -34,8 +34,13 @@ test.describe('Secret Delete Confirmation', () => {
     await window.waitForFunction(() => Boolean(window.brover))
 
     const target = await window.evaluate(async () => {
-      const spaces = await window.brover.listSpaces()
-      const space = spaces.find((s) => s.id === 'space-global') ?? spaces[0]
+      const spaceName = `delete-space-${Date.now()}`
+      const spaces = await window.brover.createSpace({
+        name: spaceName,
+        dotfilePath: `/tmp/${spaceName}.zshrc`,
+      })
+      const space = spaces.find((s) => s.name === spaceName)
+      if (!space) throw new Error('No space available')
       const targets = await window.brover.listTargets(space.id)
       return targets.find((t) => t.isActive) ?? targets[0]
     })
@@ -83,8 +88,13 @@ test.describe('Secret Delete Confirmation', () => {
     await window.waitForFunction(() => Boolean(window.brover))
 
     const target = await window.evaluate(async () => {
-      const spaces = await window.brover.listSpaces()
-      const space = spaces.find((s) => s.id === 'space-global') ?? spaces[0]
+      const spaceName = `delete-space-${Date.now()}`
+      const spaces = await window.brover.createSpace({
+        name: spaceName,
+        dotfilePath: `/tmp/${spaceName}.zshrc`,
+      })
+      const space = spaces.find((s) => s.name === spaceName)
+      if (!space) throw new Error('No space available')
       const targets = await window.brover.listTargets(space.id)
       return targets.find((t) => t.isActive) ?? targets[0]
     })

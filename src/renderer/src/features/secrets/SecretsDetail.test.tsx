@@ -84,6 +84,33 @@ describe('SecretsDetail', () => {
     })
   })
 
+  it('keeps dots while reveal is pending and value is still empty', () => {
+    const onReveal = vi.fn()
+    render(
+      <I18nProvider>
+        <SecretsDetail
+          env={env}
+          targetName="dev"
+          revealValue=""
+          hasValue={true}
+          onReveal={onReveal}
+          onCopy={() => {}}
+          onUpdateValue={() => {}}
+        />
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('secret-reveal-toggle'))
+
+    const input = screen.getByTestId('secret-reveal-toggle')
+      .closest('div')!
+      .parentElement!
+      .querySelector('input')!
+
+    expect(onReveal).toHaveBeenCalled()
+    expect((input as HTMLInputElement).value).toBe('••••••••')
+  })
+
   it('keeps update button disabled until input has content', async () => {
     render(
       <I18nProvider>
@@ -162,6 +189,44 @@ describe('SecretsDetail', () => {
       </I18nProvider>
     )
 
+    expect(screen.getByTestId('secret-reveal-toggle').getAttribute('aria-label')).toBe('Reveal secret')
+  })
+
+  it('returns to dots when revealed value is cleared for same env', () => {
+    const { rerender } = render(
+      <I18nProvider>
+        <SecretsDetail
+          env={env}
+          targetName="dev"
+          revealValue="secret123"
+          hasValue={true}
+          onReveal={() => {}}
+          onCopy={() => {}}
+          onUpdateValue={() => {}}
+        />
+      </I18nProvider>
+    )
+
+    rerender(
+      <I18nProvider>
+        <SecretsDetail
+          env={env}
+          targetName="dev"
+          revealValue=""
+          hasValue={true}
+          onReveal={() => {}}
+          onCopy={() => {}}
+          onUpdateValue={() => {}}
+        />
+      </I18nProvider>
+    )
+
+    const input = screen.getByTestId('secret-reveal-toggle')
+      .closest('div')!
+      .parentElement!
+      .querySelector('input')!
+
+    expect((input as HTMLInputElement).value).toBe('••••••••')
     expect(screen.getByTestId('secret-reveal-toggle').getAttribute('aria-label')).toBe('Reveal secret')
   })
 

@@ -53,32 +53,29 @@ test.describe('Onboarding First-Run Flow', () => {
     const text = await heading.textContent()
     expect(text?.toLowerCase()).toContain('welcome')
 
-    const retroactiveBtn = window.getByRole('button', { name: /start import/i })
+    const retroactiveBtn = window.getByText('Start import →')
     await expect(retroactiveBtn).toBeVisible()
 
-    const freshStartBtn = window.getByRole('button', { name: /start fresh/i })
+    const freshStartBtn = window.getByText('Start fresh →')
     await expect(freshStartBtn).toBeVisible()
   })
 
   test('retroactive path: imports selected sensitive vars and removes from dotfiles', async () => {
     const window = await launchApp()
 
-    await window.getByRole('button', { name: /start import/i }).click()
+    await window.getByText('Start import →').click()
 
     await expect(window.getByText('Review scanned variables')).toBeVisible({ timeout: 10000 })
 
-    const apiKeyCheckbox = window.locator(
-      'input[type="checkbox"][aria-label*="API_KEY"]',
-    )
-    await expect(apiKeyCheckbox).toBeVisible()
-    await apiKeyCheckbox.check()
-    expect(await apiKeyCheckbox.isChecked()).toBe(true)
+    await window.getByText('API_KEY').click()
 
     await window.getByRole('button', { name: /continue/i }).click()
+    await expect(window.getByText('Review import plan')).toBeVisible({ timeout: 10000 })
+    await window.getByRole('button', { name: /start managing secrets/i }).click()
 
-    await expect(window.getByText('Import complete')).toBeVisible({ timeout: 10000 })
-
-    await window.getByRole('button', { name: /go to dashboard/i }).click()
+    await expect(window.getByText('Choose launch terminals')).toBeVisible({ timeout: 10000 })
+    await window.getByRole('checkbox', { name: 'Terminal' }).check()
+    await window.getByRole('button', { name: /save preferences and finish/i }).click()
 
     const searchInput = window.locator(
       'input[placeholder*="Search secrets"]',
@@ -113,11 +110,15 @@ test.describe('Onboarding First-Run Flow', () => {
   test('fresh start creates spaces without env import', async () => {
     const window = await launchApp()
 
-    await window.getByRole('button', { name: /start fresh/i }).click()
+    await window.getByText('Start fresh →').click()
+    await expect(window.getByText('Fresh Start — Select dotfiles')).toBeVisible({ timeout: 10000 })
+    await window.getByText('.zshrc', { exact: true }).first().click()
+    await window.getByText('.bashrc', { exact: true }).first().click()
+    await window.getByRole('button', { name: /start managing secrets/i }).click()
 
-    await expect(window.getByText('Import complete')).toBeVisible({ timeout: 10000 })
-
-    await window.getByRole('button', { name: /go to dashboard/i }).click()
+    await expect(window.getByText('Choose launch terminals')).toBeVisible({ timeout: 10000 })
+    await window.getByRole('checkbox', { name: 'Terminal' }).check()
+    await window.getByRole('button', { name: /save preferences and finish/i }).click()
 
     const searchInput = window.locator(
       'input[placeholder*="Search secrets"]',
@@ -134,9 +135,14 @@ test.describe('Onboarding First-Run Flow', () => {
   test('second launch skips onboarding after completion', async () => {
     const window = await launchApp()
 
-    await window.getByRole('button', { name: /start fresh/i }).click()
-    await expect(window.getByText('Import complete')).toBeVisible({ timeout: 10000 })
-    await window.getByRole('button', { name: /go to dashboard/i }).click()
+    await window.getByText('Start fresh →').click()
+    await expect(window.getByText('Fresh Start — Select dotfiles')).toBeVisible({ timeout: 10000 })
+    await window.getByText('.zshrc', { exact: true }).first().click()
+    await window.getByText('.bashrc', { exact: true }).first().click()
+    await window.getByRole('button', { name: /start managing secrets/i }).click()
+    await expect(window.getByText('Choose launch terminals')).toBeVisible({ timeout: 10000 })
+    await window.getByRole('checkbox', { name: 'Terminal' }).check()
+    await window.getByRole('button', { name: /save preferences and finish/i }).click()
 
     await expect(
       window.locator('input[placeholder*="Search secrets"]'),

@@ -23,8 +23,44 @@ const mockScanResult = {
 describe('OnboardingFlow', () => {
   afterEach(cleanup)
 
+  function installStorage() {
+    const storage = new Map<string, string>()
+    const localStorageMock = {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        storage.set(key, value)
+      },
+      removeItem: (key: string) => {
+        storage.delete(key)
+      },
+      clear: () => {
+        storage.clear()
+      },
+    }
+
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: localStorageMock,
+    })
+
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: localStorageMock,
+    })
+  }
+
   beforeEach(() => {
+    installStorage()
     window.brover = {
+      launch: {
+        listTerminals: vi.fn().mockResolvedValue({
+          terminals: [
+            { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app', installed: true },
+            { id: 'iterm2', name: 'iTerm2', bundlePath: '/Applications/iTerm.app', installed: true },
+            { id: 'terminal', name: 'Terminal', bundlePath: '/System/Applications/Utilities/Terminal.app', installed: true },
+          ],
+        }),
+      },
       onboarding: {
         scanDotfiles: vi.fn().mockResolvedValue(mockScanResult),
         runFreshStart: vi.fn().mockResolvedValue(undefined),
@@ -59,6 +95,15 @@ describe('OnboardingFlow', () => {
     fireEvent.click(screen.getByText(/Users\/test\/\.zshrc/i))
     fireEvent.click(screen.getByText(/onboarding\.freshStartReview\.continue/i))
     await waitFor(() => {
+      expect(screen.getByText(/onboarding\.terminalPreferences\.title/i)).toBeTruthy()
+    })
+
+    expect(window.brover.onboarding.runFreshStart).not.toHaveBeenCalled()
+    expect(window.brover.onboarding.complete).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('checkbox', { name: /Warp/i }))
+    fireEvent.click(screen.getByText(/onboarding\.terminalPreferences\.continue/i))
+
+    await waitFor(() => {
       expect(window.brover.onboarding.runFreshStart).toHaveBeenCalledWith({
         scanResult: expect.objectContaining({
           files: [expect.objectContaining({ filePath: '/Users/test/.zshrc' })],
@@ -66,6 +111,11 @@ describe('OnboardingFlow', () => {
       })
       expect(window.brover.onboarding.complete).toHaveBeenCalled()
       expect(onComplete).toHaveBeenCalled()
+    })
+
+    expect(JSON.parse(window.localStorage.getItem('brover.launch-preferences') ?? '{}')).toEqual({
+      favoriteTerminalIds: ['warp'],
+      defaultTerminalId: 'warp',
     })
   })
 
@@ -82,6 +132,15 @@ describe('OnboardingFlow', () => {
       expect(screen.getByText(/onboarding\.confirmation\.title/i)).toBeTruthy()
     })
     fireEvent.click(screen.getByText(/onboarding\.confirmation\.action/i))
+    await waitFor(() => {
+      expect(screen.getByText(/onboarding\.terminalPreferences\.title/i)).toBeTruthy()
+    })
+
+    expect(window.brover.onboarding.runRetroactive).not.toHaveBeenCalled()
+    expect(window.brover.onboarding.complete).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('checkbox', { name: /Terminal/i }))
+    fireEvent.click(screen.getByText(/onboarding\.terminalPreferences\.continue/i))
+
     await waitFor(() => {
       expect(window.brover.onboarding.runRetroactive).toHaveBeenCalled()
       expect(window.brover.onboarding.complete).toHaveBeenCalled()

@@ -6,9 +6,11 @@ import { createTerminalLauncher } from './terminalLauncher'
 
 describe('terminalLauncher', () => {
   let launcher: ReturnType<typeof createTerminalLauncher>
+  let openTerminal: ReturnType<typeof vi.fn<(terminalName: string, commandPath: string) => void>>
 
   beforeEach(() => {
-    launcher = createTerminalLauncher()
+    openTerminal = vi.fn<(terminalName: string, commandPath: string) => void>()
+    launcher = createTerminalLauncher({ openTerminal })
   })
 
   afterEach(() => {
@@ -36,13 +38,23 @@ describe('terminalLauncher', () => {
   })
 
   describe('launch', () => {
-    it('succeeds even when no envs provided', async () => {
+    it('creates launch script even when no envs provided', async () => {
       const result = await launcher.launch('target-1', 'terminal', [])
+
       expect(result.success).toBe(true)
+      expect(result.commandPath).toBeDefined()
+      expect(existsSync(result.commandPath!)).toBe(true)
+
+      const content = readFileSync(result.commandPath!, 'utf-8')
+      expect(content).toContain('# Brover envs — target: target-1')
+      expect(content).not.toContain('export ')
+      expect(content).toContain('exec $SHELL')
+      expect(openTerminal).toHaveBeenCalledWith('Terminal', result.commandPath!)
+
+      rmSync(result.commandPath!)
     })
 
     it('creates .command file with correct env vars', async () => {
-      const mockExecSync = vi.spyOn(require('child_process'), 'execSync')
       const envs = [
         { name: 'FOO', value: 'bar' },
         { name: 'BAZ', value: 'qux' },
@@ -56,11 +68,11 @@ describe('terminalLauncher', () => {
       expect(content).toContain("export BAZ='qux'")
       expect(content).toContain('# Brover envs — target: target-1')
       expect(content).toContain('exec $SHELL')
+      expect(openTerminal).toHaveBeenCalledWith('Terminal', result.commandPath!)
       rmSync(result.commandPath!)
     })
 
     it('.command file is executable (mode 0o755)', async () => {
-      const mockExecSync = vi.spyOn(require('child_process'), 'execSync')
       const result = await launcher.launch('target-1', 'terminal', [
         { name: 'FOO', value: 'bar' },
       ])
@@ -80,8 +92,8 @@ describe('terminalLauncher', () => {
     })
 
     it('writes new content when called twice (file is overwritten, not appended)', async () => {
-      const l1 = createTerminalLauncher()
-      const l2 = createTerminalLauncher()
+      const l1 = createTerminalLauncher({ openTerminal })
+      const l2 = createTerminalLauncher({ openTerminal })
       await l1.launch('target-B', 'terminal', [{ name: 'INITIAL', value: 'first' }])
       await l2.launch('target-B', 'terminal', [{ name: 'UPDATED', value: 'second' }])
       const path = join(tmpdir(), 'brover-target-B.command')

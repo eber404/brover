@@ -39,9 +39,12 @@ test.describe('Targets CRUD Flow', () => {
 
     const result = await window.evaluate(
       async ({ targetName, renamed, updatedColor }) => {
-        const spaces = await window.brover.listSpaces()
-        const globalSpace =
-          spaces.find((space) => space.id === 'space-global') ?? spaces[0]
+        const spaceName = `targets-space-${Date.now()}`
+        const spaces = await window.brover.createSpace({
+          name: spaceName,
+          dotfilePath: `/tmp/${spaceName}.zshrc`,
+        })
+        const globalSpace = spaces.find((space) => space.name === spaceName)
         if (!globalSpace) throw new Error('No space available')
 
         const currentTargets = await window.brover.listTargets(globalSpace.id)
