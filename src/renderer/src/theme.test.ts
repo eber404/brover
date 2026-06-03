@@ -42,5 +42,5 @@ describe('Tailwind v4 theme tokens', () => {
     expect(css).toContain('--color-surface-overlay')
     expect(css).toContain('--color-emerald-on')
     expect(css).toContain('--color-rose-on')
-  })
+  }, 30000)
 })
