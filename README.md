@@ -1,6 +1,7 @@
 # brover
 
 [![CI](https://github.com/eber404/brover/actions/workflows/ci.yml/badge.svg)](https://github.com/eber404/brover/actions/workflows/ci.yml)
+[![Coverage](https://raw.githubusercontent.com/eber404/brover/badges/coverage-badge.svg)](https://github.com/eber404/brover/tree/badges)
 
 Desktop app to manage local environment variables and secrets with authentication-gated secret actions.
 

@@ -14,8 +14,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:bun": "bun test",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage --coverage.reporter=text --coverage.reporter=lcov --coverage.reporter=html --coverage.reporter=json-summary",
     "test:coverage:text": "vitest run --coverage --coverage.reporter=text",
+    "coverage:badge": "node scripts/generateCoverageBadge.mjs coverage/coverage-summary.json .badge-dist/coverage-badge.svg",
     "test:e2e": "npm run build && npx playwright test",
     "tsc": "npx tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx"
