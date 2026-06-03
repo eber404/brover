@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach } from 'vitest'
 import { SpacesSidebar } from './SpacesSidebar'
 import type { EnvSpace, EnvTarget } from '../../../../shared/models'
@@ -67,5 +67,16 @@ describe('SpacesSidebar', () => {
     const dotfileSpace = makeSpace({ name: '.zshrc', dotfilePath: '~/.zshrc' })
     render(<SpacesSidebar {...defaultProps} spaces={[dotfileSpace]} selectedSpaceId="s1" />)
     expect(screen.getByText('.zshrc')).toBeTruthy()
+  })
+
+  it('clicking add space triggers import directly without opening menu', () => {
+    const onAddSpace = vi.fn()
+
+    render(<SpacesSidebar {...defaultProps} onAddSpace={onAddSpace} />)
+
+    fireEvent.click(screen.getByTitle('Add space'))
+
+    expect(onAddSpace).toHaveBeenCalledTimes(1)
+    expect(screen.queryByText('Import dotfile')).toBeNull()
   })
 })

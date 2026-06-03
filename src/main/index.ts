@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, systemPreferences } from 'electron'
 import { join } from 'node:path'
+import { homedir } from 'node:os'
 import { watchFile, unwatchFile } from 'node:fs'
 import {
   BroverStore,
@@ -20,6 +21,7 @@ import { createMacSecretAuthPrompt } from './authPrompt'
 import { createEnvInjector } from './envInjector'
 import { createTerminalLauncher } from './terminalLauncher'
 import { getDevStorageClearOptions } from './devSession'
+import { buildDotfileOpenDialogOptions } from './systemDialogs'
 
 if (!app.isPackaged) {
   app.commandLine.appendSwitch('disable-http-cache')
@@ -135,10 +137,7 @@ async function bootstrap() {
     }
   })
   ipcMain.handle('system:pick-dotfile', async () => {
-    const result = await dialog.showOpenDialog({
-      properties: ['openFile'],
-      filters: [{ name: 'Dotfiles', extensions: ['zshrc', 'bashrc', 'env', 'zprofile', 'bash_profile', 'profile'] }],
-    })
+    const result = await dialog.showOpenDialog(buildDotfileOpenDialogOptions(homedir()))
     return {
       canceled: result.canceled,
       path: result.canceled ? null : (result.filePaths[0] ?? null),
