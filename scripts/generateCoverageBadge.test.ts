@@ -30,4 +30,11 @@ describe('generateCoverageBadge', () => {
     expect(svg).toContain('#97ca00')
     expect(svg).toContain('<svg')
   })
+
+  it('renders scaled text coordinates large enough for badge layout', () => {
+    const svg = renderBadge(80.15)
+
+    expect(svg).toContain('x="330"')
+    expect(svg).toContain('x="920"')
+  })
 })
