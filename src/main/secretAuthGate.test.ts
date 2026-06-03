@@ -44,13 +44,14 @@ describe('createSecretAuthGate', () => {
     expect(cache.isAuthorized('target-1')).toBe(true)
   })
 
-  it('cache for targetA does not authorize targetB', async () => {
+  it('auth on one target authorizes another target within TTL', async () => {
     const cache = createAuthSessionCache()
-    cache.grant('target-A')
     const prompt = vi.fn().mockResolvedValue(undefined)
     const gate = createSecretAuthGate(prompt, cache)
 
+    await gate.authorize('reveal', { targetId: 'target-A' })
     await gate.authorize('reveal', { targetId: 'target-B' })
+
     expect(prompt).toHaveBeenCalledTimes(1)
   })
 

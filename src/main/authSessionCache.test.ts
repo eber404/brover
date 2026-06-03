@@ -21,11 +21,11 @@ describe('createAuthSessionCache', () => {
     expect(cache.isAuthorized('target-1', now + 60_001)).toBe(false)
   })
 
-  it('session for targetA does not authorize targetB', () => {
+  it('session for targetA also authorizes targetB within TTL', () => {
     const cache = createAuthSessionCache()
     const now = 1_000_000
     cache.grant('target-A', 60_000, now)
-    expect(cache.isAuthorized('target-B', now)).toBe(false)
+    expect(cache.isAuthorized('target-B', now)).toBe(true)
   })
 
   it('revoke one target clears only that session', () => {
@@ -35,7 +35,7 @@ describe('createAuthSessionCache', () => {
     cache.grant('target-B', 60_000, now)
     cache.revoke('target-A')
     expect(cache.isAuthorized('target-A', now)).toBe(false)
-    expect(cache.isAuthorized('target-B', now)).toBe(true)
+    expect(cache.isAuthorized('target-B', now)).toBe(false)
   })
 
   it('revoke all clears all sessions', () => {

@@ -6,25 +6,20 @@ export interface AuthSessionCache {
 }
 
 export function createAuthSessionCache(): AuthSessionCache {
-  const sessions = new Map<string, { expiresAt: number }>()
+  let session: { expiresAt: number } | null = null
 
   return {
     isAuthorized(targetId: string, now = Date.now()): boolean {
-      const session = sessions.get(targetId)
       return session != null && now < session.expiresAt
     },
     expiresAt(targetId: string): number | null {
-      return sessions.get(targetId)?.expiresAt ?? null
+      return session?.expiresAt ?? null
     },
     grant(targetId: string, ttlMs = 60_000, now = Date.now()): void {
-      sessions.set(targetId, { expiresAt: now + ttlMs })
+      session = { expiresAt: now + ttlMs }
     },
     revoke(targetId?: string): void {
-      if (targetId === undefined) {
-        sessions.clear()
-      } else {
-        sessions.delete(targetId)
-      }
+      session = null
     },
   }
 }
