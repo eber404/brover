@@ -4,8 +4,6 @@ import { homedir } from 'node:os'
 import { watchFile, unwatchFile } from 'node:fs'
 import {
   BroverStore,
-  MacOSKeytarSecretStore,
-  UnsupportedSecretStore,
 } from './store'
 import {
   UNSUPPORTED_SECRET_BACKEND,
@@ -22,6 +20,7 @@ import { createEnvInjector } from './envInjector'
 import { createTerminalLauncher } from './terminalLauncher'
 import { getDevStorageClearOptions } from './devSession'
 import { buildDotfileOpenDialogOptions } from './systemDialogs'
+import { createSecretStore } from './secretStoreFactory'
 
 if (!app.isPackaged) {
   app.commandLine.appendSwitch('disable-http-cache')
@@ -30,13 +29,6 @@ if (!app.isPackaged) {
 
 const isDev = !app.isPackaged
 const isE2E = process.env.BROVER_E2E === '1'
-
-function createSecretStore() {
-  if (process.platform === 'darwin') {
-    return new MacOSKeytarSecretStore()
-  }
-  return new UnsupportedSecretStore()
-}
 
 function ok(value?: string): SecretActionResult {
   return { ok: true, value }
@@ -54,7 +46,7 @@ async function bootstrap() {
   const dbPath =
     process.env.BROVER_DB_PATH ??
     join(app.getPath('appData'), 'brover', 'config.json')
-  const store = new BroverStore(dbPath, createSecretStore())
+  const store = new BroverStore(dbPath, createSecretStore({ platform: process.platform, isE2E }))
   const authSessionCache = createAuthSessionCache()
   const macSecretAuthPrompt = createMacSecretAuthPrompt(systemPreferences)
   const authGate = createSecretAuthGate(async (reason: string) => {
