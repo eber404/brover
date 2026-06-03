@@ -17,10 +17,10 @@ Brover is an Electron desktop app for local environment secret management.
 5. Dotfile spaces apply active target to their dotfile (via `applySpace`).
 6. Inject feature: creates temp cache file with target envs from Keychain, adds conditional `source` line to dotfile.
 7. Launch feature: creates `.command` file with env vars, opens terminal app (Warp/iTerm2/Terminal).
-7. Prefer early return and avoid nested conditionals/ternaries.
-8. Avoid ternary inside JSX trees.
-9. Use stable handlers and `useMemo`/`useCallback` where useful.
-10. Run `tsc --noEmit` before tests for every change set.
+8. Prefer early return and avoid nested conditionals/ternaries.
+9. Avoid ternary inside JSX trees.
+10. Use stable handlers and `useMemo`/`useCallback` where useful.
+11. Run `tsc --noEmit` before tests for every change set.
 
 ---
 

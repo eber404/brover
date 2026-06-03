@@ -14,7 +14,7 @@ Stack: **Electron + React + TypeScript + TailwindCSS**.
 - target-scoped secret values in macOS Keychain;
 - auth-gated reveal/copy/update/delete for secrets;
 - local JSON persistence for non-sensitive metadata only;
-- apply active target to shell (`~/.zshrc`, `~/.bashrc`) or directory dotenv (`.env.<target>`).
+- apply active target to dotfile spaces such as `~/.zshrc` and `~/.bashrc`.
 
 ---
 
