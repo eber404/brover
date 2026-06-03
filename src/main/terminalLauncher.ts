@@ -47,7 +47,7 @@ export function createTerminalLauncher(deps: TerminalLauncherDeps = {}) {
   function buildCommandContent(targetId: string, entries: EnvEntry[]): string {
     const exports = entries.map(e => `export ${e.name}=${escapeShellValue(e.value)}`).join('\n')
     const exportBlock = exports ? `${exports}\n` : ''
-    return `#!/bin/bash\n# Brover envs — target: ${targetId}\n${exportBlock}exec $SHELL\n`
+    return `#!/bin/bash\n# Brover envs — target: ${targetId}\n${exportBlock}cd "$HOME"\nexec "$SHELL"\n`
   }
 
   function commandPathForTarget(targetId: string): string {
