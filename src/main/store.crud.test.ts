@@ -79,14 +79,6 @@ describe('BroverStore', () => {
       expect(toggled.find((s) => s.id === newSpace.id)?.tiedSecrets).toBe(false)
     })
 
-    it('toggleSpaceExpanded flips the flag', async () => {
-      const spaces = await store.createSpace({ name: 'Test', dotfilePath: '/tmp/repo/.zshrc' })
-      const newSpace = spaces.find((s) => s.name === 'Test')!
-      expect(newSpace.expanded).toBe(true)
-
-      const toggled = await store.toggleSpaceExpanded(newSpace.id)
-      expect(toggled.find((s) => s.id === newSpace.id)?.expanded).toBe(false)
-    })
   })
 
   describe('Targets', () => {
@@ -387,82 +379,13 @@ describe('BroverStore', () => {
     })
   })
 
-  describe('Apps', () => {
-    it('listApps returns empty array initially', async () => {
-      const apps = await store.listApps()
-      expect(apps).toEqual([])
-    })
-
-    it('createApp adds app with valid bundle ID', async () => {
-      const apps = await store.createApp('My App', 'com.example.app')
-      expect(apps).toHaveLength(1)
-      expect(apps[0].displayName).toBe('My App')
-      expect(apps[0].enabled).toBe(true)
-    })
-
-    it('createApp throws with invalid bundle ID', async () => {
-      await expect(store.createApp('Bad', 'not-a-valid-bundle-id')).rejects.toThrow('Invalid app payload')
-    })
-
-    it('createApp throws with empty display name', async () => {
-      await expect(store.createApp('', 'com.example.app')).rejects.toThrow('Invalid app payload')
-    })
-
-    it('toggleApp flips enabled state', async () => {
-      await store.createApp('App', 'com.example.app')
-      const apps = await store.listApps()
-      const app = apps[0]
-
-      const toggled = await store.toggleApp(app.id)
-      expect(toggled[0].enabled).toBe(false)
-    })
-
-    it('deleteApp removes app', async () => {
-      await store.createApp('ToDelete', 'com.example.delete')
-      const apps = await store.listApps()
-      const app = apps[0]
-
-      const remaining = await store.deleteApp(app.id)
-      expect(remaining).toHaveLength(0)
-    })
-  })
-
-  describe('Profiles', () => {
-    it('listProfiles returns default profile', async () => {
-      const profiles = await store.listProfiles()
-      expect(profiles).toHaveLength(1)
-      expect(profiles[0].isActive).toBe(true)
-    })
-
-    it('createProfile adds inactive profile', async () => {
-      const profiles = await store.createProfile('work')
-      expect(profiles).toHaveLength(2)
-      expect(profiles.find((p) => p.name === 'work')?.isActive).toBe(false)
-    })
-
-    it('createProfile throws if name empty', async () => {
-      await expect(store.createProfile('   ')).rejects.toThrow('Profile required')
-    })
-
-    it('setActiveProfile activates only one profile', async () => {
-      const profiles = await store.createProfile('work')
-      const workProfile = profiles.find((p) => p.name === 'work')!
-
-      await store.setActiveProfile(workProfile.id)
-
-      const updated = await store.listProfiles()
-      expect(updated.filter((p) => p.isActive)).toHaveLength(1)
-    })
-  })
-
   describe('Edge cases', () => {
     it('readDB normalizes spaces when not an array', async () => {
       const corruptedDB = JSON.stringify({
         spaces: 'not-an-array',
         targets: [],
         envs: [],
-        apps: [],
-        profiles: []
+        extra: []
       })
       await writeFile(dbPath, corruptedDB)
 

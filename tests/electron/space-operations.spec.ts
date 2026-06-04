@@ -100,38 +100,6 @@ test.describe('Space Operations Flow', () => {
     expect(result.afterToggleAgainTied).toBe(true)
   })
 
-  test('toggle space expanded', async () => {
-    const window = await electronApp.firstWindow()
-    await window.waitForFunction(() => Boolean(window.brover))
-
-    const spaceName = `pw-space-${Date.now()}`
-
-    const result = await window.evaluate(
-      async ({ spaceName }) => {
-        const spaces = await window.brover.createSpace({
-          name: spaceName,
-          dotfilePath: `/tmp/${spaceName}.zshrc`,
-        })
-        const created = spaces.find((item) => item.name === spaceName)
-        if (!created) throw new Error('Failed to create space')
-
-        const initialExpanded = created.expanded
-
-        const toggled = await window.brover.toggleSpaceExpanded(created.id)
-        const afterToggle = toggled.find((item) => item.id === created.id)
-
-        return {
-          initialExpanded,
-          afterToggleExpanded: afterToggle?.expanded,
-        }
-      },
-      { spaceName }
-    )
-
-    expect(result.initialExpanded).toBe(true)
-    expect(result.afterToggleExpanded).toBe(false)
-  })
-
   test('renameSpace rejects empty name', async () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))

@@ -1,8 +1,8 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { basename, dirname } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import type { AppAuthorization, EnvMetadata, EnvSpace, EnvTarget, OnboardingStatus, Profile } from '../shared/models'
-import { isValidBundleID, isValidEnvName } from '../shared/validators'
+import type { EnvMetadata, EnvSpace, EnvTarget, OnboardingStatus } from '../shared/models'
+import { isValidEnvName } from '../shared/validators'
 
 export interface SecretStore {
   save(account: string, value: string): Promise<void>
@@ -63,8 +63,6 @@ export class MacOSKeytarSecretStore implements SecretStore {
 }
 
 interface DBShape {
-  apps: AppAuthorization[]
-  profiles: Profile[]
   envs: EnvMetadata[]
   spaces: EnvSpace[]
   targets: EnvTarget[]
@@ -119,8 +117,6 @@ export class BroverStore {
           })
         : []
       return {
-        apps: Array.isArray(parsed.apps) ? parsed.apps : [],
-        profiles: Array.isArray(parsed.profiles) ? parsed.profiles : [{ id: randomUUID(), name: 'default', isActive: true, updatedAt: new Date().toISOString() }],
         envs: Array.isArray(parsed.envs) ? parsed.envs : [],
         spaces: Array.isArray(parsed.spaces) ? normalizedSpaces : [],
         targets: Array.isArray(parsed.targets) ? parsed.targets : [],
@@ -130,8 +126,6 @@ export class BroverStore {
       }
     } catch {
       return {
-        apps: [],
-        profiles: [{ id: randomUUID(), name: 'default', isActive: true, updatedAt: new Date().toISOString() }],
         envs: [],
         spaces: [],
         targets: [],
@@ -154,53 +148,6 @@ export class BroverStore {
     const db = await this.readDB()
     db.onboardingCompletedAt = new Date().toISOString()
     await this.writeDB(db)
-  }
-
-  async listApps(): Promise<AppAuthorization[]> {
-    return (await this.readDB()).apps
-  }
-
-  async createApp(displayName: string, bundleID: string): Promise<AppAuthorization[]> {
-    if (!displayName.trim() || !isValidBundleID(bundleID)) {
-      throw new Error('Invalid app payload')
-    }
-    const db = await this.readDB()
-    db.apps.push({ id: randomUUID(), displayName: displayName.trim(), bundleID: bundleID.trim(), enabled: true, updatedAt: new Date().toISOString() })
-    await this.writeDB(db)
-    return db.apps
-  }
-
-  async toggleApp(id: string): Promise<AppAuthorization[]> {
-    const db = await this.readDB()
-    db.apps = db.apps.map((item) => (item.id === id ? { ...item, enabled: !item.enabled, updatedAt: new Date().toISOString() } : item))
-    await this.writeDB(db)
-    return db.apps
-  }
-
-  async deleteApp(id: string): Promise<AppAuthorization[]> {
-    const db = await this.readDB()
-    db.apps = db.apps.filter((item) => item.id !== id)
-    await this.writeDB(db)
-    return db.apps
-  }
-
-  async listProfiles(): Promise<Profile[]> {
-    return (await this.readDB()).profiles
-  }
-
-  async createProfile(name: string): Promise<Profile[]> {
-    if (!name.trim()) throw new Error('Profile required')
-    const db = await this.readDB()
-    db.profiles.push({ id: randomUUID(), name: name.trim(), isActive: false, updatedAt: new Date().toISOString() })
-    await this.writeDB(db)
-    return db.profiles
-  }
-
-  async setActiveProfile(id: string): Promise<Profile[]> {
-    const db = await this.readDB()
-    db.profiles = db.profiles.map((profile) => ({ ...profile, isActive: profile.id === id, updatedAt: new Date().toISOString() }))
-    await this.writeDB(db)
-    return db.profiles
   }
 
   async listEnvs(): Promise<EnvMetadata[]> {
@@ -321,7 +268,6 @@ export class BroverStore {
       name: payload.name.trim() || basename(payload.dotfilePath.trim()),
       kind: 'dotfile',
       dotfilePath: payload.dotfilePath.trim(),
-      expanded: true,
       tiedSecrets: true,
       updatedAt: now,
     }
@@ -379,17 +325,6 @@ export class BroverStore {
             tiedSecrets: !space.tiedSecrets,
             updatedAt: new Date().toISOString(),
           }
-        : space
-    )
-    await this.writeDB(db)
-    return db.spaces
-  }
-
-  async toggleSpaceExpanded(spaceId: string): Promise<EnvSpace[]> {
-    const db = await this.readDB()
-    db.spaces = db.spaces.map((space) =>
-      space.id === spaceId
-        ? { ...space, expanded: !space.expanded, updatedAt: new Date().toISOString() }
         : space
     )
     await this.writeDB(db)

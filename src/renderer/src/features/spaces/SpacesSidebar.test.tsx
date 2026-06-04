@@ -15,7 +15,6 @@ function makeSpace(overrides: Partial<EnvSpace> = {}): EnvSpace {
     name: 'my-project',
     kind: 'dotfile',
     dotfilePath: '~/.zshrc',
-    expanded: true,
     tiedSecrets: true,
     updatedAt: '2024-01-01',
     ...overrides,

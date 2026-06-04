@@ -81,23 +81,6 @@ async function bootstrap() {
       })
   })
 
-  ipcMain.handle('apps:list', () => store.listApps())
-  ipcMain.handle(
-    'apps:create',
-    (_, payload: { displayName: string; bundleID: string }) =>
-      store.createApp(payload.displayName, payload.bundleID)
-  )
-  ipcMain.handle('apps:toggle', (_, id: string) => store.toggleApp(id))
-  ipcMain.handle('apps:delete', (_, id: string) => store.deleteApp(id))
-
-  ipcMain.handle('profiles:list', () => store.listProfiles())
-  ipcMain.handle('profiles:create', (_, name: string) =>
-    store.createProfile(name)
-  )
-  ipcMain.handle('profiles:set-active', (_, id: string) =>
-    store.setActiveProfile(id)
-  )
-
   ipcMain.handle('spaces:list', () => store.listSpaces())
   ipcMain.handle('spaces:create', (_, payload: { name: string; dotfilePath: string }) =>
     store.createSpace(payload)
@@ -125,9 +108,6 @@ async function bootstrap() {
       path: result.canceled ? null : (result.filePaths[0] ?? null),
     }
   })
-  ipcMain.handle('spaces:toggle-expanded', (_, spaceId: string) =>
-    store.toggleSpaceExpanded(spaceId)
-  )
   ipcMain.handle('targets:list', (_, spaceId: string) => store.listTargets(spaceId))
   ipcMain.handle('targets:create', (_, payload: { spaceId: string; name: string }) =>
     store.createTarget(payload)

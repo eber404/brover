@@ -1,14 +1,4 @@
-export type RootWorkspace = 'apps' | 'secrets'
-
 export type SpaceKind = 'dotfile'
-
-export interface AppAuthorization {
-  id: string
-  displayName: string
-  bundleID: string
-  enabled: boolean
-  updatedAt: string
-}
 
 export interface EnvMetadata {
   id: string
@@ -16,13 +6,6 @@ export interface EnvMetadata {
   profile: string
   enabled: boolean
   description?: string
-  updatedAt: string
-}
-
-export interface Profile {
-  id: string
-  name: string
-  isActive: boolean
   updatedAt: string
 }
 
@@ -38,7 +21,6 @@ export interface EnvSpace {
   name: string
   kind: SpaceKind
   dotfilePath: string
-  expanded?: boolean
   tiedSecrets: boolean
   updatedAt: string
 }

@@ -4,15 +4,6 @@ import type { BroverAPI } from '../shared/ipc'
 console.log('[preload] Loading preload script...')
 
 const api: BroverAPI = {
-  listApps: () => ipcRenderer.invoke('apps:list'),
-  createApp: (payload) => ipcRenderer.invoke('apps:create', payload),
-  toggleApp: (id) => ipcRenderer.invoke('apps:toggle', id),
-  deleteApp: (id) => ipcRenderer.invoke('apps:delete', id),
-
-  listProfiles: () => ipcRenderer.invoke('profiles:list'),
-  createProfile: (name) => ipcRenderer.invoke('profiles:create', name),
-  setActiveProfile: (id) => ipcRenderer.invoke('profiles:set-active', id),
-
   listEnvs: () => ipcRenderer.invoke('envs:list'),
   createEnv: (payload) => ipcRenderer.invoke('envs:create', payload),
   revealEnv: (payload) => ipcRenderer.invoke('envs:reveal', payload),
@@ -29,7 +20,6 @@ const api: BroverAPI = {
   deleteSpace: (spaceId) => ipcRenderer.invoke('spaces:delete', spaceId),
   toggleSpaceTiedSecrets: (spaceId) => ipcRenderer.invoke('spaces:toggle-tied-secrets', spaceId),
   pickDotfile: () => ipcRenderer.invoke('system:pick-dotfile'),
-  toggleSpaceExpanded: (spaceId) => ipcRenderer.invoke('spaces:toggle-expanded', spaceId),
   listTargets: (spaceId) => ipcRenderer.invoke('targets:list', spaceId),
   createTarget: (payload) => ipcRenderer.invoke('targets:create', payload),
   deleteTarget: (payload) => ipcRenderer.invoke('targets:delete', payload),
