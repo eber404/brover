@@ -1,3 +1,4 @@
 #!/bin/sh
-command -v tscontext >/dev/null 2>&1 || { echo "tscontext not in PATH; install it or run 'npm run precommit' manually"; exit 1; }
-npm run precommit
+set -e
+/opt/homebrew/bin/bun /Users/eber/dev/tscontext/src/cli.ts extract --repo . --out .tscontext/code-context --profile default
+git add .tscontext/code-context.toon .tscontext/code-context.md
