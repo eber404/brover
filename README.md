@@ -15,6 +15,7 @@ Stack: **Electron + React + TypeScript + TailwindCSS**.
 - target-scoped secret values in macOS Keychain;
 - auth-gated reveal/copy/update/delete for secrets;
 - local JSON persistence for non-sensitive metadata only;
+- dotfile-backed spaces created from onboarding scan or picker;
 - launch terminal sessions ephemerally from Keychain-backed target envs without editing dotfiles.
 
 ---
@@ -32,6 +33,8 @@ Both modes end with terminal preferences:
 - user must pick one or more favorites and order them;
 - first favorite becomes default for `Launch` and preferences are saved before onboarding completes;
 - `Launch` opens an ephemeral terminal session only and does not edit dotfiles.
+
+Outside retroactive onboarding import, brover does not rewrite dotfiles during normal terminal launch flow.
 
 Onboarding runs once per user. Completion timestamp persists in local config metadata.
 
@@ -83,7 +86,7 @@ Env name validation:
 ```txt
 brover/
   src/
-    main/        # Electron main process (IPC, auth gate, persistence, writers)
+    main/        # Electron main process (IPC, auth gate, persistence, terminal launch)
     preload/     # window.brover typed bridge
     renderer/    # React UI
     shared/      # shared models/types/contracts

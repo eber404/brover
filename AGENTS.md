@@ -15,10 +15,11 @@ Brover is an Electron desktop app for local environment secret management.
 3. Use target-scoped value and enabled state.
 4. Respect per-space `tiedSecrets` toggle (`Tied targets`) behavior.
 5. Launch feature: creates `.command` file with env vars, opens terminal app (Warp/iTerm2/Terminal).
-6. Prefer early return and avoid nested conditionals/ternaries.
-7. Avoid ternary inside JSX trees.
-8. Use stable handlers and `useMemo`/`useCallback` where useful.
-9. Run `tsc --noEmit` before tests for every change set.
+6. Normal app usage must not rewrite dotfiles; only retroactive onboarding import removes selected plaintext entries from source files.
+7. Prefer early return and avoid nested conditionals/ternaries.
+8. Avoid ternary inside JSX trees.
+9. Use stable handlers and `useMemo`/`useCallback` where useful.
+10. Run `tsc --noEmit` before tests for every change set.
 
 ---
 
@@ -66,7 +67,7 @@ Auth session is shared across targets for the current in-memory TTL window. Re-a
 Electron App
   ├── Main process (IPC, auth gate, persistence, terminalLauncher)
   ├── Preload bridge (typed window.brover API)
-  └── Renderer (React UI: spaces, targets, secrets, details, TargetActions)
+  └── Renderer (React UI: spaces, targets, secrets, details)
 
 Secure store (macOS)
   └── Keychain service
@@ -78,6 +79,8 @@ Local config
 ### Space model
 
 All spaces are `kind: 'dotfile'`. Each space points to one dotfile (e.g., `~/.zshrc`). No more global/directory distinction.
+
+Dotfile paths identify source files for onboarding-derived spaces and file-picked spaces. After onboarding, normal launch flow uses Keychain-backed target values and does not modify those dotfiles.
 
 ### Launch feature
 
