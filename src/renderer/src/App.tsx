@@ -55,10 +55,7 @@ function AppShell() {
       setSelectedSpaceId(nextSpaces[0].id)
     }
     if (!selectedTargetId && nextTargets.length > 0) {
-      const activeGlobal = nextTargets.find(
-        (target) => target.spaceId === 'space-global' && target.isActive
-      )
-      setSelectedTargetId(activeGlobal?.id ?? nextTargets[0].id)
+      setSelectedTargetId(nextTargets[0].id)
     }
   }, [selectedSpaceId, selectedTargetId])
 
