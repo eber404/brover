@@ -69,7 +69,8 @@ jobs:
       - name: Reinstall Electron with binary
         run: |
           rm -rf node_modules/electron
-          npm install --no-audit --no-fund --prefer-offline electron
+          ELECTRON_VERSION=$(node -p "require('./package-lock.json').packages['node_modules/electron'].version")
+          npm install --no-audit --no-fund --prefer-offline --no-save "electron@${ELECTRON_VERSION}"
           test -f node_modules/electron/path.txt
           test -x node_modules/electron/dist/electron
 
