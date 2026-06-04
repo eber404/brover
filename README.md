@@ -21,16 +21,20 @@ Stack: **Electron + React + TypeScript + TailwindCSS**.
 
 ## First-Run Onboarding
 
-On first launch, brover offers two onboarding modes:
+On first launch, brover opens a multi-step onboarding flow with two modes:
 
-- **Acesso retroativo** — scans existing dotfiles (`.zshrc`, `.bashrc`, `.env.*`), parses env vars, and presents them grouped by file. User marks which vars are sensitive. Sensitive values are imported to Keychain and removed from dotfiles. Non-sensitive values are left in place.
-- **Fresh start** — scans dotfiles to detect env names and creates spaces/targets from them, but does not import any values. User builds secret entries from scratch.
+- **Retroactive import**: scans top-level dotfiles in `$HOME` (for example `.zshrc`, `.bashrc`, `.env`, `.env.local`), skips non-files, oversized files, binary files, comments, blank lines, subshell expressions, and non-assignment lines, parses shell-style env assignments like `NAME=value` and `export NAME=value`, shows parsed variables grouped by source file with manual reveal/hide and manual sensitive selection, then imports selected values into Keychain and removes matching assignment lines from source dotfiles. Non-selected variables stay in place. Files with no selected secrets do not become spaces.
+- **Fresh start**: scans same top-level dotfiles in `$HOME`, lets user pick which source files should become brover spaces, creates one dotfile space per selected file using file basename as space name, relies on default target created with each new space, and does not import values, rewrite source files, or scaffold env entries from discovered names.
 
-Before onboarding finishes, user also picks favorite terminal apps and their order. First favorite becomes default for `Launch`.
+Both modes end with terminal preferences:
 
-Onboarding runs once per user. Completion flag persisted in local config metadata.
+- onboarding lists installed terminal apps only;
+- user must pick one or more favorites and order them;
+- first favorite becomes default for `Launch` and preferences are saved before onboarding completes.
 
-Duplicate env names across different source files remain separate (one space per file).
+Onboarding runs once per user. Completion timestamp persists in local config metadata.
+
+Duplicate env names across different source files remain separate because onboarding creates one space per file.
 
 ---
 

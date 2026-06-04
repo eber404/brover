@@ -100,19 +100,22 @@ All spaces are `kind: 'dotfile'`. Each space points to one dotfile (e.g., `~/.zs
 
 Core modules:
 
-- `onboardingScanner` — discovers dotfiles (`.zshrc`, `.bashrc`, `.env.*`), parses env names and values, groups results by source file.
-- `onboardingImporter` — handles both modes: retroactive import (moves selected sensitive values to Keychain, rewrites source files) and fresh-start space creation (scaffolds spaces/targets from env names, no value import).
+- `onboardingScanner` — scans top-level dotfiles in home directory, parses `NAME=value` and `export NAME=value`, and skips comments, blank lines, subshell expressions, non-assignment lines, binary files, oversized files, and unreadable files.
+- `onboardingImporter` — handles both modes: retroactive import (moves selected sensitive values to Keychain, rewrites source files, only creates spaces for files with selected secrets) and fresh-start space creation (creates one space per selected file, no value import, no env scaffolding).
 - `onboardingStateStore` — persists onboarding completion flag in local config; subsequent launches skip onboarding.
 
 IPC contracts under `onboarding.*` namespace:
-- `onboarding:check` — returns whether onboarding has been completed.
-- `onboarding:scan` — triggers scanner, returns grouped env vars per file with masked sensitive suggestions.
-- `onboarding:import-retroactive` — receives selected sensitive names per file, imports to Keychain, rewrites files to remove those entries.
-- `onboarding:import-fresh` — receives space/target names derived from dotfiles, creates metadata-only scaffold.
+- `onboarding:get-status` — returns whether onboarding has been completed.
+- `onboarding:scan-dotfiles` — triggers scanner, returns grouped env vars per file plus scan warnings.
+- `onboarding:run-retroactive` — receives selected sensitive ids, imports to Keychain, rewrites files to remove matching entries, and returns summary counts.
+- `onboarding:run-fresh-start` — receives selected scan files and creates one metadata-only dotfile space per file.
 
-Security: retroactive sensitive selection shows masked values without auth (pre-Keychain stage, no secrets persisted yet). After user confirms selection, values move directly to Keychain. No plaintext secrets touch local JSON at any point.
+Security: retroactive review can reveal scanned plaintext values without auth because values still come directly from user dotfiles at pre-Keychain stage. After terminal preferences, selected values move directly to Keychain. No plaintext secrets touch local JSON at any point.
 
-Flow: both onboarding modes route through final terminal-preferences step before completion flag is written.
+Flow:
+
+- retroactive: welcome -> review -> confirmation -> terminal preferences -> import -> complete flag;
+- fresh start: welcome -> file selection -> terminal preferences -> space creation -> complete flag.
 
 ---
 
