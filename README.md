@@ -3,7 +3,9 @@
 [![CI](https://github.com/eber404/brover/actions/workflows/ci.yml/badge.svg)](https://github.com/eber404/brover/actions/workflows/ci.yml)
 [![Coverage](https://github.com/eber404/brover/raw/badges/coverage-badge.svg)](https://github.com/eber404/brover/tree/badges)
 
-Desktop app to manage local environment variables and secrets with authentication-gated secret actions.
+Brover is desktop app for organizing local secrets across multiple contexts, reducing setup friction and making everyday environment management simpler.
+
+Manage your local secrets across different contexts.
 
 Stack: **Electron + React + TypeScript + TailwindCSS**.
 
