@@ -21,7 +21,6 @@ function SecretsTestWrapper(props: Partial<Parameters<typeof useSecretsPanel>[0]
   const panel = useSecretsPanel({
     selectedTargetId: 'target-1',
     targetName: props.targetName ?? 'dev',
-    dotfilePath: props.dotfilePath ?? '/Users/test/.zshrc',
     envs: props.envs ?? [],
     filteredEnvs: props.filteredEnvs ?? [],
     selectedEnvId: props.selectedEnvId ?? '',
@@ -361,7 +360,7 @@ describe('SecretsPanel', () => {
       favoriteTerminalIds: ['warp', 'iterm2'],
       defaultTerminalId: 'warp',
     })
-    const withEnv = vi.fn().mockResolvedValue({ success: true })
+    const terminal = vi.fn().mockResolvedValue({ success: true })
     const listTerminals = vi.fn().mockResolvedValue({
       terminals: [
         { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app', installed: true },
@@ -370,7 +369,7 @@ describe('SecretsPanel', () => {
       ],
     })
     // @ts-expect-error mock
-    window.brover = { launch: { withEnv, listTerminals } }
+    window.brover = { launch: { terminal, listTerminals } }
 
     render(
       <I18nProvider>
@@ -383,7 +382,7 @@ describe('SecretsPanel', () => {
     fireEvent.click(screen.getByTestId('launch-button'))
 
     await waitFor(() => {
-      expect(withEnv).toHaveBeenCalledWith('target-1', '/Users/test/.zshrc', 'warp')
+      expect(terminal).toHaveBeenCalledWith('target-1', 'warp')
     })
   })
 
@@ -392,7 +391,7 @@ describe('SecretsPanel', () => {
       favoriteTerminalIds: ['warp', 'iterm2'],
       defaultTerminalId: 'warp',
     })
-    const withEnv = vi.fn().mockResolvedValue({ success: true })
+    const terminal = vi.fn().mockResolvedValue({ success: true })
     const listTerminals = vi.fn().mockResolvedValue({
       terminals: [
         { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app', installed: true },
@@ -401,7 +400,7 @@ describe('SecretsPanel', () => {
       ],
     })
     // @ts-expect-error mock
-    window.brover = { launch: { withEnv, listTerminals } }
+    window.brover = { launch: { terminal, listTerminals } }
 
     render(
       <I18nProvider>
@@ -424,7 +423,7 @@ describe('SecretsPanel', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: 'iTerm2' }))
 
     await waitFor(() => {
-      expect(withEnv).toHaveBeenCalledWith('target-1', '/Users/test/.zshrc', 'iterm2')
+      expect(terminal).toHaveBeenCalledWith('target-1', 'iterm2')
     })
 
     expect(JSON.parse(window.localStorage.getItem('brover.launch-preferences') ?? '{}')).toEqual({
@@ -438,7 +437,7 @@ describe('SecretsPanel', () => {
       favoriteTerminalIds: ['warp', 'iterm2'],
       defaultTerminalId: 'warp',
     })
-    const withEnv = vi.fn().mockResolvedValue({ success: true })
+    const terminal = vi.fn().mockResolvedValue({ success: true })
     const listTerminals = vi.fn().mockResolvedValue({
       terminals: [
         { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app', installed: true },
@@ -447,7 +446,7 @@ describe('SecretsPanel', () => {
       ],
     })
     // @ts-expect-error mock
-    window.brover = { launch: { withEnv, listTerminals } }
+    window.brover = { launch: { terminal, listTerminals } }
 
     render(
       <I18nProvider>

@@ -104,7 +104,6 @@ function AppShell() {
   const secretsPanel = useSecretsPanel({
     selectedTargetId,
     targetName: selectedTarget?.name ?? '',
-    dotfilePath: spaces.find(s => s.id === selectedSpaceId)?.dotfilePath ?? '',
     envs: targetEnvs,
     filteredEnvs,
     selectedEnvId,

@@ -28,7 +28,6 @@ import { useToast } from '../../components/ui/toaster'
 interface SecretsPanelProps {
   selectedTargetId: string | null
   targetName: string
-  dotfilePath: string
   envs: EnvMetadata[]
   filteredEnvs: EnvMetadata[]
   selectedEnvId: string
@@ -196,14 +195,10 @@ export function useSecretsPanel(props: SecretsPanelProps) {
 
   const launchWithTerminal = useCallback(
     async (terminalApp: string) => {
-      if (!props.selectedTargetId || !props.dotfilePath) return
-      await window.brover.launch.withEnv(
-        props.selectedTargetId,
-        props.dotfilePath,
-        terminalApp
-      )
+      if (!props.selectedTargetId) return
+      await window.brover.launch.terminal(props.selectedTargetId, terminalApp)
     },
-    [props.selectedTargetId, props.dotfilePath]
+    [props.selectedTargetId]
   )
 
   const handleLaunch = useCallback(async () => {

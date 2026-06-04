@@ -52,17 +52,8 @@ export interface BroverAPI {
   secretExists: (profile: string, name: string) => Promise<boolean>
   setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>
   setActiveTarget: (payload: { spaceId: string; targetId: string }) => Promise<EnvTarget[]>
-  applySpace: (spaceId: string) => Promise<{ applied: number }>
-
-  inject: {
-    activate: (targetId: string, dotfilePath: string) => Promise<{ success: boolean }>
-    deactivate: (targetId: string, dotfilePath: string) => Promise<{ success: boolean }>
-    status: (targetId: string) => Promise<{ active: boolean }>
-    listActive: () => Promise<{ activeTargetIds: string[] }>
-  }
   launch: {
     terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }>
-    withEnv: (targetId: string, dotfilePath: string, terminalApp: string) => Promise<{ success: boolean }>
     listTerminals: () => Promise<{ terminals: TerminalApp[] }>
   }
 

@@ -38,17 +38,8 @@ const api: BroverAPI = {
   setTargetColor: (payload) => ipcRenderer.invoke('targets:set-color', payload),
   setActiveTarget: (payload) => ipcRenderer.invoke('targets:set-active', payload),
   secretExists: (profile, name) => ipcRenderer.invoke('secrets:exists', { profile, name }),
-  applySpace: (spaceId) => ipcRenderer.invoke('apply:space', spaceId),
-
-  inject: {
-    activate: (targetId, dotfilePath) => ipcRenderer.invoke('inject:activate', { targetId, dotfilePath }),
-    deactivate: (targetId, dotfilePath) => ipcRenderer.invoke('inject:deactivate', { targetId, dotfilePath }),
-    status: (targetId) => ipcRenderer.invoke('inject:status', { targetId }),
-    listActive: () => ipcRenderer.invoke('inject:list-active'),
-  },
   launch: {
     terminal: (targetId, terminalApp) => ipcRenderer.invoke('launch:terminal', { targetId, terminalApp }),
-    withEnv: (targetId, dotfilePath, terminalApp) => ipcRenderer.invoke('launch:with-env', { targetId, dotfilePath, terminalApp }),
     listTerminals: () => ipcRenderer.invoke('launch:list-terminals'),
   },
 

@@ -15,7 +15,7 @@ Stack: **Electron + React + TypeScript + TailwindCSS**.
 - target-scoped secret values in macOS Keychain;
 - auth-gated reveal/copy/update/delete for secrets;
 - local JSON persistence for non-sensitive metadata only;
-- apply active target to dotfile spaces such as `~/.zshrc` and `~/.bashrc`.
+- launch terminal sessions ephemerally from Keychain-backed target envs without editing dotfiles.
 
 ---
 
@@ -30,7 +30,8 @@ Both modes end with terminal preferences:
 
 - onboarding lists installed terminal apps only;
 - user must pick one or more favorites and order them;
-- first favorite becomes default for `Launch` and preferences are saved before onboarding completes.
+- first favorite becomes default for `Launch` and preferences are saved before onboarding completes;
+- `Launch` opens an ephemeral terminal session only and does not edit dotfiles.
 
 Onboarding runs once per user. Completion timestamp persists in local config metadata.
 

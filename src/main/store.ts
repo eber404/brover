@@ -1,10 +1,8 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { basename, dirname } from 'node:path'
-import { homedir } from 'node:os'
 import { randomUUID } from 'node:crypto'
 import type { AppAuthorization, EnvMetadata, EnvSpace, EnvTarget, OnboardingStatus, Profile } from '../shared/models'
 import { isValidBundleID, isValidEnvName } from '../shared/validators'
-import { buildManagedShellBlock, upsertManagedShellBlock } from './envWriters'
 
 export interface SecretStore {
   save(account: string, value: string): Promise<void>
@@ -530,30 +528,5 @@ export class BroverStore {
     const home = process.env.BROVER_HOME ?? process.env.HOME
     if (!home) throw new Error('HOME not found')
     return home
-  }
-
-  async applySpace(spaceId: string): Promise<{ applied: number }> {
-    const db = await this.readDB()
-    const space = db.spaces.find((s) => s.id === spaceId)
-    if (!space) throw new Error(`Space not found: ${spaceId}`)
-
-    const targets = db.targets.filter((t) => t.spaceId === spaceId)
-    const activeTarget = targets.find((t) => t.isActive) ?? targets[0]
-    if (!activeTarget) return { applied: 0 }
-
-    const envs = db.envs.filter((e) => e.profile === activeTarget.id)
-    const entries: { name: string; value: string }[] = []
-    for (const env of envs) {
-      const value = await this.secrets.get(`${activeTarget.id}:${env.name}`)
-      if (value != null) {
-        entries.push({ name: env.name, value })
-      }
-    }
-
-    const dotfilePath = space.dotfilePath.replace(/^~/, homedir())
-    let content = await readFile(dotfilePath, 'utf8')
-    content = upsertManagedShellBlock(content, buildManagedShellBlock(entries))
-    await writeFile(dotfilePath, content, 'utf8')
-    return { applied: entries.length }
   }
 }

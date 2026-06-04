@@ -16,7 +16,6 @@ import { runRetroactiveImport, runFreshStartImport } from './onboardingImporter'
 import { createSecretAuthGate } from './secretAuthGate'
 import { createAuthSessionCache } from './authSessionCache'
 import { createMacSecretAuthPrompt } from './authPrompt'
-import { createEnvInjector } from './envInjector'
 import { createTerminalLauncher } from './terminalLauncher'
 import { getDevStorageClearOptions } from './devSession'
 import { buildDotfileOpenDialogOptions } from './systemDialogs'
@@ -59,7 +58,6 @@ async function bootstrap() {
     await macSecretAuthPrompt(reason)
   }, authSessionCache)
 
-  const envInjector = createEnvInjector()
   const terminalLauncher = createTerminalLauncher()
 
   async function listActiveTargetIds(): Promise<string[]> {
@@ -71,14 +69,6 @@ async function bootstrap() {
       .map(target => target.id)
   }
 
-  // Startup cleanup: remove stale caches and dotfile blocks
-  const spaces = await store.listSpaces()
-  for (const space of spaces) {
-    if (space.dotfilePath) {
-      envInjector.startupCleanup(space.dotfilePath.replace(/^~/, require('node:os').homedir()))
-    }
-  }
-  envInjector.startupCleanup()
   terminalLauncher.startupCleanup(await listActiveTargetIds())
 
   app.on('will-quit', () => {
@@ -159,41 +149,6 @@ async function bootstrap() {
     (_, payload: { spaceId: string; targetId: string }) =>
       store.setActiveTarget(payload)
   )
-  ipcMain.handle('apply:space', (_, spaceId: string) => store.applySpace(spaceId))
-
-  ipcMain.handle('inject:activate', async (_, payload: { targetId: string; dotfilePath: string }) => {
-    try {
-      const envs = await store.listEnvs()
-      const targetEnvs = envs.filter(e => e.profile === payload.targetId)
-      const entries: { name: string; value: string }[] = []
-      for (const env of targetEnvs) {
-        const value = await store.secrets.get(`${payload.targetId}:${env.name}`)
-        if (value != null) entries.push({ name: env.name, value })
-      }
-      await envInjector.activate(payload.targetId, payload.dotfilePath, entries)
-      return { success: true }
-    } catch (e) {
-      return { success: false, error: String(e) }
-    }
-  })
-
-  ipcMain.handle('inject:deactivate', async (_, payload: { targetId: string; dotfilePath: string }) => {
-    try {
-      await envInjector.deactivate(payload.targetId, payload.dotfilePath)
-      return { success: true }
-    } catch (e) {
-      return { success: false, error: String(e) }
-    }
-  })
-
-  ipcMain.handle('inject:status', (_, payload: { targetId: string }) => {
-    return { active: envInjector.isActive(payload.targetId) }
-  })
-
-  ipcMain.handle('inject:list-active', () => {
-    return { activeTargetIds: envInjector.listActive() }
-  })
-
   ipcMain.handle('launch:terminal', async (_, payload: { targetId: string; terminalApp: string }) => {
     try {
       const envs = await store.listEnvs()
@@ -203,23 +158,6 @@ async function bootstrap() {
         const value = await store.secrets.get(`${payload.targetId}:${env.name}`)
         if (value != null) entries.push({ name: env.name, value })
       }
-      await terminalLauncher.launch(payload.targetId, payload.terminalApp, entries)
-      return { success: true }
-    } catch (e) {
-      return { success: false, error: String(e) }
-    }
-  })
-
-  ipcMain.handle('launch:with-env', async (_, payload: { targetId: string; dotfilePath: string; terminalApp: string }) => {
-    try {
-      const envs = await store.listEnvs()
-      const targetEnvs = envs.filter(e => e.profile === payload.targetId)
-      const entries: { name: string; value: string }[] = []
-      for (const env of targetEnvs) {
-        const value = await store.secrets.get(`${payload.targetId}:${env.name}`)
-        if (value != null) entries.push({ name: env.name, value })
-      }
-      await envInjector.activate(payload.targetId, payload.dotfilePath, entries)
       await terminalLauncher.launch(payload.targetId, payload.terminalApp, entries)
       return { success: true }
     } catch (e) {
