@@ -19,7 +19,10 @@
     "coverage:badge": "node scripts/generateCoverageBadge.mjs coverage/coverage-summary.json .badge-dist/coverage-badge.svg",
     "test:e2e": "npm run build && npx playwright test",
     "tsc": "npx tsc --noEmit",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "tscontext": "tscontext extract --repo . --out .tscontext/code-context --profile default",
+    "precommit": "npm run tscontext && git add .tscontext/code-context.toon .tscontext/code-context.md",
+    "postinstall": "[ -d .git ] && git config core.hooksPath .githooks && chmod +x .githooks/pre-commit || true"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
