@@ -74,10 +74,10 @@ jobs:
           curl -fsSL -o /tmp/electron.zip "https://github.com/electron/electron/releases/download/v${ELECTRON_VERSION}/electron-v${ELECTRON_VERSION}-linux-x64.zip"
           rm -rf /tmp/electron-extract && mkdir -p /tmp/electron-extract
           unzip -q /tmp/electron.zip -d /tmp/electron-extract
-          # Keep npm-installed package.json + nested deps, replace dist/ with extracted binary
+          # Replace dist/ with extracted binary (linux zip extracts flat to dist/)
           rm -rf node_modules/electron/dist node_modules/electron/path.txt node_modules/electron/version
-          cp -r /tmp/electron-extract/. node_modules/electron/
-          chmod +x node_modules/electron/dist/electron node_modules/electron/dist/chrome-sandbox || true
+          mv /tmp/electron-extract node_modules/electron/dist
+          chmod +x node_modules/electron/dist/electron node_modules/electron/dist/chrome-sandbox
           printf 'electron' > node_modules/electron/path.txt
           test -x node_modules/electron/dist/electron
           test -f node_modules/electron/path.txt
