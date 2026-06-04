@@ -66,23 +66,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Reinstall Electron with binary
+      - name: Install Electron binary manually
         run: |
           set -eux
-          rm -rf node_modules/electron node_modules/.bin/electron
           ELECTRON_VERSION=$(node -p "require('./package-lock.json').packages['node_modules/electron'].version")
-          echo "--- network test ---"
-          curl -sI "https://github.com/electron/electron/releases/download/v${ELECTRON_VERSION}/electron-v${ELECTRON_VERSION}-linux-x64.zip" | head -5
-          echo "--- npm install ---"
-          npm install --no-audit --no-fund --no-save --foreground-scripts "electron@${ELECTRON_VERSION}"
-          echo "--- electron contents ---"
-          ls -la node_modules/electron
-          echo "--- install.js log ---"
-          node node_modules/electron/install.js
-          echo "--- post install ---"
-          ls -la node_modules/electron/dist
-          test -f node_modules/electron/path.txt
+          echo "Using Electron ${ELECTRON_VERSION}"
+          rm -rf node_modules/electron node_modules/.bin/electron
+          npm install --no-audit --no-fund --no-save --ignore-scripts "electron@${ELECTRON_VERSION}"
+          curl -fsSL -o /tmp/electron.zip "https://github.com/electron/electron/releases/download/v${ELECTRON_VERSION}/electron-v${ELECTRON_VERSION}-linux-x64.zip"
+          unzip -q /tmp/electron.zip -d node_modules/electron
+          printf 'electron' > node_modules/electron/path.txt
+          echo 'v'$(echo "$ELECTRON_VERSION") > node_modules/electron/dist/version
           test -x node_modules/electron/dist/electron
+          test -f node_modules/electron/path.txt
 
       - name: Install Playwright dependencies
         run: npx playwright install --with-deps chromium
