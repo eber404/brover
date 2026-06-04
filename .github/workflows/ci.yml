@@ -75,10 +75,9 @@ jobs:
           rm -rf /tmp/electron-extract && mkdir -p /tmp/electron-extract
           unzip -q /tmp/electron.zip -d /tmp/electron-extract
           # Keep npm-installed package.json + nested deps, replace dist/ with extracted binary
-          rm -rf node_modules/electron/dist node_modules/electron/path.txt
-          cp -r /tmp/electron-extract/* node_modules/electron/
+          rm -rf node_modules/electron/dist node_modules/electron/path.txt node_modules/electron/version
+          cp -r /tmp/electron-extract/. node_modules/electron/
           printf 'electron' > node_modules/electron/path.txt
-          echo "v${ELECTRON_VERSION}" > node_modules/electron/dist/version
           test -x node_modules/electron/dist/electron
           test -f node_modules/electron/path.txt
 
