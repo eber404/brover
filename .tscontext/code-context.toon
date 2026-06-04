@@ -1,0 +1,1971 @@
+generatedAt: "2026-06-04T15:09:30.939Z"
+repoRoot: /Users/eber/dev/brover
+tsconfigPath: /Users/eber/dev/brover/tsconfig.json
+fileCount: 45
+files[45]:
+  - path: playwright.config.ts
+    imports[1]:
+      - moduleSpecifier: @playwright/test
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: defineConfig
+    exports[1]{name,kind}:
+      default,CallExpression
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/authPrompt.ts
+    imports[0]:
+    exports[1]{name,kind}:
+      createMacSecretAuthPrompt,FunctionDeclaration
+    functions[1]:
+      - name: createMacSecretAuthPrompt
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          systemPreferences,MacSystemPreferences
+        returnType: "(reason: string) => Promise<void>"
+        signature: "createMacSecretAuthPrompt(systemPreferences: MacSystemPreferences): (reason: string) => Promise<void>"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/authSessionCache.ts
+    imports[0]:
+    exports[2]{name,kind}:
+      AuthSessionCache,InterfaceDeclaration
+      createAuthSessionCache,FunctionDeclaration
+    functions[1]:
+      - name: createAuthSessionCache
+        exported: true
+        defaultExport: false
+        async: false
+        params[0]:
+        returnType: AuthSessionCache
+        signature: "createAuthSessionCache(): AuthSessionCache"
+    reactComponents[0]:
+    types[1]:
+      - name: AuthSessionCache
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface AuthSessionCache { isAuthorized(targetId: string, now?: number): boolean expiresAt(targetId: string): number | null grant(targetId: string, ..."
+        properties[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/devSession.ts
+    imports[0]:
+    exports[1]{name,kind}:
+      getDevStorageClearOptions,FunctionDeclaration
+    functions[1]:
+      - name: getDevStorageClearOptions
+        exported: true
+        defaultExport: false
+        async: false
+        params[0]:
+        returnType: "{ storages: ClearStorageKind[]; }"
+        signature: "getDevStorageClearOptions(): { storages: ClearStorageKind[]; }"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/index.ts
+    imports[15]:
+      - moduleSpecifier: electron
+        defaultImport: null
+        namespaceImport: null
+        namedImports[5]: app,BrowserWindow,dialog,ipcMain,systemPreferences
+      - moduleSpecifier: "node:path"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: join
+      - moduleSpecifier: "node:os"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: homedir
+      - moduleSpecifier: "node:fs"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: watchFile,unwatchFile
+      - moduleSpecifier: ./store
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: BroverStore
+      - moduleSpecifier: ../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[4]: UNSUPPORTED_SECRET_BACKEND,type SecretActionResult,type ScanResult,type RetroactiveSelection
+      - moduleSpecifier: ./onboardingScanner
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: scanDotfiles
+      - moduleSpecifier: ./onboardingImporter
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: runRetroactiveImport,runFreshStartImport
+      - moduleSpecifier: ./secretAuthGate
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: createSecretAuthGate
+      - moduleSpecifier: ./authSessionCache
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: createAuthSessionCache
+      - moduleSpecifier: ./authPrompt
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: createMacSecretAuthPrompt
+      - moduleSpecifier: ./terminalLauncher
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: createTerminalLauncher
+      - moduleSpecifier: ./devSession
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: getDevStorageClearOptions
+      - moduleSpecifier: ./systemDialogs
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: buildDotfileOpenDialogOptions
+      - moduleSpecifier: ./secretStoreFactory
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: createSecretStore
+    exports[0]:
+    functions[3]:
+      - name: bootstrap
+        exported: false
+        defaultExport: false
+        async: true
+        params[0]:
+        returnType: Promise<void>
+        signature: "async bootstrap(): Promise<void>"
+      - name: failure
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          error,unknown
+        returnType: SecretActionResult
+        signature: "failure(error: unknown): SecretActionResult"
+      - name: ok
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          value,string
+        returnType: SecretActionResult
+        signature: "ok(value: string): SecretActionResult"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/main.ts
+    imports[1]:
+      - moduleSpecifier: ./index
+        defaultImport: null
+        namespaceImport: null
+        namedImports[0]:
+    exports[0]:
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/onboardingImporter.ts
+    imports[5]:
+      - moduleSpecifier: "node:fs/promises"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: readFile,writeFile,rename
+      - moduleSpecifier: "node:path"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: basename
+      - moduleSpecifier: "node:crypto"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: randomUUID
+      - moduleSpecifier: ../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: ScanResult,RetroactiveSelection,OnboardingSummary
+      - moduleSpecifier: ./store
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: BroverStore
+    exports[2]{name,kind}:
+      runFreshStartImport,FunctionDeclaration
+      runRetroactiveImport,FunctionDeclaration
+    functions[2]:
+      - name: runFreshStartImport
+        exported: true
+        defaultExport: false
+        async: true
+        params[2]{name,type}:
+          store,BroverStore
+          scanResult,ScanResult
+        returnType: Promise<OnboardingSummary>
+        signature: "async runFreshStartImport(store: BroverStore, scanResult: ScanResult): Promise<OnboardingSummary>"
+      - name: runRetroactiveImport
+        exported: true
+        defaultExport: false
+        async: true
+        params[3]{name,type}:
+          store,BroverStore
+          scanResult,ScanResult
+          selection,RetroactiveSelection
+        returnType: Promise<OnboardingSummary>
+        signature: "async runRetroactiveImport(store: BroverStore, scanResult: ScanResult, selection: RetroactiveSelection): Promise<OnboardingSummary>"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/onboardingScanner.ts
+    imports[4]:
+      - moduleSpecifier: "node:fs/promises"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: readdir,readFile,stat
+      - moduleSpecifier: "node:path"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: join
+      - moduleSpecifier: "node:crypto"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: randomUUID
+      - moduleSpecifier: ../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[4]: ScanResult,ScanFile,ScannedVariable,ScanWarning
+    exports[1]{name,kind}:
+      scanDotfiles,FunctionDeclaration
+    functions[2]:
+      - name: parseLine
+        exported: false
+        defaultExport: false
+        async: false
+        params[4]{name,type}:
+          line,string
+          lineNumber,number
+          filePath,string
+          warnings,"ScanWarning[]"
+        returnType: ScannedVariable | null
+        signature: "parseLine(line: string, lineNumber: number, filePath: string, warnings: ScanWarning[]): ScannedVariable | null"
+      - name: scanDotfiles
+        exported: true
+        defaultExport: false
+        async: true
+        params[1]{name,type}:
+          homeDir,string
+        returnType: Promise<ScanResult>
+        signature: "async scanDotfiles(homeDir: string): Promise<ScanResult>"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/secretAuthGate.ts
+    imports[1]:
+      - moduleSpecifier: ./authSessionCache
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: AuthSessionCache
+    exports[4]{name,kind}:
+      AuthPrompt,TypeAliasDeclaration
+      createSecretAuthGate,FunctionDeclaration
+      SecretAction,TypeAliasDeclaration
+      SecretActionContext,InterfaceDeclaration
+    functions[1]:
+      - name: createSecretAuthGate
+        exported: true
+        defaultExport: false
+        async: false
+        params[2]{name,type}:
+          prompt,AuthPrompt
+          cache,AuthSessionCache
+        returnType: "{ authorize(action: SecretAction, context?: SecretActionContext): Promise<void>; }"
+        signature: "createSecretAuthGate(prompt: AuthPrompt, cache: AuthSessionCache): { authorize(action: SecretAction, context?: SecretActionContext): Promise<void>; }"
+    reactComponents[0]:
+    types[3]:
+      - name: SecretActionContext
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface SecretActionContext { isRevealed?: boolean targetId?: string }"
+        properties[2]: "isRevealed?: boolean","targetId?: string"
+      - name: SecretAction
+        kind: typeAlias
+        exported: true
+        defaultExport: false
+        text: export type SecretAction = 'reveal' | 'copy' | 'update' | 'delete'
+        properties[0]:
+      - name: AuthPrompt
+        kind: typeAlias
+        exported: true
+        defaultExport: false
+        text: "export type AuthPrompt = (reason: string) => Promise<void>"
+        properties[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/secretStoreFactory.ts
+    imports[1]:
+      - moduleSpecifier: ./store
+        defaultImport: null
+        namespaceImport: null
+        namedImports[4]: MacOSKeytarSecretStore,MemorySecretStore,UnsupportedSecretStore,type SecretStore
+    exports[1]{name,kind}:
+      createSecretStore,FunctionDeclaration
+    functions[1]:
+      - name: createSecretStore
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          "{\n  platform,\n  isE2E,\n}","{ platform: NodeJS.Platform isE2E: boolean }"
+        returnType: SecretStore
+        signature: "createSecretStore({\n  platform,\n  isE2E,\n}: { platform: NodeJS.Platform isE2E: boolean }): SecretStore"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/store.ts
+    imports[5]:
+      - moduleSpecifier: "node:fs/promises"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: mkdir,readFile,writeFile
+      - moduleSpecifier: "node:path"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: basename,dirname
+      - moduleSpecifier: "node:crypto"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: randomUUID
+      - moduleSpecifier: ../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[4]: EnvMetadata,EnvSpace,EnvTarget,OnboardingStatus
+      - moduleSpecifier: ../shared/validators
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: isValidEnvName
+    exports[5]{name,kind}:
+      BroverStore,ClassDeclaration
+      MacOSKeytarSecretStore,ClassDeclaration
+      MemorySecretStore,ClassDeclaration
+      SecretStore,InterfaceDeclaration
+      UnsupportedSecretStore,ClassDeclaration
+    functions[1]:
+      - name: randomTargetColor
+        exported: false
+        defaultExport: false
+        async: false
+        params[0]:
+        returnType: string
+        signature: "randomTargetColor(): string"
+    reactComponents[0]:
+    types[1]:
+      - name: SecretStore
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface SecretStore { save(account: string, value: string): Promise<void> get(account: string): Promise<string | null> delete(account: string): Prom..."
+        properties[0]:
+    classes[4]:
+      - name: UnsupportedSecretStore
+        exported: true
+        defaultExport: false
+        publicMethods[4]:
+          - name: save
+            async: true
+            params[0]:
+            returnType: Promise<void>
+            signature: "async save(): Promise<void>"
+          - name: get
+            async: true
+            params[0]:
+            returnType: Promise<string | null>
+            signature: "async get(): Promise<string | null>"
+          - name: delete
+            async: true
+            params[0]:
+            returnType: Promise<void>
+            signature: "async delete(): Promise<void>"
+          - name: exists
+            async: true
+            params[0]:
+            returnType: Promise<boolean>
+            signature: "async exists(): Promise<boolean>"
+      - name: MemorySecretStore
+        exported: true
+        defaultExport: false
+        publicMethods[4]:
+          - name: save
+            async: true
+            params[2]{name,type}:
+              account,string
+              value,string
+            returnType: Promise<void>
+            signature: "async save(account: string, value: string): Promise<void>"
+          - name: get
+            async: true
+            params[1]{name,type}:
+              account,string
+            returnType: Promise<string | null>
+            signature: "async get(account: string): Promise<string | null>"
+          - name: delete
+            async: true
+            params[1]{name,type}:
+              account,string
+            returnType: Promise<void>
+            signature: "async delete(account: string): Promise<void>"
+          - name: exists
+            async: true
+            params[1]{name,type}:
+              account,string
+            returnType: Promise<boolean>
+            signature: "async exists(account: string): Promise<boolean>"
+      - name: MacOSKeytarSecretStore
+        exported: true
+        defaultExport: false
+        publicMethods[4]:
+          - name: save
+            async: true
+            params[2]{name,type}:
+              account,string
+              value,string
+            returnType: Promise<void>
+            signature: "async save(account: string, value: string): Promise<void>"
+          - name: get
+            async: true
+            params[1]{name,type}:
+              account,string
+            returnType: Promise<string | null>
+            signature: "async get(account: string): Promise<string | null>"
+          - name: delete
+            async: true
+            params[1]{name,type}:
+              account,string
+            returnType: Promise<void>
+            signature: "async delete(account: string): Promise<void>"
+          - name: exists
+            async: true
+            params[1]{name,type}:
+              account,string
+            returnType: Promise<boolean>
+            signature: "async exists(account: string): Promise<boolean>"
+      - name: BroverStore
+        exported: true
+        defaultExport: false
+        publicMethods[21]:
+          - name: getOnboardingStatus
+            async: true
+            params[0]:
+            returnType: Promise<OnboardingStatus>
+            signature: "async getOnboardingStatus(): Promise<OnboardingStatus>"
+          - name: markOnboardingComplete
+            async: true
+            params[0]:
+            returnType: Promise<void>
+            signature: "async markOnboardingComplete(): Promise<void>"
+          - name: listEnvs
+            async: true
+            params[0]:
+            returnType: "Promise<EnvMetadata[]>"
+            signature: "async listEnvs(): Promise<EnvMetadata[]>"
+          - name: createEnv
+            async: true
+            params[1]{name,type}:
+              payload,"{ name: string; profile: string; value: string; description?: string }"
+            returnType: Promise<void>
+            signature: "async createEnv(payload: { name: string; profile: string; value: string; description?: string }): Promise<void>"
+          - name: revealEnv
+            async: true
+            params[2]{name,type}:
+              profile,string
+              name,string
+            returnType: Promise<string | null>
+            signature: "async revealEnv(profile: string, name: string): Promise<string | null>"
+          - name: secretExists
+            async: true
+            params[2]{name,type}:
+              profile,string
+              name,string
+            returnType: Promise<boolean>
+            signature: "async secretExists(profile: string, name: string): Promise<boolean>"
+          - name: updateEnv
+            async: true
+            params[1]{name,type}:
+              payload,"{ id: string; profile: string; name: string; value: string; description?: string }"
+            returnType: Promise<void>
+            signature: "async updateEnv(payload: { id: string; profile: string; name: string; value: string; description?: string }): Promise<void>"
+          - name: deleteEnv
+            async: true
+            params[1]{name,type}:
+              payload,"{ id: string; profile: string; name: string }"
+            returnType: Promise<void>
+            signature: "async deleteEnv(payload: { id: string; profile: string; name: string }): Promise<void>"
+          - name: toggleEnvEnabled
+            async: true
+            params[1]{name,type}:
+              id,string
+            returnType: "Promise<EnvMetadata[]>"
+            signature: "async toggleEnvEnabled(id: string): Promise<EnvMetadata[]>"
+          - name: listSpaces
+            async: true
+            params[0]:
+            returnType: "Promise<EnvSpace[]>"
+            signature: "async listSpaces(): Promise<EnvSpace[]>"
+          - name: createSpace
+            async: true
+            params[1]{name,type}:
+              payload,"{ name: string; dotfilePath: string }"
+            returnType: "Promise<EnvSpace[]>"
+            signature: "async createSpace(payload: { name: string; dotfilePath: string }): Promise<EnvSpace[]>"
+          - name: renameSpace
+            async: true
+            params[1]{name,type}:
+              payload,"{ spaceId: string; name: string }"
+            returnType: "Promise<EnvSpace[]>"
+            signature: "async renameSpace(payload: { spaceId: string; name: string }): Promise<EnvSpace[]>"
+          - name: deleteSpace
+            async: true
+            params[1]{name,type}:
+              spaceId,string
+            returnType: "Promise<EnvSpace[]>"
+            signature: "async deleteSpace(spaceId: string): Promise<EnvSpace[]>"
+          - name: toggleSpaceTiedSecrets
+            async: true
+            params[1]{name,type}:
+              spaceId,string
+            returnType: "Promise<EnvSpace[]>"
+            signature: "async toggleSpaceTiedSecrets(spaceId: string): Promise<EnvSpace[]>"
+          - name: listTargets
+            async: true
+            params[1]{name,type}:
+              spaceId,string
+            returnType: "Promise<EnvTarget[]>"
+            signature: "async listTargets(spaceId: string): Promise<EnvTarget[]>"
+          - name: createTarget
+            async: true
+            params[1]{name,type}:
+              payload,"{ spaceId: string; name: string }"
+            returnType: "Promise<EnvTarget[]>"
+            signature: "async createTarget(payload: { spaceId: string; name: string }): Promise<EnvTarget[]>"
+          - name: deleteTarget
+            async: true
+            params[1]{name,type}:
+              payload,"{ targetId: string }"
+            returnType: "Promise<EnvTarget[]>"
+            signature: "async deleteTarget(payload: { targetId: string }): Promise<EnvTarget[]>"
+          - name: reorderTargets
+            async: true
+            params[1]{name,type}:
+              payload,"{ spaceId: string; orderedTargetIds: string[] }"
+            returnType: "Promise<EnvTarget[]>"
+            signature: "async reorderTargets(payload: { spaceId: string; orderedTargetIds: string[] }): Promise<EnvTarget[]>"
+          - name: renameTarget
+            async: true
+            params[1]{name,type}:
+              payload,"{ targetId: string; name: string }"
+            returnType: "Promise<EnvTarget[]>"
+            signature: "async renameTarget(payload: { targetId: string; name: string }): Promise<EnvTarget[]>"
+          - name: setTargetColor
+            async: true
+            params[1]{name,type}:
+              payload,"{ targetId: string; color: string }"
+            returnType: "Promise<EnvTarget[]>"
+            signature: "async setTargetColor(payload: { targetId: string; color: string }): Promise<EnvTarget[]>"
+          - name: setActiveTarget
+            async: true
+            params[1]{name,type}:
+              payload,"{ spaceId: string; targetId: string }"
+            returnType: "Promise<EnvTarget[]>"
+            signature: "async setActiveTarget(payload: { spaceId: string; targetId: string }): Promise<EnvTarget[]>"
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/systemDialogs.ts
+    imports[1]:
+      - moduleSpecifier: electron
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: OpenDialogOptions
+    exports[1]{name,kind}:
+      buildDotfileOpenDialogOptions,FunctionDeclaration
+    functions[1]:
+      - name: buildDotfileOpenDialogOptions
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          homePath,string
+        returnType: Electron.OpenDialogOptions
+        signature: "buildDotfileOpenDialogOptions(homePath: string): Electron.OpenDialogOptions"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/terminalLauncher.ts
+    imports[4]:
+      - moduleSpecifier: child_process
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: execSync
+      - moduleSpecifier: fs
+        defaultImport: null
+        namespaceImport: null
+        namedImports[4]: existsSync,readdirSync,rmSync,writeFileSync
+      - moduleSpecifier: os
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: tmpdir
+      - moduleSpecifier: path
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: join
+    exports[3]{name,kind}:
+      createTerminalLauncher,FunctionDeclaration
+      EnvEntry,InterfaceDeclaration
+      TerminalApp,InterfaceDeclaration
+    functions[1]:
+      - name: createTerminalLauncher
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          deps,TerminalLauncherDeps
+        returnType: "{ listTerminals: () => TerminalApp[]; launch: (targetId: string, terminalAppId: string, entries: EnvEntry[]) => Promise<{ success: boolean; commandPath?: str..."
+        signature: "createTerminalLauncher(deps: TerminalLauncherDeps): { listTerminals: () => TerminalApp[]; launch: (targetId: string, terminalAppId: string, entries: EnvEntry[]) => Promise<{ success: boolean; commandPath?: str..."
+    reactComponents[0]:
+    types[2]:
+      - name: EnvEntry
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface EnvEntry { name: string value: string }"
+        properties[2]: "name: string","value: string"
+      - name: TerminalApp
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface TerminalApp { id: string name: string bundlePath: string installed: boolean }"
+        properties[4]: "id: string","name: string","bundlePath: string","installed: boolean"
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/preload/index.ts
+    imports[2]:
+      - moduleSpecifier: electron
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: contextBridge,ipcRenderer
+      - moduleSpecifier: ../shared/ipc
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: BroverAPI
+    exports[0]:
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/preload/preload.ts
+    imports[1]:
+      - moduleSpecifier: ./index
+        defaultImport: null
+        namespaceImport: null
+        namedImports[0]:
+    exports[0]:
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/main.tsx
+    imports[4]:
+      - moduleSpecifier: react
+        defaultImport: React
+        namespaceImport: null
+        namedImports[0]:
+      - moduleSpecifier: react-dom/client
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: createRoot
+      - moduleSpecifier: ./src/App
+        defaultImport: App
+        namespaceImport: null
+        namedImports[0]:
+      - moduleSpecifier: ./src/styles.css
+        defaultImport: null
+        namespaceImport: null
+        namedImports[0]:
+    exports[0]:
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[1]:
+      - name: ErrorBoundary
+        exported: false
+        defaultExport: false
+        publicMethods[3]:
+          - name: getDerivedStateFromError
+            async: false
+            params[1]{name,type}:
+              error,Error
+            returnType: "{ hasError: boolean; error: string; }"
+            signature: "getDerivedStateFromError(error: Error): { hasError: boolean; error: string; }"
+          - name: componentDidCatch
+            async: false
+            params[2]{name,type}:
+              error,Error
+              info,React.ErrorInfo
+            returnType: void
+            signature: "componentDidCatch(error: Error, info: React.ErrorInfo): void"
+          - name: render
+            async: false
+            params[0]:
+            returnType: "string | number | bigint | boolean | import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element | Iterable<React.ReactNode> | Promise..."
+            signature: "render(): string | number | bigint | boolean | import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element | Iterable<React.ReactNode> | Promise..."
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/App.tsx
+    imports[13]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[5]: useCallback,useDeferredValue,useEffect,useMemo,useState
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Search
+      - moduleSpecifier: ../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: EnvMetadata,EnvSpace,EnvTarget
+      - moduleSpecifier: ./components/ui/button
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Button
+      - moduleSpecifier: ./components/ui/confirmDialog
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: ConfirmDialog
+      - moduleSpecifier: ./components/ui/toaster
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: ToastProvider
+      - moduleSpecifier: ./i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: I18nProvider,useI18n
+      - moduleSpecifier: ./features/onboarding/OnboardingFlow
+        defaultImport: OnboardingFlow
+        namespaceImport: null
+        namedImports[0]:
+      - moduleSpecifier: ./features/secrets/SecretsDetail
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: SecretsDetail
+      - moduleSpecifier: ./features/secrets/SecretsPanel
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useSecretsPanel
+      - moduleSpecifier: ./features/spaces/SpacesSidebar
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: SpacesSidebar
+      - moduleSpecifier: ./features/secrets/SecretsCenterPanel
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: SecretsCenterPanel
+      - moduleSpecifier: ./features/secrets/SecretsDetailsPanel
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: SecretsDetailsPanel
+    exports[1]{name,kind}:
+      default,FunctionDeclaration
+    functions[2]:
+      - name: App
+        exported: true
+        defaultExport: true
+        async: false
+        params[0]:
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        signature: "App(): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+      - name: AppShell
+        exported: false
+        defaultExport: false
+        async: false
+        params[0]:
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "AppShell(): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[2]{name,exported,defaultExport,kind,propsName,propsType}:
+      App,true,true,function,null,null
+      AppShell,false,false,function,null,null
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/components/ui/button.tsx
+    imports[2]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: React
+        namedImports[0]:
+      - moduleSpecifier: ../../lib/utils
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: cn
+    exports[2]{name,kind}:
+      Button,VariableDeclaration
+      ButtonProps,InterfaceDeclaration
+    functions[0]:
+    reactComponents[0]:
+    types[1]:
+      - name: ButtonProps
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> { variant?: 'default' | 'outline' | 'destructive' | 'success' | 'card' }"
+        properties[1]: "variant?: 'default' | 'outline' | 'destructive' | 'success' | 'card'"
+    classes[0]:
+    exportedConstants[1]{name,defaultExport}:
+      Button,false
+    exportedHooks[0]:
+  - path: src/renderer/src/components/ui/card.tsx
+    imports[2]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: React
+        namedImports[0]:
+      - moduleSpecifier: ../../lib/utils
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: cn
+    exports[1]{name,kind}:
+      Card,FunctionDeclaration
+    functions[1]:
+      - name: Card
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          "{ className, ...props }",React.HTMLAttributes<HTMLDivElement>
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      Card,true,false,function,"{ className, ...props }",React.HTMLAttributes<HTMLDivElement>
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/components/ui/confirmDialog.tsx
+    imports[3]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: React
+        namedImports[0]:
+      - moduleSpecifier: ./dialog
+        defaultImport: null
+        namespaceImport: null
+        namedImports[5]: Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription
+      - moduleSpecifier: ./button
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Button
+    exports[2]{name,kind}:
+      ConfirmDialog,FunctionDeclaration
+      ConfirmDialogProps,InterfaceDeclaration
+    functions[1]:
+      - name: ConfirmDialog
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          "{\n  open,\n  onOpenChange,\n  title,\n  description,\n  confirmLabel = 'Delete',\n  cancelLabel = 'Cancel',\n  destructive = false,\n  onConfirm,\n}",ConfirmDialogProps
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "ConfirmDialog({\n  open,\n  onOpenChange,\n  title,\n  description,\n  confirmLabel = 'Delete',\n  cancelLabel = 'Cancel',\n  destructive = false,\n  onConfirm,\n}: ConfirmDialogProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      ConfirmDialog,true,false,function,"{\n  open,\n  onOpenChange,\n  title,\n  description,\n  confirmLabel = 'Delete',\n  cancelLabel = 'Cancel',\n  destructive = false,\n  onConfirm,\n}",ConfirmDialogProps
+    types[1]:
+      - name: ConfirmDialogProps
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface ConfirmDialogProps { open: boolean onOpenChange: (open: boolean) => void title: string description: string confirmLabel?: string cancelLabel..."
+        properties[8]: "open: boolean","onOpenChange: (open: boolean) => void","title: string","description: string","confirmLabel?: string","cancelLabel?: string","destructive?: boolean","onConfirm?: () => void"
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/components/ui/dialog.tsx
+    imports[3]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: React
+        namedImports[0]:
+      - moduleSpecifier: @radix-ui/react-dialog
+        defaultImport: null
+        namespaceImport: DialogPrimitive
+        namedImports[0]:
+      - moduleSpecifier: ../../lib/utils
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: cn
+    exports[7]{name,kind}:
+      Dialog,VariableDeclaration
+      DialogClose,VariableDeclaration
+      DialogContent,FunctionDeclaration
+      DialogDescription,FunctionDeclaration
+      DialogHeader,FunctionDeclaration
+      DialogTitle,FunctionDeclaration
+      DialogTrigger,VariableDeclaration
+    functions[4]:
+      - name: DialogContent
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          "{ className, children, ...props }",React.ComponentProps<typeof DialogPrimitive.Content>
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "DialogContent({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+      - name: DialogDescription
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          "{ className, ...props }",React.ComponentProps<typeof DialogPrimitive.Description>
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+      - name: DialogHeader
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          "{ className, ...props }",React.HTMLAttributes<HTMLDivElement>
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+      - name: DialogTitle
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          "{ className, ...props }",React.ComponentProps<typeof DialogPrimitive.Title>
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[4]{name,exported,defaultExport,kind,propsName,propsType}:
+      DialogContent,true,false,function,"{ className, children, ...props }",React.ComponentProps<typeof DialogPrimitive.Content>
+      DialogDescription,true,false,function,"{ className, ...props }",React.ComponentProps<typeof DialogPrimitive.Description>
+      DialogHeader,true,false,function,"{ className, ...props }",React.HTMLAttributes<HTMLDivElement>
+      DialogTitle,true,false,function,"{ className, ...props }",React.ComponentProps<typeof DialogPrimitive.Title>
+    types[0]:
+    classes[0]:
+    exportedConstants[3]{name,defaultExport}:
+      Dialog,false
+      DialogClose,false
+      DialogTrigger,false
+    exportedHooks[0]:
+  - path: src/renderer/src/components/ui/input.tsx
+    imports[2]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: React
+        namedImports[0]:
+      - moduleSpecifier: ../../lib/utils
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: cn
+    exports[1]{name,kind}:
+      Input,VariableDeclaration
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[1]{name,defaultExport}:
+      Input,false
+    exportedHooks[0]:
+  - path: src/renderer/src/components/ui/switch.tsx
+    imports[2]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: React
+        namedImports[0]:
+      - moduleSpecifier: ../../lib/utils
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: cn
+    exports[1]{name,kind}:
+      Switch,VariableDeclaration
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[1]{name,defaultExport}:
+      Switch,false
+    exportedHooks[0]:
+  - path: src/renderer/src/components/ui/toaster.tsx
+    imports[2]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: React
+        namedImports[0]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[5]: createContext,useCallback,useContext,useRef,useState
+    exports[2]{name,kind}:
+      ToastProvider,FunctionDeclaration
+      useToast,FunctionDeclaration
+    functions[3]:
+      - name: Toaster
+        exported: false
+        defaultExport: false
+        async: false
+        params[0]:
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "Toaster(): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+      - name: ToastProvider
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          "{ children }","{ children: React.ReactNode }"
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "ToastProvider({ children }: { children: React.ReactNode }): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+      - name: useToast
+        exported: true
+        defaultExport: false
+        async: false
+        params[0]:
+        returnType: ToastContextValue
+        signature: "useToast(): ToastContextValue"
+    reactComponents[2]{name,exported,defaultExport,kind,propsName,propsType}:
+      Toaster,false,false,function,null,null
+      ToastProvider,true,false,function,"{ children }","{ children: React.ReactNode }"
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[1]:
+      - name: useToast
+        exported: true
+        defaultExport: false
+        async: false
+        params[0]:
+        returnType: ToastContextValue
+        signature: "useToast(): ToastContextValue"
+  - path: src/renderer/src/features/launch/preferences.ts
+    imports[0]:
+    exports[5]{name,kind}:
+      getLaunchPreferences,FunctionDeclaration
+      getPreferredTerminalId,FunctionDeclaration
+      LaunchPreferences,InterfaceDeclaration
+      promoteLaunchDefault,FunctionDeclaration
+      saveLaunchPreferences,FunctionDeclaration
+    functions[7]:
+      - name: dedupe
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          ids,"string[]"
+        returnType: "string[]"
+        signature: "dedupe(ids: string[]): string[]"
+      - name: getLaunchPreferences
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          validTerminalIds,"string[]"
+        returnType: LaunchPreferences
+        signature: "getLaunchPreferences(validTerminalIds: string[]): LaunchPreferences"
+      - name: getPreferredTerminalId
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          validTerminalIds,"string[]"
+        returnType: string
+        signature: "getPreferredTerminalId(validTerminalIds: string[]): string"
+      - name: getTerminalFallback
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          validTerminalIds,"string[]"
+        returnType: string
+        signature: "getTerminalFallback(validTerminalIds: string[]): string"
+      - name: normalizeLaunchPreferences
+        exported: false
+        defaultExport: false
+        async: false
+        params[2]{name,type}:
+          value,unknown
+          validTerminalIds,"string[]"
+        returnType: LaunchPreferences | null
+        signature: "normalizeLaunchPreferences(value: unknown, validTerminalIds: string[]): LaunchPreferences | null"
+      - name: promoteLaunchDefault
+        exported: true
+        defaultExport: false
+        async: false
+        params[2]{name,type}:
+          preferences,LaunchPreferences
+          terminalId,string
+        returnType: LaunchPreferences
+        signature: "promoteLaunchDefault(preferences: LaunchPreferences, terminalId: string): LaunchPreferences"
+      - name: saveLaunchPreferences
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          preferences,LaunchPreferences
+        returnType: void
+        signature: "saveLaunchPreferences(preferences: LaunchPreferences): void"
+    reactComponents[0]:
+    types[1]:
+      - name: LaunchPreferences
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface LaunchPreferences { favoriteTerminalIds: string[] defaultTerminalId: string }"
+        properties[2]: "favoriteTerminalIds: string[]","defaultTerminalId: string"
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/features/onboarding/ConfirmationStep.tsx
+    imports[5]:
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: ArrowLeft
+      - moduleSpecifier: ../../i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useI18n
+      - moduleSpecifier: ../../components/ui/button
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Button
+      - moduleSpecifier: ../../components/ui/card
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Card
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: OnboardingSummary
+    exports[1]{name,kind}:
+      default,FunctionDeclaration
+    functions[1]:
+      - name: ConfirmationStep
+        exported: true
+        defaultExport: true
+        async: false
+        params[1]{name,type}:
+          "{ summary, onConfirm, onBack }",ConfirmationStepProps
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "ConfirmationStep({ summary, onConfirm, onBack }: ConfirmationStepProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      ConfirmationStep,true,true,function,"{ summary, onConfirm, onBack }",ConfirmationStepProps
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/features/onboarding/FreshStartReviewStep.tsx
+    imports[6]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: useCallback,useEffect,useState
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: ArrowLeft
+      - moduleSpecifier: ../../i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useI18n
+      - moduleSpecifier: ../../components/ui/button
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Button
+      - moduleSpecifier: ../../components/ui/card
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Card
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: ScanResult
+    exports[1]{name,kind}:
+      default,FunctionDeclaration
+    functions[2]:
+      - name: fileName
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          filePath,string
+        returnType: string
+        signature: "fileName(filePath: string): string"
+      - name: FreshStartReviewStep
+        exported: true
+        defaultExport: true
+        async: false
+        params[1]{name,type}:
+          "{\n  onContinue,\n  onBack,\n}",FreshStartReviewStepProps
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "FreshStartReviewStep({\n  onContinue,\n  onBack,\n}: FreshStartReviewStepProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      FreshStartReviewStep,true,true,function,"{\n  onContinue,\n  onBack,\n}",FreshStartReviewStepProps
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/features/onboarding/OnboardingFlow.tsx
+    imports[9]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: useCallback,useState
+      - moduleSpecifier: ./WelcomeStep
+        defaultImport: WelcomeStep
+        namespaceImport: null
+        namedImports[0]:
+      - moduleSpecifier: ./RetroactiveReviewStep
+        defaultImport: RetroactiveReviewStep
+        namespaceImport: null
+        namedImports[0]:
+      - moduleSpecifier: ./FreshStartReviewStep
+        defaultImport: FreshStartReviewStep
+        namespaceImport: null
+        namedImports[0]:
+      - moduleSpecifier: ./ConfirmationStep
+        defaultImport: ConfirmationStep
+        namespaceImport: null
+        namedImports[0]:
+      - moduleSpecifier: ./TerminalPreferencesStep
+        defaultImport: TerminalPreferencesStep
+        namespaceImport: null
+        namedImports[0]:
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: ScanResult,OnboardingSummary,RetroactiveSelection
+      - moduleSpecifier: ../launch/preferences
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: LaunchPreferences
+      - moduleSpecifier: ../launch/preferences
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: saveLaunchPreferences
+    exports[1]{name,kind}:
+      default,FunctionDeclaration
+    functions[2]:
+      - name: computePreviewSummary
+        exported: false
+        defaultExport: false
+        async: false
+        params[2]{name,type}:
+          scanResult,ScanResult
+          selectedIds,"string[]"
+        returnType: OnboardingSummary
+        signature: "computePreviewSummary(scanResult: ScanResult, selectedIds: string[]): OnboardingSummary"
+      - name: OnboardingFlow
+        exported: true
+        defaultExport: true
+        async: false
+        params[1]{name,type}:
+          "{ onComplete }",OnboardingFlowProps
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "OnboardingFlow({ onComplete }: OnboardingFlowProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      OnboardingFlow,true,true,function,"{ onComplete }",OnboardingFlowProps
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/features/onboarding/RetroactiveReviewStep.tsx
+    imports[6]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: useCallback,useEffect,useState
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[5]: ChevronDown,ChevronRight,Eye,EyeOff,ArrowLeft
+      - moduleSpecifier: ../../i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useI18n
+      - moduleSpecifier: ../../components/ui/button
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Button
+      - moduleSpecifier: ../../components/ui/card
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Card
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: RetroactiveSelection,ScanResult,ScannedVariable
+    exports[1]{name,kind}:
+      default,FunctionDeclaration
+    functions[3]:
+      - name: fileName
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          filePath,string
+        returnType: string
+        signature: "fileName(filePath: string): string"
+      - name: groupByFile
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          scanResult,ScanResult
+        returnType: "FileGroup[]"
+        signature: "groupByFile(scanResult: ScanResult): FileGroup[]"
+      - name: RetroactiveReviewStep
+        exported: true
+        defaultExport: true
+        async: false
+        params[1]{name,type}:
+          "{\n  onContinue,\n  onBack,\n}",RetroactiveReviewStepProps
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "RetroactiveReviewStep({\n  onContinue,\n  onBack,\n}: RetroactiveReviewStepProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      RetroactiveReviewStep,true,true,function,"{\n  onContinue,\n  onBack,\n}",RetroactiveReviewStepProps
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/features/onboarding/TerminalPreferencesStep.tsx
+    imports[7]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: useCallback,useEffect,useState
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: ArrowDown,ArrowLeft,ArrowUp
+      - moduleSpecifier: ../../i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useI18n
+      - moduleSpecifier: ../../components/ui/button
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Button
+      - moduleSpecifier: ../../components/ui/card
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Card
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: TerminalApp
+      - moduleSpecifier: ../launch/preferences
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: LaunchPreferences
+    exports[1]{name,kind}:
+      default,FunctionDeclaration
+    functions[2]:
+      - name: moveItem
+        exported: false
+        defaultExport: false
+        async: false
+        params[3]{name,type}:
+          ids,"string[]"
+          fromIndex,number
+          toIndex,number
+        returnType: "string[]"
+        signature: "moveItem(ids: string[], fromIndex: number, toIndex: number): string[]"
+      - name: TerminalPreferencesStep
+        exported: true
+        defaultExport: true
+        async: false
+        params[1]{name,type}:
+          "{\n  onBack,\n  onContinue,\n}",TerminalPreferencesStepProps
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "TerminalPreferencesStep({\n  onBack,\n  onContinue,\n}: TerminalPreferencesStepProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      TerminalPreferencesStep,true,true,function,"{\n  onBack,\n  onContinue,\n}",TerminalPreferencesStepProps
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/features/onboarding/WelcomeStep.tsx
+    imports[3]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useCallback
+      - moduleSpecifier: ../../i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useI18n
+      - moduleSpecifier: ../../components/ui/card
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Card
+    exports[1]{name,kind}:
+      default,FunctionDeclaration
+    functions[1]:
+      - name: WelcomeStep
+        exported: true
+        defaultExport: true
+        async: false
+        params[1]{name,type}:
+          "{ onSelectMode }",WelcomeStepProps
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "WelcomeStep({ onSelectMode }: WelcomeStepProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      WelcomeStep,true,true,function,"{ onSelectMode }",WelcomeStepProps
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/features/secrets/SecretsCenterPanel.tsx
+    imports[1]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: memo
+    exports[1]{name,kind}:
+      SecretsCenterPanel,VariableDeclaration
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[1]{name,defaultExport}:
+      SecretsCenterPanel,false
+    exportedHooks[0]:
+  - path: src/renderer/src/features/secrets/SecretsDetail.tsx
+    imports[6]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: useEffect,useState
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: EnvMetadata
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[4]: Copy,Eye,EyeOff,RotateCw
+      - moduleSpecifier: ../../i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useI18n
+      - moduleSpecifier: ../../components/ui/button
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Button
+      - moduleSpecifier: ../../components/ui/input
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Input
+    exports[1]{name,kind}:
+      SecretsDetail,FunctionDeclaration
+    functions[1]:
+      - name: SecretsDetail
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          "{\n  env,\n  targetName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}",SecretsDetailProps
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "SecretsDetail({\n  env,\n  targetName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}: SecretsDetailProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      SecretsDetail,true,false,function,"{\n  env,\n  targetName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}",SecretsDetailProps
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/features/secrets/SecretsDetailsPanel.tsx
+    imports[5]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: memo
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Trash2
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: EnvMetadata
+      - moduleSpecifier: ../../components/ui/button
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Button
+      - moduleSpecifier: ./SecretsDetail
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: SecretsDetail
+    exports[1]{name,kind}:
+      SecretsDetailsPanel,VariableDeclaration
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[1]{name,defaultExport}:
+      SecretsDetailsPanel,false
+    exportedHooks[0]:
+  - path: src/renderer/src/features/secrets/SecretsPanel.tsx
+    imports[13]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[6]: memo,useCallback,useEffect,useMemo,useRef,useState
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: ReactNode
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[5]: Check,ChevronDown,KeyRound,Plus,Terminal
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: EnvMetadata,TerminalApp
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: UNSUPPORTED_SECRET_BACKEND
+      - moduleSpecifier: ../../i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useI18n
+      - moduleSpecifier: ../launch/preferences
+        defaultImport: null
+        namespaceImport: null
+        namedImports[4]: getLaunchPreferences,getPreferredTerminalId,promoteLaunchDefault,saveLaunchPreferences
+      - moduleSpecifier: ../../components/ui/button
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Button
+      - moduleSpecifier: ../../components/ui/card
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Card
+      - moduleSpecifier: ../../components/ui/dialog
+        defaultImport: null
+        namespaceImport: null
+        namedImports[7]: Dialog,DialogClose,DialogContent,DialogDescription,DialogHeader,DialogTitle,DialogTrigger
+      - moduleSpecifier: ../../components/ui/confirmDialog
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: ConfirmDialog
+      - moduleSpecifier: ../../components/ui/input
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Input
+      - moduleSpecifier: ../../components/ui/toaster
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useToast
+    exports[1]{name,kind}:
+      useSecretsPanel,FunctionDeclaration
+    functions[1]:
+      - name: useSecretsPanel
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          props,SecretsPanelProps
+        returnType: "{ center: import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ..."
+        signature: "useSecretsPanel(props: SecretsPanelProps): { center: import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ..."
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[1]:
+      - name: useSecretsPanel
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          props,SecretsPanelProps
+        returnType: "{ center: import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ..."
+        signature: "useSecretsPanel(props: SecretsPanelProps): { center: import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ..."
+  - path: src/renderer/src/features/spaces/SpacesSidebar.tsx
+    imports[6]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: memo,useRef,useState
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: Layers,Plus,Trash2
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: EnvSpace,EnvTarget
+      - moduleSpecifier: ../../components/ui/confirmDialog
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: ConfirmDialog
+      - moduleSpecifier: ../../components/ui/switch
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Switch
+      - moduleSpecifier: ../../i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useI18n
+    exports[1]{name,kind}:
+      SpacesSidebar,VariableDeclaration
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[1]{name,defaultExport}:
+      SpacesSidebar,false
+    exportedHooks[0]:
+  - path: src/renderer/src/i18n/index.tsx
+    imports[5]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[5]: createContext,useCallback,useContext,useEffect,useState
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: ReactNode
+      - moduleSpecifier: ./locales/en.json
+        defaultImport: en
+        namespaceImport: null
+        namedImports[0]:
+      - moduleSpecifier: ./locales/es.json
+        defaultImport: es
+        namespaceImport: null
+        namedImports[0]:
+      - moduleSpecifier: ./locales/pt.json
+        defaultImport: pt
+        namespaceImport: null
+        namedImports[0]:
+    exports[3]{name,kind}:
+      I18nProvider,FunctionDeclaration
+      Locale,TypeAliasDeclaration
+      useI18n,FunctionDeclaration
+    functions[5]:
+      - name: getNestedValue
+        exported: false
+        defaultExport: false
+        async: false
+        params[2]{name,type}:
+          obj,"Record<string, unknown>"
+          path,string
+        returnType: string
+        signature: "getNestedValue(obj: Record<string, unknown>, path: string): string"
+      - name: getStoredLocale
+        exported: false
+        defaultExport: false
+        async: false
+        params[0]:
+        returnType: Locale
+        signature: "getStoredLocale(): Locale"
+      - name: I18nProvider
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          "{ children }","{ children: ReactNode }"
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "I18nProvider({ children }: { children: ReactNode }): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+      - name: storeLocale
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          newLocale,Locale
+        returnType: void
+        signature: "storeLocale(newLocale: Locale): void"
+      - name: useI18n
+        exported: true
+        defaultExport: false
+        async: false
+        params[0]:
+        returnType: I18nContextValue
+        signature: "useI18n(): I18nContextValue"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      I18nProvider,true,false,function,"{ children }","{ children: ReactNode }"
+    types[1]:
+      - name: Locale
+        kind: typeAlias
+        exported: true
+        defaultExport: false
+        text: export type Locale = 'en' | 'es' | 'pt'
+        properties[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[1]:
+      - name: useI18n
+        exported: true
+        defaultExport: false
+        async: false
+        params[0]:
+        returnType: I18nContextValue
+        signature: "useI18n(): I18nContextValue"
+  - path: src/renderer/src/lib/utils.ts
+    imports[2]:
+      - moduleSpecifier: clsx
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: clsx,type ClassValue
+      - moduleSpecifier: tailwind-merge
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: twMerge
+    exports[1]{name,kind}:
+      cn,FunctionDeclaration
+    functions[1]:
+      - name: cn
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          inputs,"ClassValue[]"
+        returnType: string
+        signature: "cn(inputs: ClassValue[]): string"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/shared/ipc.ts
+    imports[1]:
+      - moduleSpecifier: ./models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[9]: EnvMetadata,EnvSpace,EnvTarget,OnboardingStatus,RetroactiveSelection,ScanResult,SecretActionResult,OnboardingSummary,TerminalApp
+    exports[2]{name,kind}:
+      BroverAPI,InterfaceDeclaration
+      RetroactivePayload,InterfaceDeclaration
+    functions[0]:
+    reactComponents[0]:
+    types[2]:
+      - name: RetroactivePayload
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface RetroactivePayload { scanResult: ScanResult selection: RetroactiveSelection }"
+        properties[2]: "scanResult: ScanResult","selection: RetroactiveSelection"
+      - name: BroverAPI
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface BroverAPI { listEnvs: () => Promise<EnvMetadata[]> createEnv: (payload: { name: string; profile: string; value: string; description?: string..."
+        properties[25]: "listEnvs: () => Promise<EnvMetadata[]>","createEnv: (payload: { name: string; profile: string; value: string; description?: string }) => Promise<SecretActionResult>","revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>","copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>","updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","updateEnvConfirmed: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>","listSpaces: () => Promise<EnvSpace[]>","createSpace: (payload: { name: string; dotfilePath: string }) => Promise<EnvSpace[]>","renameSpace: (payload: { spaceId: string; name: string }) => Promise<EnvSpace[]>","deleteSpace: (spaceId: string) => Promise<EnvSpace[]>","toggleSpaceTiedSecrets: (spaceId: string) => Promise<EnvSpace[]>","pickDotfile: () => Promise<{ canceled: boolean; filePath: string | null }>","listTargets: (spaceId: string) => Promise<EnvTarget[]>","createTarget: (payload: { spaceId: string; name: string }) => Promise<EnvTarget[]>","deleteTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>","reorderTargets: (payload: { spaceId: string; orderedTargetIds: string[] }) => Promise<EnvTarget[]>","renameTarget: (payload: { targetId: string; name: string }) => Promise<EnvTarget[]>","secretExists: (profile: string, name: string) => Promise<boolean>","setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>","setActiveTarget: (payload: { spaceId: string; targetId: string }) => Promise<EnvTarget[]>","launch: { terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }> listTerminals: () => Promise<{ terminals: TerminalApp[] }> }","onboarding: { getStatus: () => Promise<OnboardingStatus> scanDotfiles: () => Promise<ScanResult> runRetroactive: (payload: RetroactivePayload) => Promise<Onb..."
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/shared/models.ts
+    imports[0]:
+    exports[14]{name,kind}:
+      EnvMetadata,InterfaceDeclaration
+      EnvSpace,InterfaceDeclaration
+      EnvTarget,InterfaceDeclaration
+      OnboardingStatus,InterfaceDeclaration
+      OnboardingSummary,InterfaceDeclaration
+      RetroactiveSelection,InterfaceDeclaration
+      ScanFile,InterfaceDeclaration
+      ScannedVariable,InterfaceDeclaration
+      ScanResult,InterfaceDeclaration
+      ScanWarning,InterfaceDeclaration
+      SecretActionResult,InterfaceDeclaration
+      SpaceKind,TypeAliasDeclaration
+      TerminalApp,InterfaceDeclaration
+      UNSUPPORTED_SECRET_BACKEND,VariableDeclaration
+    functions[0]:
+    reactComponents[0]:
+    types[13]:
+      - name: EnvMetadata
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface EnvMetadata { id: string name: string profile: string enabled: boolean description?: string updatedAt: string }"
+        properties[6]: "id: string","name: string","profile: string","enabled: boolean","description?: string","updatedAt: string"
+      - name: SecretActionResult
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface SecretActionResult { ok: boolean value?: string error?: string expiresAt?: number | null }"
+        properties[4]: "ok: boolean","value?: string","error?: string","expiresAt?: number | null"
+      - name: EnvSpace
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface EnvSpace { id: string name: string kind: SpaceKind dotfilePath: string tiedSecrets: boolean updatedAt: string }"
+        properties[6]: "id: string","name: string","kind: SpaceKind","dotfilePath: string","tiedSecrets: boolean","updatedAt: string"
+      - name: TerminalApp
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface TerminalApp { id: string name: string bundlePath: string installed: boolean }"
+        properties[4]: "id: string","name: string","bundlePath: string","installed: boolean"
+      - name: EnvTarget
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface EnvTarget { id: string spaceId: string name: string color: string isActive: boolean updatedAt: string }"
+        properties[6]: "id: string","spaceId: string","name: string","color: string","isActive: boolean","updatedAt: string"
+      - name: OnboardingStatus
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface OnboardingStatus { completedAt?: string }"
+        properties[1]: "completedAt?: string"
+      - name: ScannedVariable
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface ScannedVariable { id: string name: string value: string sourceFile: string }"
+        properties[4]: "id: string","name: string","value: string","sourceFile: string"
+      - name: ScanFile
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface ScanFile { filePath: string variables: ScannedVariable[] }"
+        properties[2]: "filePath: string","variables: ScannedVariable[]"
+      - name: ScanWarning
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface ScanWarning { filePath: string line?: number message: string }"
+        properties[3]: "filePath: string","line?: number","message: string"
+      - name: ScanResult
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface ScanResult { files: ScanFile[] warnings: ScanWarning[] }"
+        properties[2]: "files: ScanFile[]","warnings: ScanWarning[]"
+      - name: RetroactiveSelection
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface RetroactiveSelection { selectedSensitiveIds: string[] }"
+        properties[1]: "selectedSensitiveIds: string[]"
+      - name: OnboardingSummary
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface OnboardingSummary { importedSensitive: number removedFromDotfiles: number ignoredNonSensitive: number ignoredWithReason: { filePath: string;..."
+        properties[4]: "importedSensitive: number","removedFromDotfiles: number","ignoredNonSensitive: number","ignoredWithReason: { filePath: string; reason: string }[]"
+      - name: SpaceKind
+        kind: typeAlias
+        exported: true
+        defaultExport: false
+        text: export type SpaceKind = 'dotfile'
+        properties[0]:
+    classes[0]:
+    exportedConstants[1]{name,defaultExport,literalValue}:
+      UNSUPPORTED_SECRET_BACKEND,false,UNSUPPORTED_SECRET_BACKEND
+    exportedHooks[0]:
+  - path: src/shared/validators.ts
+    imports[0]:
+    exports[1]{name,kind}:
+      isValidEnvName,FunctionDeclaration
+    functions[1]:
+      - name: isValidEnvName
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          value,string
+        returnType: boolean
+        signature: "isValidEnvName(value: string): boolean"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: tailwind.config.ts
+    imports[1]:
+      - moduleSpecifier: tailwindcss
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Config
+    exports[1]{name,kind}:
+      default,SatisfiesExpression
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: tests/bun.setup.ts
+    imports[1]:
+      - moduleSpecifier: jsdom
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: JSDOM
+    exports[0]:
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: vite.config.ts
+    imports[2]:
+      - moduleSpecifier: vite
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: defineConfig
+      - moduleSpecifier: @vitejs/plugin-react
+        defaultImport: react
+        namespaceImport: null
+        namedImports[0]:
+    exports[1]{name,kind}:
+      default,CallExpression
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: vitest.config.ts
+    imports[1]:
+      - moduleSpecifier: vitest/config
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: defineConfig
+    exports[1]{name,kind}:
+      default,CallExpression
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+warnings[0]:

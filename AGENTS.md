@@ -98,6 +98,7 @@ Core modules:
 - `onboardingStateStore` — persists onboarding completion flag in local config; subsequent launches skip onboarding.
 
 IPC contracts under `onboarding.*` namespace:
+
 - `onboarding:get-status` — returns whether onboarding has been completed.
 - `onboarding:scan-dotfiles` — triggers scanner, returns grouped env vars per file plus scan warnings.
 - `onboarding:run-retroactive` — receives selected sensitive ids, imports to Keychain, rewrites files to remove matching entries, and returns summary counts.
@@ -121,6 +122,17 @@ npm run test
 npm run test:coverage
 npm run test:e2e
 ```
+
+---
+
+## Code context
+
+For broad/multi-file discovery, consult the auto-generated symbol map:
+
+- TOON snapshot: `.tscontext/code-context.toon` (regenerate with `tscontext extract`).
+- Human summary: `.tscontext/code-context.md`.
+- Use for metadata-friendly questions (imports/exports/types/components).
+- For literal-sensitive answers, verify in source. Treat snapshot as potentially stale until regenerated.
 
 ---
 
