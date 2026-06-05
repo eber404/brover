@@ -42,17 +42,12 @@ export async function loadTerminalIconDataUrl(
     const bundleIconPath = join(bundlePath, 'Contents', 'Resources', normalizeIconFileName(bundleIconFileName))
     if (deps.fileExists(bundleIconPath)) {
       try {
-        const bundleIconFile = await deps.getFileIcon(bundleIconPath)
-        if (!bundleIconFile.isEmpty()) {
-          return bundleIconFile.toDataURL()
+        const bundleIcon = deps.createImageFromPath(bundleIconPath)
+        if (!bundleIcon.isEmpty()) {
+          return bundleIcon.toDataURL()
         }
       } catch {
-        // Fall through to createFromPath.
-      }
-
-      const bundleIcon = deps.createImageFromPath(bundleIconPath)
-      if (!bundleIcon.isEmpty()) {
-        return bundleIcon.toDataURL()
+        // Fall through to app bundle file icon.
       }
     }
   }
