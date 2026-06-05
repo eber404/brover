@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react'
 import WelcomeStep from './WelcomeStep'
 import RetroactiveReviewStep from './RetroactiveReviewStep'
-import FreshStartReviewStep from './FreshStartReviewStep'
 import ConfirmationStep from './ConfirmationStep'
 import TerminalPreferencesStep from './TerminalPreferencesStep'
 import type { ScanResult, OnboardingSummary, RetroactiveSelection } from '../../../../shared/models'
 import type { LaunchPreferences } from '../launch/preferences'
 import { saveLaunchPreferences } from '../launch/preferences'
+import { Card } from '../../components/ui/card'
+import { Button } from '../../components/ui/button'
 
 interface OnboardingFlowProps {
   onComplete: () => void
@@ -23,8 +24,7 @@ function computePreviewSummary(scanResult: ScanResult, selectedIds: string[]): O
 }
 
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
-  const [step, setStep] = useState<'welcome' | 'review' | 'fresh-start-review' | 'confirmation' | 'terminal-preferences'>('welcome')
-  const [scanResult, setScanResult] = useState<ScanResult | null>(null)
+  const [step, setStep] = useState<'welcome' | 'review' | 'fresh-start-loading' | 'confirmation' | 'terminal-preferences'>('welcome')
   const [retroactivePayload, setRetroactivePayload] = useState<{
     scanResult: ScanResult
     selection: RetroactiveSelection
@@ -33,34 +33,41 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [terminalPreferencesOrigin, setTerminalPreferencesOrigin] = useState<
     'fresh-start' | 'retroactive' | null
   >(null)
+  const [freshStartError, setFreshStartError] = useState<string | null>(null)
+
+  const startFreshStart = useCallback(async () => {
+    setFreshStartError(null)
+    setStep('fresh-start-loading')
+
+    try {
+      const nextScanResult = await window.brover.onboarding.scanDotfiles()
+      setFreshStartPayload({ scanResult: nextScanResult })
+      setTerminalPreferencesOrigin('fresh-start')
+      setStep('terminal-preferences')
+    } catch (err) {
+      setFreshStartError(err instanceof Error ? err.message : String(err))
+    }
+  }, [])
 
   const handleModeSelect = useCallback(
     (selectedMode: 'retroactive' | 'fresh-start') => {
       setFreshStartPayload(null)
       setRetroactivePayload(null)
       setTerminalPreferencesOrigin(null)
+      setFreshStartError(null)
       if (selectedMode === 'retroactive') {
         setStep('review')
-      } else {
-        setStep('fresh-start-review')
+        return
       }
-    },
-    []
-  )
 
-  const handleFreshStartContinue = useCallback(
-    async (payload: { scanResult: ScanResult }) => {
-      setFreshStartPayload(payload)
-      setTerminalPreferencesOrigin('fresh-start')
-      setStep('terminal-preferences')
+      void startFreshStart()
     },
-    []
+    [startFreshStart]
   )
 
   const handleRetroactiveContinue = useCallback(
     (payload: { scanResult: ScanResult; selection: RetroactiveSelection }) => {
       setRetroactivePayload(payload)
-      setScanResult(payload.scanResult)
       setStep('confirmation')
     },
     []
@@ -92,7 +99,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const handleTerminalPreferencesBack = useCallback(() => {
     if (terminalPreferencesOrigin === 'fresh-start') {
-      setStep('fresh-start-review')
+      setFreshStartPayload(null)
+      setTerminalPreferencesOrigin(null)
+      setStep('welcome')
       return
     }
     setStep('confirmation')
@@ -114,7 +123,29 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const content = (() => {
     if (step === 'welcome') return <WelcomeStep onSelectMode={handleModeSelect} />
     if (step === 'review') return <RetroactiveReviewStep onContinue={handleRetroactiveContinue} onBack={handleBack} />
-    if (step === 'fresh-start-review') return <FreshStartReviewStep onContinue={handleFreshStartContinue} onBack={handleBack} />
+    if (step === 'fresh-start-loading') {
+      if (freshStartError) {
+        return (
+          <div className="flex min-h-screen items-center justify-center bg-surface-base p-6">
+            <Card className="flex w-full max-w-md flex-col items-center gap-4 p-8 text-center">
+              <p className="text-rose-status">{freshStartError}</p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleBack}>
+                  Back
+                </Button>
+                <Button onClick={() => void startFreshStart()}>Retry</Button>
+              </div>
+            </Card>
+          </div>
+        )
+      }
+
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-surface-base">
+          <p className="text-text-muted">Preparing fresh start...</p>
+        </div>
+      )
+    }
     if (step === 'confirmation') {
       return (
         <ConfirmationStep

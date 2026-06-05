@@ -1,4 +1,4 @@
-generatedAt: "2026-06-05T00:14:26.682Z"
+generatedAt: "2026-06-05T20:44:46.292Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 46
@@ -76,6 +76,45 @@ files[46]:
     classes[0]:
     exportedConstants[0]:
     exportedHooks[0]:
+  - path: src/main/envMutationFlow.ts
+    imports[1]:
+      - moduleSpecifier: ../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: SecretActionResult
+    exports[2]{name,kind}:
+      runDeleteMutation,FunctionDeclaration
+      runUpdateMutation,FunctionDeclaration
+    functions[3]:
+      - name: ok
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          value,string
+        returnType: SecretActionResult
+        signature: "ok(value: string): SecretActionResult"
+      - name: runDeleteMutation
+        exported: true
+        defaultExport: false
+        async: true
+        params[1]{name,type}:
+          deps,DeleteMutationDeps
+        returnType: Promise<SecretActionResult>
+        signature: "async runDeleteMutation(deps: DeleteMutationDeps): Promise<SecretActionResult>"
+      - name: runUpdateMutation
+        exported: true
+        defaultExport: false
+        async: true
+        params[1]{name,type}:
+          deps,UpdateMutationDeps
+        returnType: Promise<SecretActionResult>
+        signature: "async runUpdateMutation(deps: UpdateMutationDeps): Promise<SecretActionResult>"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
   - path: src/main/index.ts
     imports[15]:
       - moduleSpecifier: electron
@@ -86,10 +125,6 @@ files[46]:
         defaultImport: null
         namespaceImport: null
         namedImports[1]: join
-      - moduleSpecifier: "node:os"
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: homedir
       - moduleSpecifier: "node:fs"
         defaultImport: null
         namespaceImport: null
@@ -126,14 +161,18 @@ files[46]:
         defaultImport: null
         namespaceImport: null
         namedImports[1]: createTerminalLauncher
+      - moduleSpecifier: ./envMutationFlow
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: runDeleteMutation,runUpdateMutation
+      - moduleSpecifier: ./terminalIconLoader
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: loadTerminalIconDataUrl
       - moduleSpecifier: ./devSession
         defaultImport: null
         namespaceImport: null
         namedImports[1]: getDevStorageClearOptions
-      - moduleSpecifier: ./systemDialogs
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: buildDotfileOpenDialogOptions
       - moduleSpecifier: ./secretStoreFactory
         defaultImport: null
         namespaceImport: null
@@ -206,7 +245,16 @@ files[46]:
     exports[2]{name,kind}:
       runFreshStartImport,FunctionDeclaration
       runRetroactiveImport,FunctionDeclaration
-    functions[2]:
+    functions[3]:
+      - name: createTargetForFile
+        exported: false
+        defaultExport: false
+        async: true
+        params[2]{name,type}:
+          store,BroverStore
+          filePath,string
+        returnType: Promise<string>
+        signature: "async createTargetForFile(store: BroverStore, filePath: string): Promise<string>"
       - name: runFreshStartImport
         exported: true
         defaultExport: false
@@ -351,7 +399,7 @@ files[46]:
       - moduleSpecifier: "node:path"
         defaultImport: null
         namespaceImport: null
-        namedImports[2]: basename,dirname
+        namedImports[1]: dirname
       - moduleSpecifier: "node:crypto"
         defaultImport: null
         namespaceImport: null
@@ -472,7 +520,7 @@ files[46]:
       - name: BroverStore
         exported: true
         defaultExport: false
-        publicMethods[23]:
+        publicMethods[18]:
           - name: getOnboardingStatus
             async: true
             params[0]:
@@ -526,35 +574,6 @@ files[46]:
               id,string
             returnType: "Promise<EnvMetadata[]>"
             signature: "async toggleEnvEnabled(id: string): Promise<EnvMetadata[]>"
-          - name: listSpaces
-            async: true
-            params[0]:
-            returnType: "Promise<CompatSpace[]>"
-            signature: "async listSpaces(): Promise<CompatSpace[]>"
-          - name: createSpace
-            async: true
-            params[1]{name,type}:
-              payload,"{ name: string; dotfilePath: string }"
-            returnType: "Promise<CompatSpace[]>"
-            signature: "async createSpace(payload: { name: string; dotfilePath: string }): Promise<CompatSpace[]>"
-          - name: renameSpace
-            async: true
-            params[1]{name,type}:
-              payload,"{ spaceId: string; name: string }"
-            returnType: "Promise<CompatSpace[]>"
-            signature: "async renameSpace(payload: { spaceId: string; name: string }): Promise<CompatSpace[]>"
-          - name: deleteSpace
-            async: true
-            params[1]{name,type}:
-              spaceId,string
-            returnType: "Promise<CompatSpace[]>"
-            signature: "async deleteSpace(spaceId: string): Promise<CompatSpace[]>"
-          - name: toggleSpaceTiedSecrets
-            async: true
-            params[1]{name,type}:
-              spaceId,string
-            returnType: "Promise<CompatSpace[]>"
-            signature: "async toggleSpaceTiedSecrets(spaceId: string): Promise<CompatSpace[]>"
           - name: getTiedTargets
             async: true
             params[0]:
@@ -610,23 +629,56 @@ files[46]:
             signature: "async setActiveTarget(payload: { targetId: string; spaceId?: string }): Promise<EnvTarget[]>"
     exportedConstants[0]:
     exportedHooks[0]:
-  - path: src/main/systemDialogs.ts
-    imports[1]:
+  - path: src/main/terminalIconLoader.ts
+    imports[5]:
+      - moduleSpecifier: "node:util"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: promisify
+      - moduleSpecifier: "node:child_process"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: execFile
+      - moduleSpecifier: "node:fs"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: existsSync
+      - moduleSpecifier: "node:path"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: join
       - moduleSpecifier: electron
         defaultImport: null
         namespaceImport: null
-        namedImports[1]: OpenDialogOptions
+        namedImports[3]: app,nativeImage,type NativeImage
     exports[1]{name,kind}:
-      buildDotfileOpenDialogOptions,FunctionDeclaration
-    functions[1]:
-      - name: buildDotfileOpenDialogOptions
+      loadTerminalIconDataUrl,FunctionDeclaration
+    functions[3]:
+      - name: loadTerminalIconDataUrl
         exported: true
+        defaultExport: false
+        async: true
+        params[2]{name,type}:
+          bundlePath,string
+          deps,TerminalIconLoaderDeps
+        returnType: Promise<string | undefined>
+        signature: "async loadTerminalIconDataUrl(bundlePath: string, deps: TerminalIconLoaderDeps): Promise<string | undefined>"
+      - name: normalizeIconFileName
+        exported: false
         defaultExport: false
         async: false
         params[1]{name,type}:
-          homePath,string
-        returnType: Electron.OpenDialogOptions
-        signature: "buildDotfileOpenDialogOptions(homePath: string): Electron.OpenDialogOptions"
+          iconFileName,string
+        returnType: string
+        signature: "normalizeIconFileName(iconFileName: string): string"
+      - name: readBundleIconFileName
+        exported: false
+        defaultExport: false
+        async: true
+        params[1]{name,type}:
+          bundlePath,string
+        returnType: Promise<string | null>
+        signature: "async readBundleIconFileName(bundlePath: string): Promise<string | null>"
     reactComponents[0]:
     types[0]:
     classes[0]:
@@ -1194,59 +1246,8 @@ files[46]:
     classes[0]:
     exportedConstants[0]:
     exportedHooks[0]:
-  - path: src/renderer/src/features/onboarding/FreshStartReviewStep.tsx
-    imports[6]:
-      - moduleSpecifier: react
-        defaultImport: null
-        namespaceImport: null
-        namedImports[3]: useCallback,useEffect,useState
-      - moduleSpecifier: lucide-react
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: ArrowLeft
-      - moduleSpecifier: ../../i18n
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: useI18n
-      - moduleSpecifier: ../../components/ui/button
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: Button
-      - moduleSpecifier: ../../components/ui/card
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: Card
-      - moduleSpecifier: ../../../../shared/models
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: ScanResult
-    exports[1]{name,kind}:
-      default,FunctionDeclaration
-    functions[2]:
-      - name: fileName
-        exported: false
-        defaultExport: false
-        async: false
-        params[1]{name,type}:
-          filePath,string
-        returnType: string
-        signature: "fileName(filePath: string): string"
-      - name: FreshStartReviewStep
-        exported: true
-        defaultExport: true
-        async: false
-        params[1]{name,type}:
-          "{\n  onContinue,\n  onBack,\n}",FreshStartReviewStepProps
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "FreshStartReviewStep({\n  onContinue,\n  onBack,\n}: FreshStartReviewStepProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
-      FreshStartReviewStep,true,true,function,"{\n  onContinue,\n  onBack,\n}",FreshStartReviewStepProps
-    types[0]:
-    classes[0]:
-    exportedConstants[0]:
-    exportedHooks[0]:
   - path: src/renderer/src/features/onboarding/OnboardingFlow.tsx
-    imports[9]:
+    imports[10]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
@@ -1257,10 +1258,6 @@ files[46]:
         namedImports[0]:
       - moduleSpecifier: ./RetroactiveReviewStep
         defaultImport: RetroactiveReviewStep
-        namespaceImport: null
-        namedImports[0]:
-      - moduleSpecifier: ./FreshStartReviewStep
-        defaultImport: FreshStartReviewStep
         namespaceImport: null
         namedImports[0]:
       - moduleSpecifier: ./ConfirmationStep
@@ -1283,6 +1280,14 @@ files[46]:
         defaultImport: null
         namespaceImport: null
         namedImports[1]: saveLaunchPreferences
+      - moduleSpecifier: ../../components/ui/card
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Card
+      - moduleSpecifier: ../../components/ui/button
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Button
     exports[1]{name,kind}:
       default,FunctionDeclaration
     functions[2]:
@@ -1655,11 +1660,15 @@ files[46]:
       SpacesSidebar,false
     exportedHooks[0]:
   - path: src/renderer/src/features/terminals/TerminalSidebar.tsx
-    imports[3]:
+    imports[6]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
-        namedImports[4]: memo,useEffect,useMemo,useState
+        namedImports[5]: memo,useEffect,useMemo,useRef,useState
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Plus
       - moduleSpecifier: ../../../../shared/models
         defaultImport: null
         namespaceImport: null
@@ -1667,7 +1676,15 @@ files[46]:
       - moduleSpecifier: ../launch/preferences
         defaultImport: null
         namespaceImport: null
-        namedImports[3]: getLaunchPreferences,promoteLaunchDefault,saveLaunchPreferences
+        namedImports[4]: getLaunchPreferences,promoteLaunchDefault,saveLaunchPreferences,type LaunchPreferences
+      - moduleSpecifier: ../../i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useI18n
+      - moduleSpecifier: ../../components/ui/toaster
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useToast
     exports[1]{name,kind}:
       TerminalSidebar,VariableDeclaration
     functions[0]:
@@ -1811,7 +1828,7 @@ files[46]:
         exported: true
         defaultExport: false
         text: "export interface BroverAPI { listEnvs: () => Promise<EnvMetadata[]> createEnv: (payload: { name: string; profile: string; value: string; description?: string..."
-        properties[22]: "listEnvs: () => Promise<EnvMetadata[]>","createEnv: (payload: { name: string; profile: string; value: string; description?: string }) => Promise<SecretActionResult>","revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>","copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>","updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","updateEnvConfirmed: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>","getTiedTargets: () => Promise<boolean>","setTiedTargets: (tiedTargets: boolean) => Promise<boolean>","pickDotfile: () => Promise<{ canceled: boolean; filePath: string | null }>","listTargets: () => Promise<EnvTarget[]>","createTarget: (payload: { name: string }) => Promise<EnvTarget[]>","deleteTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>","reorderTargets: (payload: { orderedTargetIds: string[] }) => Promise<EnvTarget[]>","renameTarget: (payload: { targetId: string; name: string }) => Promise<EnvTarget[]>","secretExists: (profile: string, name: string) => Promise<boolean>","setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>","setActiveTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>","launch: { terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }> listTerminals: () => Promise<{ terminals: TerminalApp[] }> }","onboarding: { getStatus: () => Promise<OnboardingStatus> scanDotfiles: () => Promise<ScanResult> runRetroactive: (payload: RetroactivePayload) => Promise<Onb..."
+        properties[21]: "listEnvs: () => Promise<EnvMetadata[]>","createEnv: (payload: { name: string; profile: string; value: string; description?: string }) => Promise<SecretActionResult>","revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>","copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>","updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","updateEnvConfirmed: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>","getTiedTargets: () => Promise<boolean>","setTiedTargets: (tiedTargets: boolean) => Promise<boolean>","listTargets: () => Promise<EnvTarget[]>","createTarget: (payload: { name: string }) => Promise<EnvTarget[]>","deleteTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>","reorderTargets: (payload: { orderedTargetIds: string[] }) => Promise<EnvTarget[]>","renameTarget: (payload: { targetId: string; name: string }) => Promise<EnvTarget[]>","secretExists: (profile: string, name: string) => Promise<boolean>","setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>","setActiveTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>","launch: { terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }> listTerminals: () => Promise<{ terminals: TerminalApp[] }> pickT...","onboarding: { getStatus: () => Promise<OnboardingStatus> scanDotfiles: () => Promise<ScanResult> runRetroactive: (payload: RetroactivePayload) => Promise<Onb..."
     classes[0]:
     exportedConstants[0]:
     exportedHooks[0]:

@@ -11,7 +11,7 @@ async function tempDir(): Promise<string> {
 }
 
 describe('runRetroactiveImport', () => {
-  it('creates spaces from dotfiles', async () => {
+  it('creates targets from dotfiles', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -31,14 +31,9 @@ describe('runRetroactiveImport', () => {
     const summary = await runRetroactiveImport(store, scanResult, selection)
     expect(summary.importedSensitive).toBe(1)
 
-    const spaces = await store.listSpaces()
-    const space = spaces.find(s => s.name === '.env')
-    expect(space).toBeDefined()
-    expect(space!.dotfilePath).toBe(join(root, '.env'))
-
-    const targets = await store.listTargets(space!.id)
+    const targets = await store.listTargets()
     expect(targets).toHaveLength(1)
-    expect(targets[0].name).toBe('default')
+    expect(targets[0]?.name).toBe('.env')
   })
 
   it('writes sensitive values to SecretStore', async () => {
@@ -63,10 +58,8 @@ describe('runRetroactiveImport', () => {
 
     await runRetroactiveImport(store, scanResult, selection)
 
-    const spaces = await store.listSpaces()
-    const space = spaces.find(s => s.name === '.env')!
-    const targets = await store.listTargets(space.id)
-    const target = targets[0]
+    const targets = await store.listTargets()
+    const target = targets.find((item) => item.name === '.env')!
 
     const apiKey = await store.revealEnv(target.id, 'API_KEY')
     expect(apiKey).toBe('abc123')
@@ -127,16 +120,14 @@ describe('runRetroactiveImport', () => {
     expect(summary.importedSensitive).toBe(1)
     expect(summary.ignoredNonSensitive).toBe(1)
 
-    const spaces = await store.listSpaces()
-    const space = spaces.find(s => s.name === '.env')!
-    const targets = await store.listTargets(space.id)
-    const target = targets[0]
+    const targets = await store.listTargets()
+    const target = targets.find((item) => item.name === '.env')!
 
     const revealed = await store.revealEnv(target.id, 'PUBLIC')
     expect(revealed).toBeNull()
   })
 
-  it('keeps duplicate names as separate spaces', async () => {
+  it('keeps duplicate names as separate targets', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -167,20 +158,16 @@ describe('runRetroactiveImport', () => {
     const summary = await runRetroactiveImport(store, scanResult, selection)
     expect(summary.importedSensitive).toBe(2)
 
-    const spaces = await store.listSpaces()
-    const dotfileSpaces = spaces.filter(s => s.kind === 'dotfile')
-    expect(dotfileSpaces).toHaveLength(2)
+    const targets = await store.listTargets()
+    expect(targets).toHaveLength(2)
 
-    const zshrcSpace = dotfileSpaces.find(s => s.name === '.zshrc')!
-    const bashrcSpace = dotfileSpaces.find(s => s.name === '.bashrc')!
+    const zshrcTarget = targets.find(s => s.name === '.zshrc')!
+    const bashrcTarget = targets.find(s => s.name === '.bashrc')!
 
-    const zshrcTargets = await store.listTargets(zshrcSpace.id)
-    const bashrcTargets = await store.listTargets(bashrcSpace.id)
-
-    const zshValue = await store.revealEnv(zshrcTargets[0].id, 'TOKEN')
+    const zshValue = await store.revealEnv(zshrcTarget.id, 'TOKEN')
     expect(zshValue).toBe('secret1')
 
-    const bashValue = await store.revealEnv(bashrcTargets[0].id, 'TOKEN')
+    const bashValue = await store.revealEnv(bashrcTarget.id, 'TOKEN')
     expect(bashValue).toBe('secret2')
   })
 
@@ -246,7 +233,7 @@ describe('runRetroactiveImport', () => {
 })
 
 describe('runFreshStartImport', () => {
-  it('creates spaces for files with parseable env entries', async () => {
+  it('creates a single default target for fresh start', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -268,13 +255,9 @@ describe('runFreshStartImport', () => {
     const summary = await runFreshStartImport(store, scanResult)
     expect(summary.importedSensitive).toBe(0)
 
-    const spaces = await store.listSpaces()
-    const space = spaces.find(s => s.name === '.env')
-    expect(space).toBeDefined()
-    expect(space!.dotfilePath).toBe(join(root, '.env'))
-
-    const targets = await store.listTargets(space!.id)
+    const targets = await store.listTargets()
     expect(targets).toHaveLength(1)
+    expect(targets[0]?.name).toBe('default')
   })
 
   it('does not import any variable values', async () => {
@@ -298,10 +281,8 @@ describe('runFreshStartImport', () => {
 
     await runFreshStartImport(store, scanResult)
 
-    const spaces = await store.listSpaces()
-    const space = spaces.find(s => s.name === '.env')!
-    const targets = await store.listTargets(space.id)
-    const target = targets[0]
+    const targets = await store.listTargets()
+    const target = targets.find((item) => item.name === 'default')!
 
     const apiKey = await store.revealEnv(target.id, 'API_KEY')
     expect(apiKey).toBeNull()
@@ -338,7 +319,7 @@ describe('runFreshStartImport', () => {
     })
   })
 
-  it('keeps duplicate env names across files as separate spaces', async () => {
+  it('does not create multiple targets for multiple scanned files in fresh start', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -367,12 +348,12 @@ describe('runFreshStartImport', () => {
 
     await runFreshStartImport(store, scanResult)
 
-    const spaces = await store.listSpaces()
-    const dotfileSpaces = spaces.filter(s => s.kind === 'dotfile')
-    expect(dotfileSpaces).toHaveLength(2)
+    const targets = await store.listTargets()
+    expect(targets).toHaveLength(1)
+    expect(targets[0]?.name).toBe('default')
   })
 
-  it('does not create spaces for files without parseable env entries', async () => {
+  it('does not create targets for files without parseable env entries', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -390,9 +371,8 @@ describe('runFreshStartImport', () => {
 
     await runFreshStartImport(store, scanResult)
 
-    const spaces = await store.listSpaces()
-    const dotfileSpaces = spaces.filter(s => s.kind === 'dotfile')
-    expect(dotfileSpaces).toHaveLength(0)
+    const targets = await store.listTargets()
+    expect(targets).toHaveLength(0)
   })
 
   it('throws if onboarding already completed', async () => {

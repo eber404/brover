@@ -85,20 +85,12 @@
       "hide": "Hide",
       "selectVariable": "Select as sensitive"
     },
-    "freshStartReview": {
-      "title": "Fresh Start — Select dotfiles",
-      "subtitle": "Each selected dotfile becomes a target in Brover.",
-      "loading": "Scanning dotfiles...",
-      "error": "Failed to scan dotfiles",
-      "noFiles": "No dotfiles found",
-      "continue": "Start managing secrets →"
-    },
     "terminalPreferences": {
       "title": "Choose launch terminals",
       "subtitle": "Pick favorites, set order, and use first item as default.",
       "loading": "Loading installed terminals...",
       "error": "Failed to load installed terminals",
-      "continue": "Save preferences and finish"
+      "continue": "Start managing secrets →"
     }
   },
   "spaces": {
@@ -107,7 +99,10 @@
   "launch": {
     "launch": "Launch",
     "openMenu": "Open launch menu",
-    "closeMenu": "Close launch menu"
+    "closeMenu": "Close launch menu",
+    "addTerminal": "Add terminal",
+    "removeTerminal": "Remove",
+    "notTerminal": "is not a supported terminal."
   },
   "common": {
     "refresh": "Refresh",

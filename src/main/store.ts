@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { basename, dirname } from 'node:path'
+import { dirname } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import type { EnvMetadata, EnvTarget, OnboardingStatus } from '../shared/models'
 import { isValidEnvName } from '../shared/validators'
@@ -149,17 +149,70 @@ export class BroverStore {
     })
   }
 
-  private normalizeTargets(parsed: PersistedDBShape): StoredTarget[] {
+  private makeUniqueTargetName(name: string, usedNames: Set<string>): string {
+    const trimmed = name.trim() || 'target'
+    const normalized = trimmed.toLowerCase()
+    if (!usedNames.has(normalized)) {
+      usedNames.add(normalized)
+      return trimmed
+    }
+
+    let suffix = 2
+    let candidate = `${trimmed}-${suffix}`
+    while (usedNames.has(candidate.toLowerCase())) {
+      suffix += 1
+      candidate = `${trimmed}-${suffix}`
+    }
+
+    usedNames.add(candidate.toLowerCase())
+    return candidate
+  }
+
+  private normalizeTargets(parsed: PersistedDBShape, spaces: CompatSpace[]): StoredTarget[] {
     if (!Array.isArray(parsed.targets)) {
       return []
     }
 
     const now = new Date().toISOString()
-    return (parsed.targets as StoredTarget[]).map((target) => ({
-      ...target,
-      isActive: Boolean(target.isActive),
-      updatedAt: target.updatedAt ?? now,
-    }))
+    const spaceNames = new Map(spaces.map((space) => [space.id, space.name]))
+    const usedNames = new Set<string>()
+
+    const normalizedTargets = (parsed.targets as StoredTarget[]).map((target) => {
+      const legacySpaceName = target.spaceId ? spaceNames.get(target.spaceId) : null
+      const migratedName =
+        target.spaceId && target.name.trim().toLowerCase() === 'default' && legacySpaceName
+          ? legacySpaceName
+          : target.name
+
+      return {
+        ...target,
+        spaceId: undefined,
+        name: this.makeUniqueTargetName(migratedName, usedNames),
+        isActive: Boolean(target.isActive),
+        updatedAt: target.updatedAt ?? now,
+      }
+    })
+
+    const rootTargets = normalizedTargets.filter((target) => !target.spaceId)
+    const allRootTargetsLookLikeDotfiles =
+      rootTargets.length > 1 && rootTargets.every((target) => target.name.startsWith('.'))
+    const envs = Array.isArray(parsed.envs) ? (parsed.envs as EnvMetadata[]) : []
+    const hasRootEnvMetadata = rootTargets.some((target) => envs.some((env) => env.profile === target.id))
+
+    if (allRootTargetsLookLikeDotfiles && !hasRootEnvMetadata) {
+      const [firstTarget] = rootTargets
+      if (firstTarget) {
+        return [
+          {
+            ...firstTarget,
+            name: 'default',
+            isActive: true,
+          },
+        ]
+      }
+    }
+
+    return normalizedTargets
   }
 
   private async readDB(): Promise<DBShape> {
@@ -167,18 +220,12 @@ export class BroverStore {
       const raw = await readFile(this.dbPath, 'utf8')
       const parsed = JSON.parse(raw) as PersistedDBShape
       const spaces = this.normalizeSpaces(parsed)
-      const targets = this.normalizeTargets(parsed)
-      const activeRootTargetId = targets.find((target) => !target.spaceId && target.isActive)?.id ?? targets.find((target) => !target.spaceId)?.id
-      const normalizedTargets = targets.map((target) => {
-        if (target.spaceId) {
-          return target
-        }
-
-        return {
-          ...target,
-          isActive: activeRootTargetId ? target.id === activeRootTargetId : target.isActive,
-        }
-      })
+      const targets = this.normalizeTargets(parsed, spaces)
+      const activeRootTargetId = targets.find((target) => target.isActive)?.id ?? targets[0]?.id
+      const normalizedTargets = targets.map((target) => ({
+        ...target,
+        isActive: activeRootTargetId ? target.id === activeRootTargetId : target.isActive,
+      }))
 
       return {
         envs: Array.isArray(parsed.envs) ? (parsed.envs as EnvMetadata[]) : [],
@@ -356,78 +403,6 @@ export class BroverStore {
     )
     await this.writeDB(db)
     return db.envs
-  }
-
-  async listSpaces(): Promise<CompatSpace[]> {
-    return (await this.readDB()).spaces
-  }
-
-  async createSpace(payload: { name: string; dotfilePath: string }): Promise<CompatSpace[]> {
-    const db = await this.readDB()
-    const now = new Date().toISOString()
-    const created: CompatSpace = {
-      id: randomUUID(),
-      name: payload.name.trim() || basename(payload.dotfilePath.trim()),
-      kind: 'dotfile',
-      dotfilePath: payload.dotfilePath.trim(),
-      tiedSecrets: true,
-      updatedAt: now,
-    }
-
-    db.spaces.push(created)
-    db.targets.push({
-      id: randomUUID(),
-      spaceId: created.id,
-      name: 'default',
-      color: '#34d399',
-      isActive: true,
-      updatedAt: now,
-    })
-    await this.writeDB(db)
-    return db.spaces
-  }
-
-  async renameSpace(payload: { spaceId: string; name: string }): Promise<CompatSpace[]> {
-    const db = await this.readDB()
-    const name = payload.name.trim()
-    if (!name) throw new Error('Space name required')
-
-    db.spaces = db.spaces.map((space) =>
-      space.id === payload.spaceId
-        ? { ...space, name, updatedAt: new Date().toISOString() }
-        : space
-    )
-    await this.writeDB(db)
-    return db.spaces
-  }
-
-  async deleteSpace(spaceId: string): Promise<CompatSpace[]> {
-    const db = await this.readDB()
-    const targetIds = db.targets.filter((target) => target.spaceId === spaceId).map((target) => target.id)
-
-    const spaceEnvs = db.envs.filter((env) => targetIds.includes(env.profile))
-    for (const env of spaceEnvs) {
-      for (const targetId of targetIds) {
-        await this.secrets.delete(`${targetId}:${env.name}`)
-      }
-    }
-
-    db.targets = db.targets.filter((target) => target.spaceId !== spaceId)
-    db.envs = db.envs.filter((env) => !targetIds.includes(env.profile))
-    db.spaces = db.spaces.filter((space) => space.id !== spaceId)
-    await this.writeDB(db)
-    return db.spaces
-  }
-
-  async toggleSpaceTiedSecrets(spaceId: string): Promise<CompatSpace[]> {
-    const db = await this.readDB()
-    db.spaces = db.spaces.map((space) =>
-      space.id === spaceId
-        ? { ...space, tiedSecrets: !space.tiedSecrets, updatedAt: new Date().toISOString() }
-        : space
-    )
-    await this.writeDB(db)
-    return db.spaces
   }
 
   async getTiedTargets(): Promise<boolean> {

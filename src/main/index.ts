@@ -1,6 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, systemPreferences } from 'electron'
 import { join } from 'node:path'
-import { homedir } from 'node:os'
 import { watchFile, unwatchFile } from 'node:fs'
 import {
   BroverStore,
@@ -17,8 +16,9 @@ import { createSecretAuthGate } from './secretAuthGate'
 import { createAuthSessionCache } from './authSessionCache'
 import { createMacSecretAuthPrompt } from './authPrompt'
 import { createTerminalLauncher } from './terminalLauncher'
+import { runDeleteMutation, runUpdateMutation } from './envMutationFlow'
+import { loadTerminalIconDataUrl } from './terminalIconLoader'
 import { getDevStorageClearOptions } from './devSession'
-import { buildDotfileOpenDialogOptions } from './systemDialogs'
 import { createSecretStore } from './secretStoreFactory'
 
 if (!app.isPackaged) {
@@ -78,22 +78,6 @@ async function bootstrap() {
       })
   })
 
-  ipcMain.handle('system:pick-directory', async () => {
-    const result = await dialog.showOpenDialog({
-      properties: ['openDirectory', 'createDirectory'],
-    })
-    return {
-      canceled: result.canceled,
-      path: result.canceled ? null : (result.filePaths[0] ?? null),
-    }
-  })
-  ipcMain.handle('system:pick-dotfile', async () => {
-    const result = await dialog.showOpenDialog(buildDotfileOpenDialogOptions(homedir()))
-    return {
-      canceled: result.canceled,
-      path: result.canceled ? null : (result.filePaths[0] ?? null),
-    }
-  })
   ipcMain.handle('targets:get-tied', () => store.getTiedTargets())
   ipcMain.handle('targets:set-tied', (_, tiedTargets: boolean) =>
     store.setTiedTargets(tiedTargets)
@@ -138,15 +122,42 @@ async function bootstrap() {
   ipcMain.handle('launch:list-terminals', () => {
     return Promise.all(
       terminalLauncher.listTerminals().map(async (terminal) => {
-        try {
-          const icon = await app.getFileIcon(terminal.bundlePath, { size: 'normal' })
-          const iconDataUrl = icon.isEmpty() ? undefined : icon.toDataURL()
-          return { ...terminal, iconDataUrl }
-        } catch {
-          return terminal
-        }
+        const iconDataUrl = await loadTerminalIconDataUrl(terminal.bundlePath)
+        return iconDataUrl ? { ...terminal, iconDataUrl } : terminal
       })
     ).then((terminals) => ({ terminals }))
+  })
+
+  ipcMain.handle('launch:pick-terminal-app', async () => {
+    const result = await dialog.showOpenDialog({
+      defaultPath: '/Applications',
+      properties: ['openFile'],
+      filters: [{ name: 'Applications', extensions: ['app'] }],
+    })
+
+    if (result.canceled) {
+      return { canceled: true }
+    }
+
+    const filePath = result.filePaths[0]
+    if (!filePath) {
+      return { canceled: true }
+    }
+
+    const knownTerminals = await Promise.all(
+      terminalLauncher.listTerminals().map(async (terminal) => {
+        const iconDataUrl = await loadTerminalIconDataUrl(terminal.bundlePath)
+        return iconDataUrl ? { ...terminal, iconDataUrl } : terminal
+      })
+    )
+
+    const matchedTerminal = knownTerminals.find((terminal) => terminal.bundlePath === filePath)
+    if (!matchedTerminal) {
+      const appName = filePath.split('/').pop()?.replace(/\.app$/i, '') ?? 'App'
+      return { canceled: false, error: 'UNSUPPORTED_TERMINAL_APP', appName }
+    }
+
+    return { canceled: false, terminal: matchedTerminal }
   })
 
   ipcMain.handle('secrets:exists', (_, payload: { profile: string; name: string }) =>
@@ -219,12 +230,11 @@ async function bootstrap() {
       }
     ) => {
       try {
-        const cached = authSessionCache.isAuthorized(payload.profile)
-        if (!cached) {
-          await authGate.authorize('update', { targetId: payload.profile })
-        }
-        await store.updateEnv(payload)
-        return ok()
+        return await runUpdateMutation({
+          cached: authSessionCache.isAuthorized(payload.profile),
+          authorize: () => authGate.authorize('update', { targetId: payload.profile }),
+          update: () => store.updateEnv(payload),
+        })
       } catch (error) {
         return failure(error)
       }
@@ -254,12 +264,11 @@ async function bootstrap() {
 
   ipcMain.handle('envs:delete', async (_, payload: { id: string; profile: string; name: string }) => {
     try {
-      const cached = authSessionCache.isAuthorized(payload.profile)
-      if (!cached) {
-        await authGate.authorize('delete', { targetId: payload.profile })
-      }
-      await store.deleteEnv(payload)
-      return { ok: true }
+      return await runDeleteMutation({
+        cached: authSessionCache.isAuthorized(payload.profile),
+        authorize: () => authGate.authorize('delete', { targetId: payload.profile }),
+        remove: () => store.deleteEnv(payload),
+      })
     } catch (error) {
       return failure(error)
     }

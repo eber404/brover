@@ -419,6 +419,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
           confirmLabel="Delete"
           cancelLabel="Cancel"
           destructive
+          onConfirm={() => void deleteEnvConfirmed()}
         />
       </>
     ),

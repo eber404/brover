@@ -152,6 +152,7 @@ export default function TerminalPreferencesStep({
                 } ${
                   draggingTerminalId === terminal.id ? 'opacity-50' : ''
                 }`}
+                onClick={() => toggleFavorite(terminal.id)}
                 draggable={isFavorite}
                 onDragStart={(event) => {
                   if (!isFavorite) return
@@ -174,25 +175,29 @@ export default function TerminalPreferencesStep({
                   setDraggingTerminalId(null)
                 }}
               >
-                <label className="flex flex-1 items-center gap-3">
+                <div className="flex flex-1 items-center gap-3">
                   <input
                     type="checkbox"
                     checked={isFavorite}
                     onChange={() => toggleFavorite(terminal.id)}
+                    onClick={(event) => event.stopPropagation()}
                     aria-label={terminal.name}
                   />
                   <div className="flex flex-1 flex-col gap-0.5">
                     <span className="font-medium text-sm text-text-base">{terminal.name}</span>
                     <span className="text-xs text-text-muted">{terminal.bundlePath}</span>
                   </div>
-                </label>
+                </div>
 
                 {isFavorite ? (
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
                       className="rounded p-1 text-text-muted transition-colors hover:bg-surface-hover hover:text-text-base disabled:opacity-40"
-                      onClick={() => moveFavorite(terminal.id, 'up')}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        moveFavorite(terminal.id, 'up')
+                      }}
                       disabled={favoriteIndex === 0}
                       aria-label={`move ${terminal.name} up`}
                     >
@@ -201,7 +206,10 @@ export default function TerminalPreferencesStep({
                     <button
                       type="button"
                       className="rounded p-1 text-text-muted transition-colors hover:bg-surface-hover hover:text-text-base disabled:opacity-40"
-                      onClick={() => moveFavorite(terminal.id, 'down')}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        moveFavorite(terminal.id, 'down')
+                      }}
                       disabled={favoriteIndex === favoriteIds.length - 1}
                       aria-label={`move ${terminal.name} down`}
                     >

@@ -30,12 +30,11 @@ describe('onboardingImporter skip space', () => {
     expect(summary.importedSensitive).toBe(0)
     expect(summary.ignoredNonSensitive).toBe(1)
 
-    const spaces = await store.listSpaces()
-    const dotfileSpaces = spaces.filter(s => s.kind === 'dotfile')
-    expect(dotfileSpaces).toHaveLength(0)
+    const targets = await store.listTargets()
+    expect(targets).toHaveLength(0)
   })
 
-  it('creates space only for files with selected secrets', async () => {
+  it('creates target only for files with selected secrets', async () => {
     const root = await mkdtemp(join(tmpdir(), 'brover-import-partial-'))
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -68,9 +67,8 @@ describe('onboardingImporter skip space', () => {
     expect(summary.importedSensitive).toBe(1)
     expect(summary.ignoredNonSensitive).toBe(1)
 
-    const spaces = await store.listSpaces()
-    const dotfileSpaces = spaces.filter(s => s.kind === 'dotfile')
-    expect(dotfileSpaces).toHaveLength(1)
-    expect(dotfileSpaces[0].name).toBe('.env')
+    const targets = await store.listTargets()
+    expect(targets).toHaveLength(1)
+    expect(targets[0]?.name).toBe('.env')
   })
 })

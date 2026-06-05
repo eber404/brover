@@ -90,4 +90,20 @@ describe('TerminalPreferencesStep', () => {
       defaultTerminalId: 'iterm2',
     })
   })
+
+  it('makes the whole terminal card clickable', async () => {
+    const onContinue = vi.fn()
+    render(<TerminalPreferencesStep onBack={() => {}} onContinue={onContinue} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('favorite-terminal-warp')).toBeTruthy()
+    })
+
+    const continueButton = screen.getByText(/onboarding\.terminalPreferences\.continue/i)
+    expect(continueButton.hasAttribute('disabled')).toBe(true)
+
+    fireEvent.click(screen.getByTestId('favorite-terminal-warp'))
+
+    expect(continueButton.hasAttribute('disabled')).toBe(false)
+  })
 })

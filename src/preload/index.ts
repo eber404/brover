@@ -16,7 +16,6 @@ const api: BroverAPI = {
 
   getTiedTargets: () => ipcRenderer.invoke('targets:get-tied'),
   setTiedTargets: (tiedTargets) => ipcRenderer.invoke('targets:set-tied', tiedTargets),
-  pickDotfile: () => ipcRenderer.invoke('system:pick-dotfile'),
   listTargets: () => ipcRenderer.invoke('targets:list'),
   createTarget: (payload) => ipcRenderer.invoke('targets:create', payload),
   deleteTarget: (payload) => ipcRenderer.invoke('targets:delete', payload),
@@ -28,6 +27,7 @@ const api: BroverAPI = {
   launch: {
     terminal: (targetId, terminalApp) => ipcRenderer.invoke('launch:terminal', { targetId, terminalApp }),
     listTerminals: () => ipcRenderer.invoke('launch:list-terminals'),
+    pickTerminalApp: () => ipcRenderer.invoke('launch:pick-terminal-app'),
   },
 
   onboarding: {

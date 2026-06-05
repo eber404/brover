@@ -27,7 +27,6 @@ export interface BroverAPI {
 
   getTiedTargets: () => Promise<boolean>
   setTiedTargets: (tiedTargets: boolean) => Promise<boolean>
-  pickDotfile: () => Promise<{ canceled: boolean; filePath: string | null }>
   listTargets: () => Promise<EnvTarget[]>
   createTarget: (payload: { name: string }) => Promise<EnvTarget[]>
   deleteTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>
@@ -39,6 +38,7 @@ export interface BroverAPI {
   launch: {
     terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }>
     listTerminals: () => Promise<{ terminals: TerminalApp[] }>
+    pickTerminalApp: () => Promise<{ canceled: boolean; terminal?: TerminalApp; error?: string; appName?: string }>
   }
 
   onboarding: {

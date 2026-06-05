@@ -85,18 +85,15 @@ describe('OnboardingFlow', () => {
     expect(subHeadings[1].textContent).toMatch(/fresh/i)
   })
 
-  it('fresh start shows file selection and imports filtered scan result', async () => {
+  it('fresh start goes directly to terminal preferences and imports full scan result', async () => {
     const onComplete = vi.fn()
     render(<OnboardingFlow onComplete={onComplete} />)
     fireEvent.click(screen.getByText(/onboarding\.mode\.freshStart\.action/i))
     await waitFor(() => {
-      expect(screen.getByText(/onboarding\.freshStartReview\.title/i)).toBeTruthy()
-    })
-    fireEvent.click(screen.getByText(/Users\/test\/\.zshrc/i))
-    fireEvent.click(screen.getByText(/onboarding\.freshStartReview\.continue/i))
-    await waitFor(() => {
       expect(screen.getByText(/onboarding\.terminalPreferences\.title/i)).toBeTruthy()
     })
+
+    expect(screen.queryByText(/onboarding\.freshStartReview\.title/i)).toBeNull()
 
     expect(window.brover.onboarding.runFreshStart).not.toHaveBeenCalled()
     expect(window.brover.onboarding.complete).not.toHaveBeenCalled()

@@ -4,14 +4,28 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach } from 'vitest'
 import { TerminalSidebar } from './TerminalSidebar'
 
+const toast = vi.fn()
+
 vi.mock('../../i18n', () => ({
-  useI18n: () => ({ t: (key: string) => key }),
+  useI18n: () => ({
+    t: (key: string) => {
+      if (key === 'launch.addTerminal') return 'Add terminal'
+      if (key === 'launch.removeTerminal') return 'Remove'
+      if (key === 'launch.notTerminal') return 'is not a supported terminal.'
+      return key
+    },
+  }),
+}))
+
+vi.mock('../../components/ui/toaster', () => ({
+  useToast: () => ({ toast }),
 }))
 
 describe('TerminalSidebar', () => {
   afterEach(cleanup)
 
   beforeEach(() => {
+    toast.mockReset()
     const storage = new Map<string, string>()
     storage.set(
       'brover.launch-preferences',
@@ -50,6 +64,16 @@ describe('TerminalSidebar', () => {
           ],
         }),
         terminal: vi.fn().mockResolvedValue({ success: true }),
+        pickTerminalApp: vi.fn().mockResolvedValue({
+          canceled: false,
+          terminal: {
+            id: 'terminal',
+            name: 'Terminal',
+            bundlePath: '/Terminal.app',
+            installed: true,
+            iconDataUrl: 'data:image/png;base64,terminal',
+          },
+        }),
       },
     }
   })
@@ -71,13 +95,41 @@ describe('TerminalSidebar', () => {
       expect(buttons.map((button) => button.getAttribute('data-testid'))).toEqual([
         'terminal-launch-iterm2',
         'terminal-launch-warp',
-        'terminal-launch-terminal',
       ])
     })
 
     expect(screen.queryByText('TERMINALS')).toBeNull()
     expect(screen.getByTestId('terminal-launch-iterm2').getAttribute('title')).toBe('iTerm2')
     expect(screen.getByTestId('terminal-icon-iterm2').getAttribute('src')).toBe('data:image/png;base64,iterm2')
+    expect(screen.getByTestId('terminal-add-button')).toBeTruthy()
+    expect(screen.queryByTestId('terminal-launch-terminal')).toBeNull()
+  })
+
+  it('opens picker directly from plus button and adds picked terminal to rail', async () => {
+    render(
+      <TerminalSidebar
+        title="Brover"
+        subtitle="test"
+        locale="en"
+        onLocaleChange={vi.fn()}
+        selectedTargetId="target-1"
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-add-button')).toBeTruthy()
+    })
+
+    const pickTerminalApp = window.brover.launch.pickTerminalApp as ReturnType<typeof vi.fn>
+    fireEvent.click(screen.getByTestId('terminal-add-button'))
+
+    await waitFor(() => {
+      expect(pickTerminalApp).toHaveBeenCalled()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-launch-terminal')).toBeTruthy()
+    })
   })
 
   it('clicking terminal launches selected target', async () => {
@@ -101,6 +153,66 @@ describe('TerminalSidebar', () => {
 
     await waitFor(() => {
       expect(launchTerminal).toHaveBeenCalledWith('target-1', 'iterm2')
+    })
+  })
+
+  it('shows remove action on terminal context menu and removes favorite terminal', async () => {
+    render(
+      <TerminalSidebar
+        title="Brover"
+        subtitle="test"
+        locale="en"
+        onLocaleChange={vi.fn()}
+        selectedTargetId="target-1"
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-launch-warp')).toBeTruthy()
+    })
+
+    fireEvent.contextMenu(screen.getByTestId('terminal-launch-warp'), {
+      clientX: 32,
+      clientY: 120,
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-remove-warp')).toBeTruthy()
+      expect(screen.getByText('Remove')).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByTestId('terminal-remove-warp'))
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('terminal-launch-warp')).toBeNull()
+    })
+  })
+
+  it('shows i18n error toast when picked app is not a terminal', async () => {
+    ;(window.brover.launch.pickTerminalApp as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      canceled: false,
+      error: 'UNSUPPORTED_TERMINAL_APP',
+      appName: 'Notes',
+    })
+
+    render(
+      <TerminalSidebar
+        title="Brover"
+        subtitle="test"
+        locale="en"
+        onLocaleChange={vi.fn()}
+        selectedTargetId="target-1"
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-add-button')).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByTestId('terminal-add-button'))
+
+    await waitFor(() => {
+      expect(toast).toHaveBeenCalledWith('Notes is not a supported terminal.', 'error')
     })
   })
 })

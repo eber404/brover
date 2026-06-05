@@ -1,6 +1,6 @@
 # Code Context Summary
 
-Generated: 2026-06-05T00:14:26.682Z
+Generated: 2026-06-05T20:44:46.292Z
 Files: 46
 
 ## `playwright.config.ts`
@@ -33,9 +33,20 @@ Exports: `getDevStorageClearOptions` (FunctionDeclaration)
 Functions:
 - `getDevStorageClearOptions(): { storages: ClearStorageKind[]; }`
 
+## `src/main/envMutationFlow.ts`
+
+Imports: `../shared/models`
+
+Exports: `runDeleteMutation` (FunctionDeclaration), `runUpdateMutation` (FunctionDeclaration)
+
+Functions:
+- `ok(value: string): SecretActionResult`
+- `async runDeleteMutation(deps: DeleteMutationDeps): Promise<SecretActionResult>`
+- `async runUpdateMutation(deps: UpdateMutationDeps): Promise<SecretActionResult>`
+
 ## `src/main/index.ts`
 
-Imports: `electron`, `node:path`, `node:os`, `node:fs`, `./store`, `../shared/models`, `./onboardingScanner`, `./onboardingImporter`, `./secretAuthGate`, `./authSessionCache`, `./authPrompt`, `./terminalLauncher`, `./devSession`, `./systemDialogs`, `./secretStoreFactory`
+Imports: `electron`, `node:path`, `node:fs`, `./store`, `../shared/models`, `./onboardingScanner`, `./onboardingImporter`, `./secretAuthGate`, `./authSessionCache`, `./authPrompt`, `./terminalLauncher`, `./envMutationFlow`, `./terminalIconLoader`, `./devSession`, `./secretStoreFactory`
 
 Functions:
 - `async bootstrap(): Promise<void>`
@@ -53,6 +64,7 @@ Imports: `node:fs/promises`, `node:path`, `node:crypto`, `../shared/models`, `./
 Exports: `runFreshStartImport` (FunctionDeclaration), `runRetroactiveImport` (FunctionDeclaration)
 
 Functions:
+- `async createTargetForFile(store: BroverStore, filePath: string): Promise<string>`
 - `async runFreshStartImport(store: BroverStore, scanResult: ScanResult): Promise<OnboardingSummary>`
 - `async runRetroactiveImport(store: BroverStore, scanResult: ScanResult, selection: RetroactiveSelection): Promise<OnboardingSummary>`
 
@@ -108,16 +120,18 @@ Classes:
 - `UnsupportedSecretStore`: async save(): Promise<void>; async get(): Promise<string | null>; async delete(): Promise<void>; async exists(): Promise<boolean>
 - `MemorySecretStore`: async save(account: string, value: string): Promise<void>; async get(account: string): Promise<string | null>; async delete(account: string): Promise<void>; async exists(account: string): Promise<boolean>
 - `MacOSKeytarSecretStore`: async save(account: string, value: string): Promise<void>; async get(account: string): Promise<string | null>; async delete(account: string): Promise<void>; async exists(account: string): Promise<boolean>
-- `BroverStore`: async getOnboardingStatus(): Promise<OnboardingStatus>; async markOnboardingComplete(): Promise<void>; async listEnvs(): Promise<EnvMetadata[]>; async createEnv(payload: { name: string; profile: string; value: string; description?: string }): Promise<void>; async revealEnv(profile: string, name: string): Promise<string | null>; async secretExists(profile: string, name: string): Promise<boolean>; async updateEnv(payload: { id: string; profile: string; name: string; value: string; description?: string }): Promise<void>; async deleteEnv(payload: { id: string; profile: string; name: string }): Promise<void>; async toggleEnvEnabled(id: string): Promise<EnvMetadata[]>; async listSpaces(): Promise<CompatSpace[]>; async createSpace(payload: { name: string; dotfilePath: string }): Promise<CompatSpace[]>; async renameSpace(payload: { spaceId: string; name: string }): Promise<CompatSpace[]>; async deleteSpace(spaceId: string): Promise<CompatSpace[]>; async toggleSpaceTiedSecrets(spaceId: string): Promise<CompatSpace[]>; async getTiedTargets(): Promise<boolean>; async setTiedTargets(tiedTargets: boolean): Promise<boolean>; async listTargets(spaceId: string): Promise<EnvTarget[]>; async createTarget(payload: { name: string; spaceId?: string }): Promise<EnvTarget[]>; async deleteTarget(payload: { targetId: string }): Promise<EnvTarget[]>; async reorderTargets(payload: { orderedTargetIds: string[]; spaceId?: string }): Promise<EnvTarget[]>; async renameTarget(payload: { targetId: string; name: string }): Promise<EnvTarget[]>; async setTargetColor(payload: { targetId: string; color: string }): Promise<EnvTarget[]>; async setActiveTarget(payload: { targetId: string; spaceId?: string }): Promise<EnvTarget[]>
+- `BroverStore`: async getOnboardingStatus(): Promise<OnboardingStatus>; async markOnboardingComplete(): Promise<void>; async listEnvs(): Promise<EnvMetadata[]>; async createEnv(payload: { name: string; profile: string; value: string; description?: string }): Promise<void>; async revealEnv(profile: string, name: string): Promise<string | null>; async secretExists(profile: string, name: string): Promise<boolean>; async updateEnv(payload: { id: string; profile: string; name: string; value: string; description?: string }): Promise<void>; async deleteEnv(payload: { id: string; profile: string; name: string }): Promise<void>; async toggleEnvEnabled(id: string): Promise<EnvMetadata[]>; async getTiedTargets(): Promise<boolean>; async setTiedTargets(tiedTargets: boolean): Promise<boolean>; async listTargets(spaceId: string): Promise<EnvTarget[]>; async createTarget(payload: { name: string; spaceId?: string }): Promise<EnvTarget[]>; async deleteTarget(payload: { targetId: string }): Promise<EnvTarget[]>; async reorderTargets(payload: { orderedTargetIds: string[]; spaceId?: string }): Promise<EnvTarget[]>; async renameTarget(payload: { targetId: string; name: string }): Promise<EnvTarget[]>; async setTargetColor(payload: { targetId: string; color: string }): Promise<EnvTarget[]>; async setActiveTarget(payload: { targetId: string; spaceId?: string }): Promise<EnvTarget[]>
 
-## `src/main/systemDialogs.ts`
+## `src/main/terminalIconLoader.ts`
 
-Imports: `electron`
+Imports: `node:util`, `node:child_process`, `node:fs`, `node:path`, `electron`
 
-Exports: `buildDotfileOpenDialogOptions` (FunctionDeclaration)
+Exports: `loadTerminalIconDataUrl` (FunctionDeclaration)
 
 Functions:
-- `buildDotfileOpenDialogOptions(homePath: string): Electron.OpenDialogOptions`
+- `async loadTerminalIconDataUrl(bundlePath: string, deps: TerminalIconLoaderDeps): Promise<string | undefined>`
+- `normalizeIconFileName(iconFileName: string): string`
+- `async readBundleIconFileName(bundlePath: string): Promise<string | null>`
 
 ## `src/main/terminalLauncher.ts`
 
@@ -299,28 +313,9 @@ Functions:
 React Components:
 - `ConfirmationStep` [function] props: { summary, onConfirm, onBack }: ConfirmationStepProps
 
-## `src/renderer/src/features/onboarding/FreshStartReviewStep.tsx`
-
-Imports: `react`, `lucide-react`, `../../i18n`, `../../components/ui/button`, `../../components/ui/card`, `../../../../shared/models`
-
-Exports: `default` (FunctionDeclaration)
-
-Functions:
-- `fileName(filePath: string): string`
-- `FreshStartReviewStep({
-  onContinue,
-  onBack,
-}: FreshStartReviewStepProps): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
-
-React Components:
-- `FreshStartReviewStep` [function] props: {
-  onContinue,
-  onBack,
-}: FreshStartReviewStepProps
-
 ## `src/renderer/src/features/onboarding/OnboardingFlow.tsx`
 
-Imports: `react`, `./WelcomeStep`, `./RetroactiveReviewStep`, `./FreshStartReviewStep`, `./ConfirmationStep`, `./TerminalPreferencesStep`, `../../../../shared/models`, `../launch/preferences`, `../launch/preferences`
+Imports: `react`, `./WelcomeStep`, `./RetroactiveReviewStep`, `./ConfirmationStep`, `./TerminalPreferencesStep`, `../../../../shared/models`, `../launch/preferences`, `../launch/preferences`, `../../components/ui/card`, `../../components/ui/button`
 
 Exports: `default` (FunctionDeclaration)
 
@@ -448,7 +443,7 @@ Exported Constants: `SpacesSidebar`
 
 ## `src/renderer/src/features/terminals/TerminalSidebar.tsx`
 
-Imports: `react`, `../../../../shared/models`, `../launch/preferences`
+Imports: `react`, `lucide-react`, `../../../../shared/models`, `../launch/preferences`, `../../i18n`, `../../components/ui/toaster`
 
 Exports: `TerminalSidebar` (VariableDeclaration)
 

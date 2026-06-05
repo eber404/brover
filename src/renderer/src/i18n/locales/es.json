@@ -85,20 +85,12 @@
       "hide": "Ocultar",
       "selectVariable": "Seleccionar como sensible"
     },
-    "freshStartReview": {
-      "title": "Nuevo inicio — Seleccionar archivos",
-      "subtitle": "Cada dotfile seleccionado se convierte en un target en Brover.",
-      "loading": "Escaneando dotfiles...",
-      "error": "Error al escanear dotfiles",
-      "noFiles": "No se encontraron dotfiles",
-      "continue": "Empezar a gestionar secretos →"
-    },
     "terminalPreferences": {
       "title": "Elegir terminales de launch",
       "subtitle": "Marca favoritos, ajusta orden y usa primer item como predeterminado.",
       "loading": "Cargando terminales instalados...",
       "error": "Error al cargar terminales instalados",
-      "continue": "Guardar preferencias y finalizar"
+      "continue": "Empezar a gestionar secretos →"
     }
   },
   "spaces": {
@@ -107,7 +99,10 @@
   "launch": {
     "launch": "Launch",
     "openMenu": "Abrir menu de launch",
-    "closeMenu": "Cerrar menu de launch"
+    "closeMenu": "Cerrar menu de launch",
+    "addTerminal": "Agregar terminal",
+    "removeTerminal": "Eliminar",
+    "notTerminal": "no es un terminal compatible."
   },
   "common": {
     "refresh": "Actualizar",

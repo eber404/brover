@@ -313,6 +313,32 @@ describe('SecretsPanel', () => {
     })
   })
 
+  it('does not open update confirmation when auth cache is absent', async () => {
+    const updateEnv = vi.fn().mockResolvedValue({ ok: true })
+    // @ts-expect-error mock
+    window.brover = { updateEnv, secretExists: vi.fn().mockResolvedValue(true) }
+
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper
+            envs={[mockEnv]}
+            filteredEnvs={[mockEnv]}
+            selectedEnvId={mockEnv.id}
+          />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('update-btn'))
+
+    await waitFor(() => {
+      expect(updateEnv).toHaveBeenCalled()
+    })
+
+    expect(screen.queryByText('Update "API_KEY"?')).toBeNull()
+  })
+
   it('shows toast when deleteEnv fails', async () => {
     const deleteEnv = vi.fn().mockResolvedValue({ ok: false, error: 'Failed to delete' })
     const listEnvs = vi.fn().mockResolvedValue([])
@@ -365,6 +391,68 @@ describe('SecretsPanel', () => {
     await waitFor(() => {
       expect(setSelectedEnvId).toHaveBeenCalledWith('')
     })
+  })
+
+  it('opens delete confirmation when auth cache already exists', async () => {
+    const deleteEnv = vi.fn().mockResolvedValue({ ok: true, value: 'needs-confirmation' })
+    const deleteEnvConfirmed = vi.fn().mockResolvedValue({ ok: true })
+    // @ts-expect-error mock
+    window.brover = { deleteEnv, deleteEnvConfirmed, secretExists: vi.fn().mockResolvedValue(true), listEnvs: vi.fn().mockResolvedValue([]) }
+
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper
+            envs={[mockEnv]}
+            filteredEnvs={[mockEnv]}
+            selectedEnvId={mockEnv.id}
+          />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('delete-btn'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Delete "API_KEY"?')).toBeTruthy()
+    })
+
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete', hidden: true })
+    fireEvent.click(deleteButtons[deleteButtons.length - 1]!)
+
+    await waitFor(() => {
+      expect(deleteEnvConfirmed).toHaveBeenCalledWith({
+        id: mockEnv.id,
+        profile: mockEnv.profile,
+        name: mockEnv.name,
+      })
+    })
+  })
+
+  it('does not open delete confirmation when auth cache is absent', async () => {
+    const deleteEnv = vi.fn().mockResolvedValue({ ok: true })
+    // @ts-expect-error mock
+    window.brover = { deleteEnv, listEnvs: vi.fn().mockResolvedValue([]), secretExists: vi.fn().mockResolvedValue(true) }
+
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper
+            envs={[mockEnv]}
+            filteredEnvs={[mockEnv]}
+            selectedEnvId={mockEnv.id}
+          />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('delete-btn'))
+
+    await waitFor(() => {
+      expect(deleteEnv).toHaveBeenCalled()
+    })
+
+    expect(screen.queryByText('Delete "API_KEY"?')).toBeNull()
   })
 
 })

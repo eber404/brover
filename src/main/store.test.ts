@@ -121,7 +121,95 @@ describe('BroverStore onboarding', () => {
       await expect(store.getTiedTargets()).resolves.toBe(false)
       const targets = await store.listTargets()
       expect(targets).toHaveLength(1)
+      expect(targets[0]?.name).toBe('Repo')
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('legacy per-space default targets flatten into root-level targets and stay visible after activation changes', async () => {
+    const { store, cleanup } = createStore({
+      envs: [],
+      spaces: [
+        {
+          id: 'space-1',
+          name: 'API',
+          kind: 'dotfile',
+          dotfilePath: '/tmp/api/.env',
+          tiedSecrets: true,
+          updatedAt: '2026-06-04T00:00:00.000Z'
+        },
+        {
+          id: 'space-2',
+          name: 'Web',
+          kind: 'dotfile',
+          dotfilePath: '/tmp/web/.env',
+          tiedSecrets: true,
+          updatedAt: '2026-06-04T00:00:00.000Z'
+        }
+      ],
+      targets: [
+        {
+          id: 'target-1',
+          spaceId: 'space-1',
+          name: 'default',
+          color: '#34d399',
+          isActive: true,
+          updatedAt: '2026-06-04T00:00:00.000Z'
+        },
+        {
+          id: 'target-2',
+          spaceId: 'space-2',
+          name: 'default',
+          color: '#f59e0b',
+          isActive: false,
+          updatedAt: '2026-06-04T00:00:00.000Z'
+        }
+      ]
+    })
+
+    try {
+      const initialTargets = await store.listTargets()
+      expect(initialTargets.map((target) => target.name)).toEqual(['API', 'Web'])
+
+      await store.setActiveTarget({ targetId: 'target-2' })
+
+      const updatedTargets = await store.listTargets()
+      expect(updatedTargets.map((target) => target.name)).toEqual(['API', 'Web'])
+      expect(updatedTargets.filter((target) => target.isActive)).toHaveLength(1)
+      expect(updatedTargets.find((target) => target.isActive)?.id).toBe('target-2')
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('collapses fresh-start dotfile targets without envs into a single default target', async () => {
+    const { store, cleanup } = createStore({
+      envs: [],
+      targets: [
+        {
+          id: 'target-1',
+          name: '.bash_profile',
+          color: '#34d399',
+          isActive: true,
+          updatedAt: '2026-06-04T00:00:00.000Z'
+        },
+        {
+          id: 'target-2',
+          name: '.zshrc',
+          color: '#f59e0b',
+          isActive: false,
+          updatedAt: '2026-06-04T00:00:00.000Z'
+        }
+      ]
+    })
+
+    try {
+      const targets = await store.listTargets()
+      expect(targets).toHaveLength(1)
+      expect(targets[0]?.id).toBe('target-1')
       expect(targets[0]?.name).toBe('default')
+      expect(targets[0]?.isActive).toBe(true)
     } finally {
       cleanup()
     }
