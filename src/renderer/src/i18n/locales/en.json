@@ -55,26 +55,27 @@
     "mode": {
       "retroactive": {
         "title": "Import from dotfiles",
-        "desc": "Scan existing .zshrc / .bashrc and import selected environment variables.",
+        "desc": "Scan existing dotfiles, move selected secrets into Brover targets, and remove imported lines from the source files.",
         "action": "Start import"
       },
       "freshStart": {
         "title": "Start fresh",
-        "desc": "Set up new secrets from scratch with a clean configuration. Current system secrets reamain untouched.",
+        "desc": "Pick dotfiles to create Brover targets without importing values or changing source files.",
         "action": "Start fresh"
       }
     },
     "confirmation": {
       "title": "Review import plan",
+      "subtitle": "Brover will create one target per selected dotfile before you finish setup.",
       "toStore": "Secrets to store in Keychain",
       "toRemove": "Lines to remove from dotfiles",
       "ignoredNonSensitive": "Non-sensitive variables ignored",
       "ignoredTitle": "Ignored items",
-      "action": "Start Managing Secrets"
+      "action": "Choose launch terminals"
     },
     "review": {
       "title": "Review scanned variables",
-      "subtitle": "Select which variables contain sensitive values to import securely",
+      "subtitle": "Select which variables contain sensitive values to move into secure Brover targets.",
       "loading": "Scanning dotfiles...",
       "error": "Failed to scan dotfiles",
       "warnings": "Scan completed with warnings:",
@@ -86,7 +87,7 @@
     },
     "freshStartReview": {
       "title": "Fresh Start — Select dotfiles",
-      "subtitle": "Select which dotfiles to bring into Brover.",
+      "subtitle": "Each selected dotfile becomes a target in Brover.",
       "loading": "Scanning dotfiles...",
       "error": "Failed to scan dotfiles",
       "noFiles": "No dotfiles found",
@@ -101,7 +102,7 @@
     }
   },
   "spaces": {
-    "tiedTargetsTooltip": "Keep secret names synced across all targets in this space. Values remain target-specific."
+    "tiedTargetsTooltip": "Keep secret names synced across all targets. Values remain target-specific."
   },
   "launch": {
     "launch": "Launch",

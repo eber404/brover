@@ -61,10 +61,7 @@ async function bootstrap() {
   const terminalLauncher = createTerminalLauncher()
 
   async function listActiveTargetIds(): Promise<string[]> {
-    const spaces = await store.listSpaces()
-    const targetsBySpace = await Promise.all(spaces.map(space => store.listTargets(space.id)))
-    return targetsBySpace
-      .flat()
+    return (await store.listTargets())
       .filter(target => target.isActive)
       .map(target => target.id)
   }
@@ -81,17 +78,6 @@ async function bootstrap() {
       })
   })
 
-  ipcMain.handle('spaces:list', () => store.listSpaces())
-  ipcMain.handle('spaces:create', (_, payload: { name: string; dotfilePath: string }) =>
-    store.createSpace(payload)
-  )
-  ipcMain.handle('spaces:rename', (_, payload: { spaceId: string; name: string }) =>
-    store.renameSpace(payload)
-  )
-  ipcMain.handle('spaces:delete', (_, spaceId: string) => store.deleteSpace(spaceId))
-  ipcMain.handle('spaces:toggle-tied-secrets', (_, spaceId: string) =>
-    store.toggleSpaceTiedSecrets(spaceId)
-  )
   ipcMain.handle('system:pick-directory', async () => {
     const result = await dialog.showOpenDialog({
       properties: ['openDirectory', 'createDirectory'],
@@ -108,14 +94,18 @@ async function bootstrap() {
       path: result.canceled ? null : (result.filePaths[0] ?? null),
     }
   })
-  ipcMain.handle('targets:list', (_, spaceId: string) => store.listTargets(spaceId))
-  ipcMain.handle('targets:create', (_, payload: { spaceId: string; name: string }) =>
+  ipcMain.handle('targets:get-tied', () => store.getTiedTargets())
+  ipcMain.handle('targets:set-tied', (_, tiedTargets: boolean) =>
+    store.setTiedTargets(tiedTargets)
+  )
+  ipcMain.handle('targets:list', () => store.listTargets())
+  ipcMain.handle('targets:create', (_, payload: { name: string }) =>
     store.createTarget(payload)
   )
   ipcMain.handle('targets:delete', (_, payload: { targetId: string }) =>
     store.deleteTarget(payload)
   )
-  ipcMain.handle('targets:reorder', (_, payload: { spaceId: string; orderedTargetIds: string[] }) =>
+  ipcMain.handle('targets:reorder', (_, payload: { orderedTargetIds: string[] }) =>
     store.reorderTargets(payload)
   )
   ipcMain.handle('targets:rename', (_, payload: { targetId: string; name: string }) =>
@@ -126,7 +116,7 @@ async function bootstrap() {
   )
   ipcMain.handle(
     'targets:set-active',
-    (_, payload: { spaceId: string; targetId: string }) =>
+    (_, payload: { targetId: string }) =>
       store.setActiveTarget(payload)
   )
   ipcMain.handle('launch:terminal', async (_, payload: { targetId: string; terminalApp: string }) => {

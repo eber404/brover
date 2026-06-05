@@ -3,43 +3,30 @@ import { describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach } from 'vitest'
 import { SpacesSidebar } from './SpacesSidebar'
-import type { EnvSpace, EnvTarget } from '../../../../shared/models'
+import type { EnvTarget } from '../../../../shared/models'
 
 vi.mock('../../i18n', () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }))
 
-function makeSpace(overrides: Partial<EnvSpace> = {}): EnvSpace {
+function makeTarget(overrides: Partial<EnvTarget> = {}): EnvTarget {
   return {
-    id: 's1',
-    name: 'my-project',
-    kind: 'dotfile',
-    dotfilePath: '~/.zshrc',
-    tiedSecrets: true,
+    id: 'target-1',
+    name: 'dev',
+    color: '#34d399',
+    isActive: true,
     updatedAt: '2024-01-01',
     ...overrides,
   }
 }
 
 const defaultProps = {
-  title: 'Brover',
-  subtitle: 'test',
-  spaces: [makeSpace()],
-  targetsBySpace: new Map<string, EnvTarget[]>(),
-  selectedSpaceId: 's1',
-  selectedTargetId: null,
-  editingSpaceId: null,
-  editingSpaceName: '',
+  targets: [makeTarget()],
+  selectedTargetId: 'target-1',
+  tiedTargets: true,
   editingTargetId: null,
   editingName: '',
-  locale: 'en' as const,
-  onLocaleChange: vi.fn(),
   onEditNameChange: vi.fn(),
-  onAddSpace: vi.fn(),
-  onStartRenameSpace: vi.fn(),
-  onSaveRenameSpace: vi.fn(),
-  onEditSpaceNameChange: vi.fn(),
-  onSelectSpace: vi.fn(),
   onAddTarget: vi.fn(),
   onStartRenameTarget: vi.fn(),
   onSaveRenameTarget: vi.fn(),
@@ -47,35 +34,33 @@ const defaultProps = {
   onUpdateTargetColor: vi.fn(),
   onReorderTargets: vi.fn(),
   onDeleteTarget: vi.fn(),
-  onDeleteSpace: vi.fn(),
-  onToggleSpaceTiedSecrets: vi.fn(),
+  onToggleTiedTargets: vi.fn(),
 }
 
 describe('SpacesSidebar', () => {
   afterEach(cleanup)
 
-  it('displays selected space name below TARGETS heading', () => {
+  it('renders target-only column with tied targets control', () => {
     render(<SpacesSidebar {...defaultProps} />)
-    const targetsHeading = screen.getByText('TARGETS')
-    expect(targetsHeading).toBeTruthy()
-    const spaceName = screen.getByText('my-project')
-    expect(spaceName).toBeTruthy()
+
+    expect(screen.getByText('TARGETS')).toBeTruthy()
+    expect(screen.getByText('Tied targets')).toBeTruthy()
+    expect(screen.getByTestId('target-row-target-1')).toBeTruthy()
   })
 
-  it('shows dotfile name for dotfile-imported space', () => {
-    const dotfileSpace = makeSpace({ name: '.zshrc', dotfilePath: '~/.zshrc' })
-    render(<SpacesSidebar {...defaultProps} spaces={[dotfileSpace]} selectedSpaceId="s1" />)
-    expect(screen.getByText('.zshrc')).toBeTruthy()
+  it('does not render old space rail affordances', () => {
+    render(<SpacesSidebar {...defaultProps} />)
+
+    expect(screen.queryByTitle('Add space')).toBeNull()
+    expect(screen.queryByText('my-project')).toBeNull()
   })
 
-  it('clicking add space triggers import directly without opening menu', () => {
-    const onAddSpace = vi.fn()
+  it('clicking add target triggers handler', () => {
+    const onAddTarget = vi.fn()
+    render(<SpacesSidebar {...defaultProps} onAddTarget={onAddTarget} />)
 
-    render(<SpacesSidebar {...defaultProps} onAddSpace={onAddSpace} />)
+    fireEvent.click(screen.getByTestId('target-add'))
 
-    fireEvent.click(screen.getByTitle('Add space'))
-
-    expect(onAddSpace).toHaveBeenCalledTimes(1)
-    expect(screen.queryByText('Import dotfile')).toBeNull()
+    expect(onAddTarget).toHaveBeenCalledTimes(1)
   })
 })

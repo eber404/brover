@@ -6,7 +6,6 @@ import { I18nProvider } from '../../i18n'
 import { ToastProvider } from '../../components/ui/toaster'
 import { useSecretsPanel } from './SecretsPanel'
 import { UNSUPPORTED_SECRET_BACKEND } from '../../../../shared/models'
-import { saveLaunchPreferences } from '../launch/preferences'
 
 const mockEnv = {
   id: 'env-1',
@@ -89,6 +88,19 @@ describe('SecretsPanel', () => {
 
     const heading = screen.getByRole('heading', { level: 2 })
     expect(heading.textContent).toBe('dev')
+  })
+
+  it('does not render launch controls in secrets panel', () => {
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    expect(screen.queryByTestId('launch-button')).toBeNull()
+    expect(screen.queryByTestId('launch-menu-button')).toBeNull()
   })
 
   it('renders empty string targetName gracefully', () => {
@@ -355,111 +367,4 @@ describe('SecretsPanel', () => {
     })
   })
 
-  it('uses saved default terminal for primary launch', async () => {
-    saveLaunchPreferences({
-      favoriteTerminalIds: ['warp', 'iterm2'],
-      defaultTerminalId: 'warp',
-    })
-    const terminal = vi.fn().mockResolvedValue({ success: true })
-    const listTerminals = vi.fn().mockResolvedValue({
-      terminals: [
-        { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app', installed: true },
-        { id: 'iterm2', name: 'iTerm2', bundlePath: '/Applications/iTerm.app', installed: true },
-        { id: 'terminal', name: 'Terminal', bundlePath: '/System/Applications/Utilities/Terminal.app', installed: true },
-      ],
-    })
-    // @ts-expect-error mock
-    window.brover = { launch: { terminal, listTerminals } }
-
-    render(
-      <I18nProvider>
-        <ToastProvider>
-          <SecretsTestWrapper />
-        </ToastProvider>
-      </I18nProvider>
-    )
-
-    fireEvent.click(screen.getByTestId('launch-button'))
-
-    await waitFor(() => {
-      expect(terminal).toHaveBeenCalledWith('target-1', 'warp')
-    })
-  })
-
-  it('shows favorite terminals in chevron menu and promotes chosen launch default', async () => {
-    saveLaunchPreferences({
-      favoriteTerminalIds: ['warp', 'iterm2'],
-      defaultTerminalId: 'warp',
-    })
-    const terminal = vi.fn().mockResolvedValue({ success: true })
-    const listTerminals = vi.fn().mockResolvedValue({
-      terminals: [
-        { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app', installed: true },
-        { id: 'iterm2', name: 'iTerm2', bundlePath: '/Applications/iTerm.app', installed: true },
-        { id: 'terminal', name: 'Terminal', bundlePath: '/System/Applications/Utilities/Terminal.app', installed: true },
-      ],
-    })
-    // @ts-expect-error mock
-    window.brover = { launch: { terminal, listTerminals } }
-
-    render(
-      <I18nProvider>
-        <ToastProvider>
-          <SecretsTestWrapper />
-        </ToastProvider>
-      </I18nProvider>
-    )
-
-    await waitFor(() => {
-      expect(listTerminals).toHaveBeenCalled()
-    })
-
-    fireEvent.click(screen.getByTestId('launch-menu-button'))
-
-    expect(screen.getByRole('menuitem', { name: 'Warp' })).toBeTruthy()
-    expect(screen.getByRole('menuitem', { name: 'iTerm2' })).toBeTruthy()
-    expect(screen.queryByRole('menuitem', { name: 'Terminal' })).toBeNull()
-
-    fireEvent.click(screen.getByRole('menuitem', { name: 'iTerm2' }))
-
-    await waitFor(() => {
-      expect(terminal).toHaveBeenCalledWith('target-1', 'iterm2')
-    })
-
-    expect(JSON.parse(window.localStorage.getItem('brover.launch-preferences') ?? '{}')).toEqual({
-      favoriteTerminalIds: ['iterm2', 'warp'],
-      defaultTerminalId: 'iterm2',
-    })
-  })
-
-  it('hides chevron menu when only one favorite installed terminal remains', async () => {
-    saveLaunchPreferences({
-      favoriteTerminalIds: ['warp', 'iterm2'],
-      defaultTerminalId: 'warp',
-    })
-    const terminal = vi.fn().mockResolvedValue({ success: true })
-    const listTerminals = vi.fn().mockResolvedValue({
-      terminals: [
-        { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app', installed: true },
-        { id: 'iterm2', name: 'iTerm2', bundlePath: '/Applications/iTerm.app', installed: false },
-        { id: 'terminal', name: 'Terminal', bundlePath: '/System/Applications/Utilities/Terminal.app', installed: true },
-      ],
-    })
-    // @ts-expect-error mock
-    window.brover = { launch: { terminal, listTerminals } }
-
-    render(
-      <I18nProvider>
-        <ToastProvider>
-          <SecretsTestWrapper />
-        </ToastProvider>
-      </I18nProvider>
-    )
-
-    await waitFor(() => {
-      expect(listTerminals).toHaveBeenCalled()
-    })
-
-    expect(screen.queryByTestId('launch-menu-button')).toBeNull()
-  })
 })

@@ -1,6 +1,5 @@
 import type {
   EnvMetadata,
-  EnvSpace,
   EnvTarget,
   OnboardingStatus,
   RetroactiveSelection,
@@ -26,20 +25,17 @@ export interface BroverAPI {
   deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>
   toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>
 
-  listSpaces: () => Promise<EnvSpace[]>
-  createSpace: (payload: { name: string; dotfilePath: string }) => Promise<EnvSpace[]>
-  renameSpace: (payload: { spaceId: string; name: string }) => Promise<EnvSpace[]>
-  deleteSpace: (spaceId: string) => Promise<EnvSpace[]>
-  toggleSpaceTiedSecrets: (spaceId: string) => Promise<EnvSpace[]>
+  getTiedTargets: () => Promise<boolean>
+  setTiedTargets: (tiedTargets: boolean) => Promise<boolean>
   pickDotfile: () => Promise<{ canceled: boolean; filePath: string | null }>
-  listTargets: (spaceId: string) => Promise<EnvTarget[]>
-  createTarget: (payload: { spaceId: string; name: string }) => Promise<EnvTarget[]>
+  listTargets: () => Promise<EnvTarget[]>
+  createTarget: (payload: { name: string }) => Promise<EnvTarget[]>
   deleteTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>
-  reorderTargets: (payload: { spaceId: string; orderedTargetIds: string[] }) => Promise<EnvTarget[]>
+  reorderTargets: (payload: { orderedTargetIds: string[] }) => Promise<EnvTarget[]>
   renameTarget: (payload: { targetId: string; name: string }) => Promise<EnvTarget[]>
   secretExists: (profile: string, name: string) => Promise<boolean>
   setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>
-  setActiveTarget: (payload: { spaceId: string; targetId: string }) => Promise<EnvTarget[]>
+  setActiveTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>
   launch: {
     terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }>
     listTerminals: () => Promise<{ terminals: TerminalApp[] }>

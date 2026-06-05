@@ -55,26 +55,27 @@
     "mode": {
       "retroactive": {
         "title": "Importar de dotfiles",
-        "desc": "Escanea .zshrc / .bashrc existentes e importa variables de entorno seleccionadas",
+        "desc": "Escanea dotfiles existentes, mueve secretos seleccionados a targets de Brover y elimina las lineas importadas de los archivos de origen.",
         "action": "Iniciar importacion"
       },
       "freshStart": {
         "title": "Empezar de cero",
-        "desc": "Configura nuevos secretos desde cero con una configuracion limpia. Los secretos actuales del sistema permanecen intactos.",
+        "desc": "Elige dotfiles para crear targets de Brover sin importar valores ni cambiar archivos de origen.",
         "action": "Empezar de cero"
       }
     },
     "confirmation": {
       "title": "Revisar plan de importacion",
+      "subtitle": "Brover creara un target por cada dotfile seleccionado antes de terminar la configuracion.",
       "toStore": "Secretos a almacenar en Keychain",
       "toRemove": "Lineas a eliminar de dotfiles",
       "ignoredNonSensitive": "Variables no sensibles ignoradas",
       "ignoredTitle": "Elementos ignorados",
-      "action": "Empezar a gestionar secretos"
+      "action": "Elegir terminales de launch"
     },
     "review": {
       "title": "Revisar variables escaneadas",
-      "subtitle": "Selecciona que variables contienen valores sensibles para importar de forma segura",
+      "subtitle": "Selecciona que variables contienen valores sensibles para moverlas a targets seguros de Brover.",
       "loading": "Escaneando dotfiles...",
       "error": "Error al escanear dotfiles",
       "warnings": "Escaneo completado con advertencias:",
@@ -86,7 +87,7 @@
     },
     "freshStartReview": {
       "title": "Nuevo inicio — Seleccionar archivos",
-      "subtitle": "Selecciona qué dotfiles incorporar en Brover.",
+      "subtitle": "Cada dotfile seleccionado se convierte en un target en Brover.",
       "loading": "Escaneando dotfiles...",
       "error": "Error al escanear dotfiles",
       "noFiles": "No se encontraron dotfiles",
@@ -101,7 +102,7 @@
     }
   },
   "spaces": {
-    "tiedTargetsTooltip": "Mantener nombres de secretos sincronizados en todos los targets de este espacio. Los valores permanecen especificos de cada target."
+    "tiedTargetsTooltip": "Mantener nombres de secretos sincronizados en todos los targets. Los valores permanecen especificos de cada target."
   },
   "launch": {
     "launch": "Launch",

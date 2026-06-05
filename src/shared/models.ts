@@ -1,5 +1,3 @@
-export type SpaceKind = 'dotfile'
-
 export interface EnvMetadata {
   id: string
   name: string
@@ -16,15 +14,6 @@ export interface SecretActionResult {
   expiresAt?: number | null
 }
 
-export interface EnvSpace {
-  id: string
-  name: string
-  kind: SpaceKind
-  dotfilePath: string
-  tiedSecrets: boolean
-  updatedAt: string
-}
-
 export interface TerminalApp {
   id: string
   name: string
@@ -34,7 +23,6 @@ export interface TerminalApp {
 
 export interface EnvTarget {
   id: string
-  spaceId: string
   name: string
   color: string
   isActive: boolean

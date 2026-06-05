@@ -1,8 +1,8 @@
-generatedAt: "2026-06-04T23:16:35.904Z"
+generatedAt: "2026-06-05T00:03:53.492Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
-fileCount: 45
-files[45]:
+fileCount: 46
+files[46]:
   - path: playwright.config.ts
     imports[1]:
       - moduleSpecifier: @playwright/test
@@ -359,7 +359,7 @@ files[45]:
       - moduleSpecifier: ../shared/models
         defaultImport: null
         namespaceImport: null
-        namedImports[4]: EnvMetadata,EnvSpace,EnvTarget,OnboardingStatus
+        namedImports[3]: EnvMetadata,EnvTarget,OnboardingStatus
       - moduleSpecifier: ../shared/validators
         defaultImport: null
         namespaceImport: null
@@ -472,7 +472,7 @@ files[45]:
       - name: BroverStore
         exported: true
         defaultExport: false
-        publicMethods[21]:
+        publicMethods[23]:
           - name: getOnboardingStatus
             async: true
             params[0]:
@@ -529,32 +529,43 @@ files[45]:
           - name: listSpaces
             async: true
             params[0]:
-            returnType: "Promise<EnvSpace[]>"
-            signature: "async listSpaces(): Promise<EnvSpace[]>"
+            returnType: "Promise<CompatSpace[]>"
+            signature: "async listSpaces(): Promise<CompatSpace[]>"
           - name: createSpace
             async: true
             params[1]{name,type}:
               payload,"{ name: string; dotfilePath: string }"
-            returnType: "Promise<EnvSpace[]>"
-            signature: "async createSpace(payload: { name: string; dotfilePath: string }): Promise<EnvSpace[]>"
+            returnType: "Promise<CompatSpace[]>"
+            signature: "async createSpace(payload: { name: string; dotfilePath: string }): Promise<CompatSpace[]>"
           - name: renameSpace
             async: true
             params[1]{name,type}:
               payload,"{ spaceId: string; name: string }"
-            returnType: "Promise<EnvSpace[]>"
-            signature: "async renameSpace(payload: { spaceId: string; name: string }): Promise<EnvSpace[]>"
+            returnType: "Promise<CompatSpace[]>"
+            signature: "async renameSpace(payload: { spaceId: string; name: string }): Promise<CompatSpace[]>"
           - name: deleteSpace
             async: true
             params[1]{name,type}:
               spaceId,string
-            returnType: "Promise<EnvSpace[]>"
-            signature: "async deleteSpace(spaceId: string): Promise<EnvSpace[]>"
+            returnType: "Promise<CompatSpace[]>"
+            signature: "async deleteSpace(spaceId: string): Promise<CompatSpace[]>"
           - name: toggleSpaceTiedSecrets
             async: true
             params[1]{name,type}:
               spaceId,string
-            returnType: "Promise<EnvSpace[]>"
-            signature: "async toggleSpaceTiedSecrets(spaceId: string): Promise<EnvSpace[]>"
+            returnType: "Promise<CompatSpace[]>"
+            signature: "async toggleSpaceTiedSecrets(spaceId: string): Promise<CompatSpace[]>"
+          - name: getTiedTargets
+            async: true
+            params[0]:
+            returnType: Promise<boolean>
+            signature: "async getTiedTargets(): Promise<boolean>"
+          - name: setTiedTargets
+            async: true
+            params[1]{name,type}:
+              tiedTargets,boolean
+            returnType: Promise<boolean>
+            signature: "async setTiedTargets(tiedTargets: boolean): Promise<boolean>"
           - name: listTargets
             async: true
             params[1]{name,type}:
@@ -564,9 +575,9 @@ files[45]:
           - name: createTarget
             async: true
             params[1]{name,type}:
-              payload,"{ spaceId: string; name: string }"
+              payload,"{ name: string; spaceId?: string }"
             returnType: "Promise<EnvTarget[]>"
-            signature: "async createTarget(payload: { spaceId: string; name: string }): Promise<EnvTarget[]>"
+            signature: "async createTarget(payload: { name: string; spaceId?: string }): Promise<EnvTarget[]>"
           - name: deleteTarget
             async: true
             params[1]{name,type}:
@@ -576,9 +587,9 @@ files[45]:
           - name: reorderTargets
             async: true
             params[1]{name,type}:
-              payload,"{ spaceId: string; orderedTargetIds: string[] }"
+              payload,"{ orderedTargetIds: string[]; spaceId?: string }"
             returnType: "Promise<EnvTarget[]>"
-            signature: "async reorderTargets(payload: { spaceId: string; orderedTargetIds: string[] }): Promise<EnvTarget[]>"
+            signature: "async reorderTargets(payload: { orderedTargetIds: string[]; spaceId?: string }): Promise<EnvTarget[]>"
           - name: renameTarget
             async: true
             params[1]{name,type}:
@@ -594,9 +605,9 @@ files[45]:
           - name: setActiveTarget
             async: true
             params[1]{name,type}:
-              payload,"{ spaceId: string; targetId: string }"
+              payload,"{ targetId: string; spaceId?: string }"
             returnType: "Promise<EnvTarget[]>"
-            signature: "async setActiveTarget(payload: { spaceId: string; targetId: string }): Promise<EnvTarget[]>"
+            signature: "async setActiveTarget(payload: { targetId: string; spaceId?: string }): Promise<EnvTarget[]>"
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/main/systemDialogs.ts
@@ -747,7 +758,7 @@ files[45]:
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/renderer/src/App.tsx
-    imports[13]:
+    imports[12]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
@@ -759,11 +770,7 @@ files[45]:
       - moduleSpecifier: ../../shared/models
         defaultImport: null
         namespaceImport: null
-        namedImports[3]: EnvMetadata,EnvSpace,EnvTarget
-      - moduleSpecifier: ./components/ui/button
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: Button
+        namedImports[2]: EnvMetadata,EnvTarget
       - moduleSpecifier: ./components/ui/confirmDialog
         defaultImport: null
         namespaceImport: null
@@ -780,10 +787,6 @@ files[45]:
         defaultImport: OnboardingFlow
         namespaceImport: null
         namedImports[0]:
-      - moduleSpecifier: ./features/secrets/SecretsDetail
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: SecretsDetail
       - moduleSpecifier: ./features/secrets/SecretsPanel
         defaultImport: null
         namespaceImport: null
@@ -800,6 +803,10 @@ files[45]:
         defaultImport: null
         namespaceImport: null
         namedImports[1]: SecretsDetailsPanel
+      - moduleSpecifier: ./features/terminals/TerminalSidebar
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: TerminalSidebar
     exports[1]{name,kind}:
       default,FunctionDeclaration
     functions[2]:
@@ -1539,7 +1546,7 @@ files[45]:
       SecretsDetailsPanel,false
     exportedHooks[0]:
   - path: src/renderer/src/features/secrets/SecretsPanel.tsx
-    imports[13]:
+    imports[12]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
@@ -1551,11 +1558,11 @@ files[45]:
       - moduleSpecifier: lucide-react
         defaultImport: null
         namespaceImport: null
-        namedImports[5]: Check,ChevronDown,KeyRound,Plus,Terminal
+        namedImports[2]: KeyRound,Plus
       - moduleSpecifier: ../../../../shared/models
         defaultImport: null
         namespaceImport: null
-        namedImports[2]: EnvMetadata,TerminalApp
+        namedImports[1]: EnvMetadata
       - moduleSpecifier: ../../../../shared/models
         defaultImport: null
         namespaceImport: null
@@ -1564,10 +1571,6 @@ files[45]:
         defaultImport: null
         namespaceImport: null
         namedImports[1]: useI18n
-      - moduleSpecifier: ../launch/preferences
-        defaultImport: null
-        namespaceImport: null
-        namedImports[4]: getLaunchPreferences,getPreferredTerminalId,promoteLaunchDefault,saveLaunchPreferences
       - moduleSpecifier: ../../components/ui/button
         defaultImport: null
         namespaceImport: null
@@ -1629,7 +1632,7 @@ files[45]:
       - moduleSpecifier: ../../../../shared/models
         defaultImport: null
         namespaceImport: null
-        namedImports[2]: EnvSpace,EnvTarget
+        namedImports[1]: EnvTarget
       - moduleSpecifier: ../../components/ui/confirmDialog
         defaultImport: null
         namespaceImport: null
@@ -1650,6 +1653,33 @@ files[45]:
     classes[0]:
     exportedConstants[1]{name,defaultExport}:
       SpacesSidebar,false
+    exportedHooks[0]:
+  - path: src/renderer/src/features/terminals/TerminalSidebar.tsx
+    imports[4]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[4]: memo,useEffect,useMemo,useState
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: Monitor,Play
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: TerminalApp
+      - moduleSpecifier: ../launch/preferences
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: getLaunchPreferences,promoteLaunchDefault,saveLaunchPreferences
+    exports[1]{name,kind}:
+      TerminalSidebar,VariableDeclaration
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[1]{name,defaultExport}:
+      TerminalSidebar,false
     exportedHooks[0]:
   - path: src/renderer/src/i18n/index.tsx
     imports[5]:
@@ -1767,7 +1797,7 @@ files[45]:
       - moduleSpecifier: ./models
         defaultImport: null
         namespaceImport: null
-        namedImports[9]: EnvMetadata,EnvSpace,EnvTarget,OnboardingStatus,RetroactiveSelection,ScanResult,SecretActionResult,OnboardingSummary,TerminalApp
+        namedImports[8]: EnvMetadata,EnvTarget,OnboardingStatus,RetroactiveSelection,ScanResult,SecretActionResult,OnboardingSummary,TerminalApp
     exports[2]{name,kind}:
       BroverAPI,InterfaceDeclaration
       RetroactivePayload,InterfaceDeclaration
@@ -1785,15 +1815,14 @@ files[45]:
         exported: true
         defaultExport: false
         text: "export interface BroverAPI { listEnvs: () => Promise<EnvMetadata[]> createEnv: (payload: { name: string; profile: string; value: string; description?: string..."
-        properties[25]: "listEnvs: () => Promise<EnvMetadata[]>","createEnv: (payload: { name: string; profile: string; value: string; description?: string }) => Promise<SecretActionResult>","revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>","copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>","updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","updateEnvConfirmed: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>","listSpaces: () => Promise<EnvSpace[]>","createSpace: (payload: { name: string; dotfilePath: string }) => Promise<EnvSpace[]>","renameSpace: (payload: { spaceId: string; name: string }) => Promise<EnvSpace[]>","deleteSpace: (spaceId: string) => Promise<EnvSpace[]>","toggleSpaceTiedSecrets: (spaceId: string) => Promise<EnvSpace[]>","pickDotfile: () => Promise<{ canceled: boolean; filePath: string | null }>","listTargets: (spaceId: string) => Promise<EnvTarget[]>","createTarget: (payload: { spaceId: string; name: string }) => Promise<EnvTarget[]>","deleteTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>","reorderTargets: (payload: { spaceId: string; orderedTargetIds: string[] }) => Promise<EnvTarget[]>","renameTarget: (payload: { targetId: string; name: string }) => Promise<EnvTarget[]>","secretExists: (profile: string, name: string) => Promise<boolean>","setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>","setActiveTarget: (payload: { spaceId: string; targetId: string }) => Promise<EnvTarget[]>","launch: { terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }> listTerminals: () => Promise<{ terminals: TerminalApp[] }> }","onboarding: { getStatus: () => Promise<OnboardingStatus> scanDotfiles: () => Promise<ScanResult> runRetroactive: (payload: RetroactivePayload) => Promise<Onb..."
+        properties[22]: "listEnvs: () => Promise<EnvMetadata[]>","createEnv: (payload: { name: string; profile: string; value: string; description?: string }) => Promise<SecretActionResult>","revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>","copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>","updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","updateEnvConfirmed: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>","getTiedTargets: () => Promise<boolean>","setTiedTargets: (tiedTargets: boolean) => Promise<boolean>","pickDotfile: () => Promise<{ canceled: boolean; filePath: string | null }>","listTargets: () => Promise<EnvTarget[]>","createTarget: (payload: { name: string }) => Promise<EnvTarget[]>","deleteTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>","reorderTargets: (payload: { orderedTargetIds: string[] }) => Promise<EnvTarget[]>","renameTarget: (payload: { targetId: string; name: string }) => Promise<EnvTarget[]>","secretExists: (profile: string, name: string) => Promise<boolean>","setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>","setActiveTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>","launch: { terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }> listTerminals: () => Promise<{ terminals: TerminalApp[] }> }","onboarding: { getStatus: () => Promise<OnboardingStatus> scanDotfiles: () => Promise<ScanResult> runRetroactive: (payload: RetroactivePayload) => Promise<Onb..."
     classes[0]:
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/shared/models.ts
     imports[0]:
-    exports[14]{name,kind}:
+    exports[12]{name,kind}:
       EnvMetadata,InterfaceDeclaration
-      EnvSpace,InterfaceDeclaration
       EnvTarget,InterfaceDeclaration
       OnboardingStatus,InterfaceDeclaration
       OnboardingSummary,InterfaceDeclaration
@@ -1803,12 +1832,11 @@ files[45]:
       ScanResult,InterfaceDeclaration
       ScanWarning,InterfaceDeclaration
       SecretActionResult,InterfaceDeclaration
-      SpaceKind,TypeAliasDeclaration
       TerminalApp,InterfaceDeclaration
       UNSUPPORTED_SECRET_BACKEND,VariableDeclaration
     functions[0]:
     reactComponents[0]:
-    types[13]:
+    types[11]:
       - name: EnvMetadata
         kind: interface
         exported: true
@@ -1821,12 +1849,6 @@ files[45]:
         defaultExport: false
         text: "export interface SecretActionResult { ok: boolean value?: string error?: string expiresAt?: number | null }"
         properties[4]: "ok: boolean","value?: string","error?: string","expiresAt?: number | null"
-      - name: EnvSpace
-        kind: interface
-        exported: true
-        defaultExport: false
-        text: "export interface EnvSpace { id: string name: string kind: SpaceKind dotfilePath: string tiedSecrets: boolean updatedAt: string }"
-        properties[6]: "id: string","name: string","kind: SpaceKind","dotfilePath: string","tiedSecrets: boolean","updatedAt: string"
       - name: TerminalApp
         kind: interface
         exported: true
@@ -1837,8 +1859,8 @@ files[45]:
         kind: interface
         exported: true
         defaultExport: false
-        text: "export interface EnvTarget { id: string spaceId: string name: string color: string isActive: boolean updatedAt: string }"
-        properties[6]: "id: string","spaceId: string","name: string","color: string","isActive: boolean","updatedAt: string"
+        text: "export interface EnvTarget { id: string name: string color: string isActive: boolean updatedAt: string }"
+        properties[5]: "id: string","name: string","color: string","isActive: boolean","updatedAt: string"
       - name: OnboardingStatus
         kind: interface
         exported: true
@@ -1881,12 +1903,6 @@ files[45]:
         defaultExport: false
         text: "export interface OnboardingSummary { importedSensitive: number removedFromDotfiles: number ignoredNonSensitive: number ignoredWithReason: { filePath: string;..."
         properties[4]: "importedSensitive: number","removedFromDotfiles: number","ignoredNonSensitive: number","ignoredWithReason: { filePath: string; reason: string }[]"
-      - name: SpaceKind
-        kind: typeAlias
-        exported: true
-        defaultExport: false
-        text: export type SpaceKind = 'dotfile'
-        properties[0]:
     classes[0]:
     exportedConstants[1]{name,defaultExport,literalValue}:
       UNSUPPORTED_SECRET_BACKEND,false,UNSUPPORTED_SECRET_BACKEND

@@ -91,4 +91,39 @@ describe('BroverStore onboarding', () => {
       cleanup()
     }
   })
+
+  it('legacy spaces tiedSecrets migrate to global tiedTargets', async () => {
+    const { store, cleanup } = createStore({
+      envs: [],
+      spaces: [
+        {
+          id: 'space-1',
+          name: 'Repo',
+          kind: 'dotfile',
+          dotfilePath: '/tmp/repo/.zshrc',
+          tiedSecrets: false,
+          updatedAt: '2026-06-04T00:00:00.000Z'
+        }
+      ],
+      targets: [
+        {
+          id: 'target-1',
+          spaceId: 'space-1',
+          name: 'default',
+          color: '#34d399',
+          isActive: true,
+          updatedAt: '2026-06-04T00:00:00.000Z'
+        }
+      ]
+    })
+
+    try {
+      await expect(store.getTiedTargets()).resolves.toBe(false)
+      const targets = await store.listTargets()
+      expect(targets).toHaveLength(1)
+      expect(targets[0]?.name).toBe('default')
+    } finally {
+      cleanup()
+    }
+  })
 })
