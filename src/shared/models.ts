@@ -19,6 +19,7 @@ export interface TerminalApp {
   name: string
   bundlePath: string
   installed: boolean
+  iconDataUrl?: string
 }
 
 export interface EnvTarget {

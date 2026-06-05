@@ -44,9 +44,9 @@ describe('TerminalSidebar', () => {
       launch: {
         listTerminals: vi.fn().mockResolvedValue({
           terminals: [
-            { id: 'warp', name: 'Warp', bundlePath: '/Warp.app', installed: true },
-            { id: 'iterm2', name: 'iTerm2', bundlePath: '/iTerm.app', installed: true },
-            { id: 'terminal', name: 'Terminal', bundlePath: '/Terminal.app', installed: true },
+            { id: 'warp', name: 'Warp', bundlePath: '/Warp.app', installed: true, iconDataUrl: 'data:image/png;base64,warp' },
+            { id: 'iterm2', name: 'iTerm2', bundlePath: '/iTerm.app', installed: true, iconDataUrl: 'data:image/png;base64,iterm2' },
+            { id: 'terminal', name: 'Terminal', bundlePath: '/Terminal.app', installed: true, iconDataUrl: 'data:image/png;base64,terminal' },
           ],
         }),
         terminal: vi.fn().mockResolvedValue({ success: true }),
@@ -74,6 +74,10 @@ describe('TerminalSidebar', () => {
         'terminal-launch-terminal',
       ])
     })
+
+    expect(screen.queryByText('TERMINALS')).toBeNull()
+    expect(screen.getByTestId('terminal-launch-iterm2').getAttribute('title')).toBe('iTerm2')
+    expect(screen.getByTestId('terminal-icon-iterm2').getAttribute('src')).toBe('data:image/png;base64,iterm2')
   })
 
   it('clicking terminal launches selected target', async () => {

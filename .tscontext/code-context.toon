@@ -1,4 +1,4 @@
-generatedAt: "2026-06-05T00:03:53.492Z"
+generatedAt: "2026-06-05T00:14:26.682Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 46
@@ -1655,15 +1655,11 @@ files[46]:
       SpacesSidebar,false
     exportedHooks[0]:
   - path: src/renderer/src/features/terminals/TerminalSidebar.tsx
-    imports[4]:
+    imports[3]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
         namedImports[4]: memo,useEffect,useMemo,useState
-      - moduleSpecifier: lucide-react
-        defaultImport: null
-        namespaceImport: null
-        namedImports[2]: Monitor,Play
       - moduleSpecifier: ../../../../shared/models
         defaultImport: null
         namespaceImport: null
@@ -1853,8 +1849,8 @@ files[46]:
         kind: interface
         exported: true
         defaultExport: false
-        text: "export interface TerminalApp { id: string name: string bundlePath: string installed: boolean }"
-        properties[4]: "id: string","name: string","bundlePath: string","installed: boolean"
+        text: "export interface TerminalApp { id: string name: string bundlePath: string installed: boolean iconDataUrl?: string }"
+        properties[5]: "id: string","name: string","bundlePath: string","installed: boolean","iconDataUrl?: string"
       - name: EnvTarget
         kind: interface
         exported: true

@@ -1,5 +1,4 @@
 import { memo, useEffect, useMemo, useState } from 'react'
-import { Monitor, Play } from 'lucide-react'
 import type { TerminalApp } from '../../../../shared/models'
 import { getLaunchPreferences, promoteLaunchDefault, saveLaunchPreferences } from '../launch/preferences'
 
@@ -56,35 +55,42 @@ export const TerminalSidebar = memo(function TerminalSidebar(props: TerminalSide
   }
 
   return (
-    <aside className="flex h-full flex-col border-r border-edge/60 bg-panel/90 px-4 py-3">
-      <div className="flex items-center gap-2">
-        <Monitor className="h-4 w-4 text-text-muted" />
-        <h1 className="text-sm font-semibold tracking-wide text-text-base">TERMINALS</h1>
-      </div>
-
-      <div className="mt-3 grid gap-2">
+    <aside className="flex h-full flex-col items-center border-r border-edge/60 bg-surface-sidebar px-2 py-4">
+      <div className="mt-7 flex w-full flex-1 flex-col items-center gap-2">
         {orderedTerminals.map((terminal) => (
           <button
             key={terminal.id}
             type="button"
             data-testid={`terminal-launch-${terminal.id}`}
-            className="flex items-center gap-2 rounded-lg border border-edge bg-surface-card px-3 py-2 text-left text-sm text-text-base hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-edge bg-[rgba(15,23,42,0.65)] transition hover:border-slate-400 hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!selectedTargetId}
             onClick={() => void launchTerminal(terminal.id)}
+            title={terminal.name}
+            aria-label={terminal.name}
           >
-            <Play className="h-4 w-4 text-accent" />
-            <span>{terminal.name}</span>
+            {terminal.iconDataUrl ? (
+              <img
+                data-testid={`terminal-icon-${terminal.id}`}
+                src={terminal.iconDataUrl}
+                alt={terminal.name}
+                className="h-6 w-6 rounded-md"
+              />
+            ) : (
+              <span className="text-xs font-semibold text-text-base">
+                {terminal.name.slice(0, 2).toUpperCase()}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
-      <select className="mt-auto w-full rounded-lg border border-edge bg-surface-base px-2 py-2 text-xs text-text-base outline-none focus-visible:ring-2 focus-visible:ring-accent" value={locale} onChange={(event) => onLocaleChange(event.target.value as 'en' | 'es' | 'pt')}>
+      <select className="mt-auto w-full rounded-lg border border-edge bg-surface-base px-1 py-1 text-[10px] text-text-base outline-none focus-visible:ring-2 focus-visible:ring-accent" value={locale} onChange={(event) => onLocaleChange(event.target.value as 'en' | 'es' | 'pt')}>
         <option value="en">EN</option>
         <option value="es">ES</option>
         <option value="pt">PT</option>
       </select>
 
-      <p className="mt-3 text-xs text-slate-500">
+      <p className="mt-3 text-center text-xs text-slate-500">
         {title} · {subtitle}
       </p>
     </aside>

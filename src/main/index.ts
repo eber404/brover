@@ -136,7 +136,17 @@ async function bootstrap() {
   })
 
   ipcMain.handle('launch:list-terminals', () => {
-    return { terminals: terminalLauncher.listTerminals() }
+    return Promise.all(
+      terminalLauncher.listTerminals().map(async (terminal) => {
+        try {
+          const icon = await app.getFileIcon(terminal.bundlePath, { size: 'normal' })
+          const iconDataUrl = icon.isEmpty() ? undefined : icon.toDataURL()
+          return { ...terminal, iconDataUrl }
+        } catch {
+          return terminal
+        }
+      })
+    ).then((terminals) => ({ terminals }))
   })
 
   ipcMain.handle('secrets:exists', (_, payload: { profile: string; name: string }) =>

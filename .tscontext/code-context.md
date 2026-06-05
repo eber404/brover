@@ -1,6 +1,6 @@
 # Code Context Summary
 
-Generated: 2026-06-05T00:03:53.492Z
+Generated: 2026-06-05T00:14:26.682Z
 Files: 46
 
 ## `playwright.config.ts`
@@ -448,7 +448,7 @@ Exported Constants: `SpacesSidebar`
 
 ## `src/renderer/src/features/terminals/TerminalSidebar.tsx`
 
-Imports: `react`, `lucide-react`, `../../../../shared/models`, `../launch/preferences`
+Imports: `react`, `../../../../shared/models`, `../launch/preferences`
 
 Exports: `TerminalSidebar` (VariableDeclaration)
 
