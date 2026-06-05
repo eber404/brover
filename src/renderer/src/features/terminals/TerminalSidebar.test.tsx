@@ -101,6 +101,8 @@ describe('TerminalSidebar', () => {
     expect(screen.queryByText('TERMINALS')).toBeNull()
     expect(screen.getByTestId('terminal-launch-iterm2').getAttribute('title')).toBe('iTerm2')
     expect(screen.getByTestId('terminal-icon-iterm2').getAttribute('src')).toBe('data:image/png;base64,iterm2')
+    expect(screen.getByTestId('terminal-icon-iterm2').className).toContain('h-8')
+    expect(screen.getByTestId('terminal-icon-iterm2').className).toContain('w-8')
     expect(screen.getByTestId('terminal-add-button')).toBeTruthy()
     expect(screen.queryByTestId('terminal-launch-terminal')).toBeNull()
   })

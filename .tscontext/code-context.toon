@@ -1,4 +1,4 @@
-generatedAt: "2026-06-05T20:47:48.625Z"
+generatedAt: "2026-06-05T20:59:36.685Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 46
@@ -630,7 +630,7 @@ files[46]:
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/main/terminalIconLoader.ts
-    imports[5]:
+    imports[6]:
       - moduleSpecifier: "node:util"
         defaultImport: null
         namespaceImport: null
@@ -643,17 +643,29 @@ files[46]:
         defaultImport: null
         namespaceImport: null
         namedImports[1]: existsSync
+      - moduleSpecifier: "node:os"
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: tmpdir
       - moduleSpecifier: "node:path"
         defaultImport: null
         namespaceImport: null
-        namedImports[1]: join
+        namedImports[2]: basename,join
       - moduleSpecifier: electron
         defaultImport: null
         namespaceImport: null
         namedImports[3]: app,nativeImage,type NativeImage
     exports[1]{name,kind}:
       loadTerminalIconDataUrl,FunctionDeclaration
-    functions[3]:
+    functions[4]:
+      - name: convertIcnsToPng
+        exported: false
+        defaultExport: false
+        async: true
+        params[1]{name,type}:
+          iconPath,string
+        returnType: Promise<string | null>
+        signature: "async convertIcnsToPng(iconPath: string): Promise<string | null>"
       - name: loadTerminalIconDataUrl
         exported: true
         defaultExport: false

@@ -1,7 +1,12 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import type { TerminalApp } from '../../../../shared/models'
-import { getLaunchPreferences, promoteLaunchDefault, saveLaunchPreferences, type LaunchPreferences } from '../launch/preferences'
+import {
+  getLaunchPreferences,
+  promoteLaunchDefault,
+  saveLaunchPreferences,
+  type LaunchPreferences,
+} from '../launch/preferences'
 import { useI18n } from '../../i18n'
 import { useToast } from '../../components/ui/toaster'
 
@@ -13,14 +18,16 @@ interface TerminalSidebarProps {
   selectedTargetId: string | null
 }
 
-export const TerminalSidebar = memo(function TerminalSidebar(props: TerminalSidebarProps) {
+export const TerminalSidebar = memo(function TerminalSidebar(
+  props: TerminalSidebarProps
+) {
   const { title, subtitle, locale, onLocaleChange, selectedTargetId } = props
   const { t } = useI18n()
   const { toast } = useToast()
   const asideRef = useRef<HTMLElement | null>(null)
   const [terminals, setTerminals] = useState<TerminalApp[]>([])
-  const [launchPreferences, setLaunchPreferences] = useState<LaunchPreferences>(() =>
-    getLaunchPreferences([])
+  const [launchPreferences, setLaunchPreferences] = useState<LaunchPreferences>(
+    () => getLaunchPreferences([])
   )
   const [contextMenu, setContextMenu] = useState<{
     terminalId: string
@@ -35,9 +42,15 @@ export const TerminalSidebar = memo(function TerminalSidebar(props: TerminalSide
       .listTerminals()
       .then(({ terminals: nextTerminals }) => {
         if (cancelled) return
-        const installedTerminals = nextTerminals.filter((terminal) => terminal.installed)
+        const installedTerminals = nextTerminals.filter(
+          (terminal) => terminal.installed
+        )
         setTerminals(installedTerminals)
-        setLaunchPreferences(getLaunchPreferences(installedTerminals.map((terminal) => terminal.id)))
+        setLaunchPreferences(
+          getLaunchPreferences(
+            installedTerminals.map((terminal) => terminal.id)
+          )
+        )
       })
       .catch(() => {
         if (cancelled) return
@@ -51,17 +64,21 @@ export const TerminalSidebar = memo(function TerminalSidebar(props: TerminalSide
 
   const orderedTerminals = useMemo(() => {
     if (terminals.length === 0) return []
-    const rank = new Map(launchPreferences.favoriteTerminalIds.map((id, index) => [id, index]))
+    const rank = new Map(
+      launchPreferences.favoriteTerminalIds.map((id, index) => [id, index])
+    )
     return terminals
-      .filter((terminal) => launchPreferences.favoriteTerminalIds.includes(terminal.id))
+      .filter((terminal) =>
+        launchPreferences.favoriteTerminalIds.includes(terminal.id)
+      )
       .sort((a, b) => {
-      const aRank = rank.get(a.id)
-      const bRank = rank.get(b.id)
-      if (aRank == null && bRank == null) return a.name.localeCompare(b.name)
-      if (aRank == null) return 1
-      if (bRank == null) return -1
-      return aRank - bRank
-    })
+        const aRank = rank.get(a.id)
+        const bRank = rank.get(b.id)
+        if (aRank == null && bRank == null) return a.name.localeCompare(b.name)
+        if (aRank == null) return 1
+        if (bRank == null) return -1
+        return aRank - bRank
+      })
   }, [launchPreferences.favoriteTerminalIds, terminals])
 
   async function launchTerminal(terminalId: string) {
@@ -78,10 +95,14 @@ export const TerminalSidebar = memo(function TerminalSidebar(props: TerminalSide
     }
 
     const nextPreferences = {
-      favoriteTerminalIds: [...launchPreferences.favoriteTerminalIds, terminalId],
-      defaultTerminalId: launchPreferences.favoriteTerminalIds.length === 0
-        ? terminalId
-        : launchPreferences.defaultTerminalId,
+      favoriteTerminalIds: [
+        ...launchPreferences.favoriteTerminalIds,
+        terminalId,
+      ],
+      defaultTerminalId:
+        launchPreferences.favoriteTerminalIds.length === 0
+          ? terminalId
+          : launchPreferences.defaultTerminalId,
     }
     setLaunchPreferences(nextPreferences)
     saveLaunchPreferences(nextPreferences)
@@ -92,10 +113,12 @@ export const TerminalSidebar = memo(function TerminalSidebar(props: TerminalSide
       return
     }
 
-    const favoriteTerminalIds = launchPreferences.favoriteTerminalIds.filter((id) => id !== terminalId)
+    const favoriteTerminalIds = launchPreferences.favoriteTerminalIds.filter(
+      (id) => id !== terminalId
+    )
     const defaultTerminalId =
       launchPreferences.defaultTerminalId === terminalId
-        ? favoriteTerminalIds[0] ?? ''
+        ? (favoriteTerminalIds[0] ?? '')
         : launchPreferences.defaultTerminalId
 
     const nextPreferences = {
@@ -135,7 +158,10 @@ export const TerminalSidebar = memo(function TerminalSidebar(props: TerminalSide
   }
 
   return (
-    <aside ref={asideRef} className="relative flex h-full flex-col items-center border-r border-edge/60 bg-surface-sidebar px-2 py-4">
+    <aside
+      ref={asideRef}
+      className="relative flex h-full flex-col items-center border-r border-edge/60 bg-surface-sidebar px-2 py-4"
+    >
       <div className="mt-7 flex w-full flex-1 flex-col items-center gap-2">
         {orderedTerminals.map((terminal) => (
           <button
@@ -164,7 +190,7 @@ export const TerminalSidebar = memo(function TerminalSidebar(props: TerminalSide
                 data-testid={`terminal-icon-${terminal.id}`}
                 src={terminal.iconDataUrl}
                 alt={terminal.name}
-                className="h-6 w-6 rounded-md"
+                className="h-8 w-8 rounded-md"
               />
             ) : (
               <span className="text-xs font-semibold text-text-base">
@@ -208,7 +234,13 @@ export const TerminalSidebar = memo(function TerminalSidebar(props: TerminalSide
         </div>
       ) : null}
 
-      <select className="mt-auto w-full rounded-lg border border-edge bg-surface-base px-1 py-1 text-[10px] text-text-base outline-none focus-visible:ring-2 focus-visible:ring-accent" value={locale} onChange={(event) => onLocaleChange(event.target.value as 'en' | 'es' | 'pt')}>
+      <select
+        className="mt-auto w-full rounded-lg border border-edge bg-surface-base px-1 py-1 text-[10px] text-text-base outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        value={locale}
+        onChange={(event) =>
+          onLocaleChange(event.target.value as 'en' | 'es' | 'pt')
+        }
+      >
         <option value="en">EN</option>
         <option value="es">ES</option>
         <option value="pt">PT</option>
