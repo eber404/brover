@@ -4,11 +4,11 @@
   "private": true,
   "main": "dist-electron/main/main.js",
   "scripts": {
-    "dev": "concurrently \"npm:dev:renderer\" \"npm:dev:main\" \"npm:dev:electron\"",
+    "dev": "concurrently \"bun:dev:renderer\" \"bun:dev:main\" \"bun:dev:electron\"",
     "dev:renderer": "vite",
     "dev:main": "tsup src/main/main.ts src/preload/preload.ts --format cjs --out-dir dist-electron --watch --external electron",
     "dev:electron": "wait-on http-get://127.0.0.1:5173 file:dist-electron/main/main.js file:dist-electron/preload/preload.js && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .",
-    "build": "npm run build:renderer && npm run build:main",
+    "build": "bun run build:renderer && bun run build:main",
     "build:renderer": "vite build",
     "build:main": "tsup src/main/main.ts src/preload/preload.ts --format cjs --out-dir dist-electron --external electron",
     "preview": "vite preview",
@@ -17,11 +17,11 @@
     "test:coverage": "vitest run --coverage --coverage.reporter=text --coverage.reporter=lcov --coverage.reporter=html --coverage.reporter=json-summary",
     "test:coverage:text": "vitest run --coverage --coverage.reporter=text",
     "coverage:badge": "node scripts/generateCoverageBadge.mjs coverage/coverage-summary.json .badge-dist/coverage-badge.svg",
-    "test:e2e": "npm run build && npx playwright test",
-    "tsc": "npx tsc --noEmit",
+    "test:e2e": "bun run build && bunx playwright test",
+    "tsc": "bunx tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx",
     "tscontext": "/opt/homebrew/bin/bun /Users/eber/dev/tscontext/src/cli.ts extract --repo . --out .tscontext/code-context --profile default",
-    "precommit": "npm run tscontext && git add .tscontext/code-context.toon .tscontext/code-context.md",
+    "precommit": "bun run tscontext && git add .tscontext/code-context.toon .tscontext/code-context.md",
     "postinstall": "[ -d .git ] && git config core.hooksPath .githooks && chmod +x .githooks/pre-commit || true"
   },
   "dependencies": {
