@@ -1,7 +1,7 @@
 # Code Context Summary
 
-Generated: 2026-06-06T01:36:18.397Z
-Files: 46
+Generated: 2026-06-06T01:48:19.786Z
+Files: 45
 
 ## `playwright.config.ts`
 
@@ -522,10 +522,6 @@ Functions:
 Imports: `tailwindcss`
 
 Exports: `default` (SatisfiesExpression)
-
-## `tests/bun.setup.ts`
-
-Imports: `jsdom`
 
 ## `vite.config.ts`
 

@@ -13,7 +13,6 @@
     "build:main": "tsup src/main/main.ts src/preload/preload.ts --format cjs --out-dir dist-electron --external electron",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:bun": "bun test",
     "test:coverage": "vitest run --coverage --coverage.reporter=text --coverage.reporter=lcov --coverage.reporter=html --coverage.reporter=json-summary",
     "test:coverage:text": "vitest run --coverage --coverage.reporter=text",
     "coverage:badge": "node scripts/generateCoverageBadge.mjs coverage/coverage-summary.json .badge-dist/coverage-badge.svg",
@@ -21,7 +20,7 @@
     "tsc": "bunx tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx",
     "tscontext": "/opt/homebrew/bin/bun /Users/eber/dev/tscontext/src/cli.ts extract --repo . --out .tscontext/code-context --profile default",
-    "precommit": "bun run tscontext && git add .tscontext/code-context.toon .tscontext/code-context.md",
+    "precommit": "bun run tsc && bun run test && bun run tscontext && git add .tscontext/code-context.toon .tscontext/code-context.md",
     "postinstall": "[ -d .git ] && git config core.hooksPath .githooks && chmod +x .githooks/pre-commit || true"
   },
   "dependencies": {

@@ -1,8 +1,8 @@
-generatedAt: "2026-06-06T01:36:18.397Z"
+generatedAt: "2026-06-06T01:48:19.786Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
-fileCount: 46
-files[46]:
+fileCount: 45
+files[45]:
   - path: playwright.config.ts
     imports[1]:
       - moduleSpecifier: @playwright/test
@@ -1958,19 +1958,6 @@ files[46]:
         namedImports[1]: Config
     exports[1]{name,kind}:
       default,SatisfiesExpression
-    functions[0]:
-    reactComponents[0]:
-    types[0]:
-    classes[0]:
-    exportedConstants[0]:
-    exportedHooks[0]:
-  - path: tests/bun.setup.ts
-    imports[1]:
-      - moduleSpecifier: jsdom
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: JSDOM
-    exports[0]:
     functions[0]:
     reactComponents[0]:
     types[0]:
