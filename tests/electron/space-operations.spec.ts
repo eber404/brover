@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 
 const electronAppPath = join(__dirname, '../..')
 
-test.describe('Space Operations Flow', () => {
+test.describe('Target Scope Operations Flow', () => {
   let electronApp: Awaited<ReturnType<typeof electron.launch>>
   let dbDir: string
 
@@ -29,101 +29,79 @@ test.describe('Space Operations Flow', () => {
     rmSync(dbDir, { recursive: true, force: true })
   })
 
-  test('rename space', async () => {
+  test('rename target', async () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
-    const spaceName = `pw-space-${Date.now()}`
-    const renamed = `${spaceName}-renamed`
+    const targetName = `pw-target-${Date.now()}`
+    const renamed = `${targetName}-renamed`
 
     const result = await window.evaluate(
-      async ({ spaceName, renamed }) => {
-        const spaces = await window.brover.createSpace({
-          name: spaceName,
-          dotfilePath: `/tmp/${spaceName}.zshrc`,
-        })
-        const created = spaces.find((item) => item.name === spaceName)
-        if (!created) throw new Error('Failed to create space')
+      async ({ targetName, renamed }) => {
+        const targets = await window.brover.createTarget({ name: targetName })
+        const created = targets.find((item) => item.name === targetName)
+        if (!created) throw new Error('Failed to create target')
 
-        const updated = await window.brover.renameSpace({
-          spaceId: created.id,
+        const updated = await window.brover.renameTarget({
+          targetId: created.id,
           name: renamed,
         })
         const afterRename = updated.find((item) => item.id === created.id)
 
         return {
-          originalName: spaceName,
+          originalName: targetName,
           renamedName: afterRename?.name,
         }
       },
-      { spaceName, renamed }
+      { targetName, renamed }
     )
 
-    expect(result.originalName).toBe(spaceName)
+    expect(result.originalName).toBe(targetName)
     expect(result.renamedName).toBe(renamed)
   })
 
-  test('toggle space tied secrets', async () => {
+  test('toggle tied targets', async () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
-    const spaceName = `pw-space-${Date.now()}`
-
-    const result = await window.evaluate(
-      async ({ spaceName }) => {
-        const spaces = await window.brover.createSpace({
-          name: spaceName,
-          dotfilePath: `/tmp/${spaceName}.zshrc`,
-        })
-        const created = spaces.find((item) => item.name === spaceName)
-        if (!created) throw new Error('Failed to create space')
-
-        const initialTied = created.tiedSecrets
-
-        const toggled = await window.brover.toggleSpaceTiedSecrets(created.id)
-        const afterToggle = toggled.find((item) => item.id === created.id)
-
-        const toggledAgain = await window.brover.toggleSpaceTiedSecrets(created.id)
-        const afterToggleAgain = toggledAgain.find((item) => item.id === created.id)
+    const result = await window.evaluate(async () => {
+        const initialTied = await window.brover.getTiedTargets()
+        const afterToggle = await window.brover.setTiedTargets(!initialTied)
+        const afterToggleAgain = await window.brover.setTiedTargets(initialTied)
 
         return {
           initialTied,
-          afterToggleTied: afterToggle?.tiedSecrets,
-          afterToggleAgainTied: afterToggleAgain?.tiedSecrets,
+          afterToggleTied: afterToggle,
+          afterToggleAgainTied: afterToggleAgain,
         }
-      },
-      { spaceName }
-    )
+      })
 
     expect(result.initialTied).toBe(true)
     expect(result.afterToggleTied).toBe(false)
     expect(result.afterToggleAgainTied).toBe(true)
   })
 
-  test('renameSpace rejects empty name', async () => {
+  test('renameTarget rejects empty name', async () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
-    const spaceName = `pw-space-${Date.now()}`
+    const targetName = `pw-target-${Date.now()}`
 
-    const result = await window.evaluate(async ({ spaceName }) => {
-      const spaces = await window.brover.createSpace({
-        name: spaceName,
-        dotfilePath: `/tmp/${spaceName}.zshrc`,
-      })
-      const created = spaces.find((item) => item.name === spaceName)
-      if (!created) throw new Error('Failed to create space')
+    const result = await window.evaluate(async ({ targetName }) => {
+      const targets = await window.brover.createTarget({ name: targetName })
+      const created = targets.find((item) => item.name === targetName)
+      if (!created) throw new Error('Failed to create target')
 
       try {
-        await window.brover.renameSpace({
-          spaceId: created.id,
+        await window.brover.renameTarget({
+          targetId: created.id,
           name: '   ',
         })
         return { success: false }
       } catch (e) {
         return { success: true, error: (e as Error).message }
       }
-    }, { spaceName })
+    }, { targetName })
 
     expect(result.success).toBe(true)
   })

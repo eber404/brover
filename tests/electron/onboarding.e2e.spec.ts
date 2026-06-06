@@ -71,11 +71,11 @@ test.describe('Onboarding First-Run Flow', () => {
 
     await window.getByRole('button', { name: /continue/i }).click()
     await expect(window.getByText('Review import plan')).toBeVisible({ timeout: 10000 })
-    await window.getByRole('button', { name: /start managing secrets/i }).click()
+    await window.getByRole('button', { name: /choose launch terminals/i }).click()
 
     await expect(window.getByText('Choose launch terminals')).toBeVisible({ timeout: 10000 })
     await window.getByRole('checkbox', { name: 'Terminal' }).check()
-    await window.getByRole('button', { name: /save preferences and finish/i }).click()
+    await window.getByRole('button', { name: /start managing secrets/i }).click()
 
     const searchInput = window.locator(
       'input[placeholder*="Search secrets"]',
@@ -89,60 +89,40 @@ test.describe('Onboarding First-Run Flow', () => {
     const bashrc = readFileSync(join(homeDir, '.bashrc'), 'utf8')
     expect(bashrc).toContain('DB_URL=postgres://localhost')
 
-    const spaces = await window.evaluate(() => window.brover.listSpaces())
-    const dotfileSpace = spaces.find((s) => s.name === '.zshrc')
-    expect(dotfileSpace).toBeDefined()
+    const targets = await window.evaluate(() => window.brover.listTargets())
+    const dotfileTarget = targets.find((target) => target.name === '.zshrc')
+    expect(dotfileTarget).toBeDefined()
 
-    const targets = await window.evaluate(
-      (spaceId) => window.brover.listTargets(spaceId),
-      dotfileSpace!.id,
-    )
-    expect(targets).toHaveLength(1)
-
-    const envs = await window.evaluate(
-      (targetId) => window.brover.listEnvs(targetId),
-      targets[0].id,
-    )
-    expect(envs).toHaveLength(1)
-    expect(envs[0].name).toBe('API_KEY')
+    const envs = await window.evaluate(() => window.brover.listEnvs())
+    const importedEnv = envs.find((env) => env.profile === dotfileTarget!.id)
+    expect(importedEnv?.name).toBe('API_KEY')
   })
 
-  test('fresh start creates spaces without env import', async () => {
+  test('fresh start creates default target without env import', async () => {
     const window = await launchApp()
 
     await window.getByText('Start fresh →').click()
-    await expect(window.getByText('Fresh Start — Select dotfiles')).toBeVisible({ timeout: 10000 })
-    await window.getByText('.zshrc', { exact: true }).first().click()
-    await window.getByText('.bashrc', { exact: true }).first().click()
-    await window.getByRole('button', { name: /start managing secrets/i }).click()
-
     await expect(window.getByText('Choose launch terminals')).toBeVisible({ timeout: 10000 })
     await window.getByRole('checkbox', { name: 'Terminal' }).check()
-    await window.getByRole('button', { name: /save preferences and finish/i }).click()
+    await window.getByRole('button', { name: /start managing secrets/i }).click()
 
     const searchInput = window.locator(
       'input[placeholder*="Search secrets"]',
     )
     await expect(searchInput).toBeVisible({ timeout: 10000 })
 
-    const spaces = await window.evaluate(() => window.brover.listSpaces())
-    const zshrcSpace = spaces.find((s) => s.name === '.zshrc')
-    expect(zshrcSpace).toBeDefined()
-    const bashrcSpace = spaces.find((s) => s.name === '.bashrc')
-    expect(bashrcSpace).toBeDefined()
+    const targets = await window.evaluate(() => window.brover.listTargets())
+    expect(targets).toHaveLength(1)
+    expect(targets[0]?.name).toBe('default')
   })
 
   test('second launch skips onboarding after completion', async () => {
     const window = await launchApp()
 
     await window.getByText('Start fresh →').click()
-    await expect(window.getByText('Fresh Start — Select dotfiles')).toBeVisible({ timeout: 10000 })
-    await window.getByText('.zshrc', { exact: true }).first().click()
-    await window.getByText('.bashrc', { exact: true }).first().click()
-    await window.getByRole('button', { name: /start managing secrets/i }).click()
     await expect(window.getByText('Choose launch terminals')).toBeVisible({ timeout: 10000 })
     await window.getByRole('checkbox', { name: 'Terminal' }).check()
-    await window.getByRole('button', { name: /save preferences and finish/i }).click()
+    await window.getByRole('button', { name: /start managing secrets/i }).click()
 
     await expect(
       window.locator('input[placeholder*="Search secrets"]'),

@@ -29,19 +29,14 @@ test.describe('Secret Delete Confirmation', () => {
     rmSync(dbDir, { recursive: true, force: true })
   })
 
-  test('deletes directly when auth cache exists', async () => {
+  test('requires confirmation when auth cache exists', async () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
     const target = await window.evaluate(async () => {
-      const spaceName = `delete-space-${Date.now()}`
-      const spaces = await window.brover.createSpace({
-        name: spaceName,
-        dotfilePath: `/tmp/${spaceName}.zshrc`,
+      const targets = await window.brover.createTarget({
+        name: `delete-target-${Date.now()}`,
       })
-      const space = spaces.find((s) => s.name === spaceName)
-      if (!space) throw new Error('No space available')
-      const targets = await window.brover.listTargets(space.id)
       return targets.find((t) => t.isActive) ?? targets[0]
     })
 
@@ -61,13 +56,16 @@ test.describe('Secret Delete Confirmation', () => {
       await window.brover.revealEnv({ profile: targetId, name })
     }, { targetId: target.id, name: secretName })
 
-    // Cached auth should allow delete without extra confirmation
+    // Cached auth triggers confirmation flow instead of re-prompting auth.
     const deleteResult = await window.evaluate(async ({ id, targetId, name }) => {
-      return window.brover.deleteEnv({ id, profile: targetId, name })
+      const result = await window.brover.deleteEnv({ id, profile: targetId, name })
+      if (result.value === 'needs-confirmation') {
+        return window.brover.deleteEnvConfirmed({ id, profile: targetId, name })
+      }
+      return result
     }, { id: env.id, targetId: target.id, name: secretName })
 
     expect(deleteResult.ok).toBe(true)
-    expect(deleteResult.value).toBeUndefined()
 
     // Verify deleted
     const remaining = await window.evaluate(async ({ name }) => {
@@ -81,14 +79,9 @@ test.describe('Secret Delete Confirmation', () => {
     await window.waitForFunction(() => Boolean(window.brover))
 
     const target = await window.evaluate(async () => {
-      const spaceName = `delete-space-${Date.now()}`
-      const spaces = await window.brover.createSpace({
-        name: spaceName,
-        dotfilePath: `/tmp/${spaceName}.zshrc`,
+      const targets = await window.brover.createTarget({
+        name: `delete-target-${Date.now()}`,
       })
-      const space = spaces.find((s) => s.name === spaceName)
-      if (!space) throw new Error('No space available')
-      const targets = await window.brover.listTargets(space.id)
       return targets.find((t) => t.isActive) ?? targets[0]
     })
 

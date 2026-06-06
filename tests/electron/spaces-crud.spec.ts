@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 
 const electronAppPath = join(__dirname, '../..')
 
-test.describe('Spaces CRUD Flow', () => {
+test.describe('Targets Cleanup Flow', () => {
   let electronApp: Awaited<ReturnType<typeof electron.launch>>
   let dbDir: string
 
@@ -29,28 +29,20 @@ test.describe('Spaces CRUD Flow', () => {
     rmSync(dbDir, { recursive: true, force: true })
   })
 
-  test('create space with targets and secrets, then delete space cleans everything', async () => {
+  test('create targets with secrets, then delete targets cleans everything', async () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
-    const spaceName = `pw-space-${Date.now()}`
+    const defaultTargetName = `pw-target-${Date.now()}`
     const secretName = `PW_SECRET_${Date.now()}`
 
     const result = await window.evaluate(
-      async ({ spaceName, secretName }) => {
-        const spaces = await window.brover.createSpace({
-          name: spaceName,
-          dotfilePath: `/tmp/${spaceName}.zshrc`,
-        })
-        const createdSpace = spaces.find((item) => item.name === spaceName)
-        if (!createdSpace) throw new Error('Failed to create space')
-
-        const targets = await window.brover.listTargets(createdSpace.id)
-        const defaultTarget = targets[0]
+      async ({ defaultTargetName, secretName }) => {
+        const targets = await window.brover.createTarget({ name: defaultTargetName })
+        const defaultTarget = targets.find((item) => item.name === defaultTargetName)
         if (!defaultTarget) throw new Error('No default target created')
 
         const extraTarget = await window.brover.createTarget({
-          spaceId: createdSpace.id,
           name: 'prod',
         })
         const prodTarget = extraTarget.find((item) => item.name === 'prod')
@@ -73,27 +65,25 @@ test.describe('Spaces CRUD Flow', () => {
           (env) => env.profile === defaultTarget.id || env.profile === prodTarget.id
         )
 
-        await window.brover.deleteSpace(createdSpace.id)
+        await window.brover.deleteTarget({ targetId: prodTarget.id })
+        await window.brover.deleteTarget({ targetId: defaultTarget.id })
 
-        const spacesAfter = await window.brover.listSpaces()
-        const targetsAfter = await window.brover.listTargets(createdSpace.id)
+        const targetsAfter = await window.brover.listTargets()
         const envsAfter = await window.brover.listEnvs()
         const spaceEnvsAfter = envsAfter.filter(
           (env) => env.profile === defaultTarget.id || env.profile === prodTarget.id
         )
 
         return {
-          spaceExists: spacesAfter.some((item) => item.id === createdSpace.id),
-          targetCount: targetsAfter.length,
+          targetExists: targetsAfter.some((item) => item.id === defaultTarget.id || item.id === prodTarget.id),
           envCountBefore: spaceEnvsBefore.length,
           envCountAfter: spaceEnvsAfter.length,
         }
       },
-      { spaceName, secretName }
+      { defaultTargetName, secretName }
     )
 
-    expect(result.spaceExists).toBe(false)
-    expect(result.targetCount).toBe(0)
+    expect(result.targetExists).toBe(false)
     expect(result.envCountBefore).toBe(2)
     expect(result.envCountAfter).toBe(0)
   })

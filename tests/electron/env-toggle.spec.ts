@@ -37,14 +37,9 @@ test.describe('Env Toggle Flow', () => {
 
     const result = await window.evaluate(
       async ({ secretName }) => {
-        const spaceName = `env-space-${Date.now()}`
-        const spaces = await window.brover.createSpace({
-          name: spaceName,
-          dotfilePath: `/tmp/${spaceName}.zshrc`,
+        const targets = await window.brover.createTarget({
+          name: `env-target-${Date.now()}`,
         })
-        const globalSpace = spaces.find((space) => space.name === spaceName)
-        if (!globalSpace) throw new Error('No space available')
-        const targets = await window.brover.listTargets(globalSpace.id)
         const target = targets.find((t) => t.isActive) ?? targets[0]
         if (!target) throw new Error('No target available')
 

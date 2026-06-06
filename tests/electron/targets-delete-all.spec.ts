@@ -29,30 +29,24 @@ test.describe('Targets Delete All Flow', () => {
     rmSync(dbDir, { recursive: true, force: true })
   })
 
-  test('can delete all targets in one space', async () => {
+  test('can delete all root targets', async () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
-    const spaceName = `pw-space-${Date.now()}`
     const result = await window.evaluate(
-      async ({ spaceName }) => {
-        const spaces = await window.brover.createSpace({
-          name: spaceName,
-          dotfilePath: `/tmp/${spaceName}.zshrc`,
-        })
-        const created = spaces.find((item) => item.name === spaceName)
-        if (!created) throw new Error('Failed to create space')
+      async () => {
+        await window.brover.createTarget({ name: `delete-all-${Date.now()}` })
+        await window.brover.createTarget({ name: `delete-all-${Date.now()}-2` })
 
-        let targets = await window.brover.listTargets(created.id)
+        let targets = await window.brover.listTargets()
         while (targets.length > 0) {
           await window.brover.deleteTarget({ targetId: targets[0].id })
-          targets = await window.brover.listTargets(created.id)
+          targets = await window.brover.listTargets()
         }
         return {
           targetCount: targets.length,
         }
-      },
-      { spaceName }
+      }
     )
 
     expect(result.targetCount).toBe(0)

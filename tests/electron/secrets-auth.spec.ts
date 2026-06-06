@@ -35,14 +35,9 @@ test.describe('Secrets Auth Flow', () => {
     await window.waitForFunction(() => Boolean(window.brover))
 
     const target = await window.evaluate(async () => {
-      const spaceName = `secret-space-${Date.now()}`
-      const spaces = await window.brover.createSpace({
-        name: spaceName,
-        dotfilePath: `/tmp/${spaceName}.zshrc`,
+      const targets = await window.brover.createTarget({
+        name: `secret-target-${Date.now()}`,
       })
-      const globalSpace = spaces.find((space) => space.name === spaceName)
-      if (!globalSpace) throw new Error('No space available')
-      const targets = await window.brover.listTargets(globalSpace.id)
       return targets.find((item) => item.isActive) ?? targets[0]
     })
 
@@ -87,13 +82,22 @@ test.describe('Secrets Auth Flow', () => {
     expect(copyResult.value).toBe('secret-1')
 
     const updateResult = await window.evaluate(async ({ envId, targetId, secretName }) => {
-      return window.brover.updateEnv({
+      const result = await window.brover.updateEnv({
         id: envId,
         profile: targetId,
         name: secretName,
         value: 'secret-2',
         enabled: true,
       })
+      if (result.value === 'needs-confirmation') {
+        return window.brover.updateEnvConfirmed({
+          id: envId,
+          profile: targetId,
+          name: secretName,
+          value: 'secret-2',
+        })
+      }
+      return result
     }, { envId: created.env!.id, targetId: target.id, secretName })
     expect(updateResult.ok).toBe(true)
 

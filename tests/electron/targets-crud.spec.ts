@@ -39,15 +39,7 @@ test.describe('Targets CRUD Flow', () => {
 
     const result = await window.evaluate(
       async ({ targetName, renamed, updatedColor }) => {
-        const spaceName = `targets-space-${Date.now()}`
-        const spaces = await window.brover.createSpace({
-          name: spaceName,
-          dotfilePath: `/tmp/${spaceName}.zshrc`,
-        })
-        const globalSpace = spaces.find((space) => space.name === spaceName)
-        if (!globalSpace) throw new Error('No space available')
-
-        const currentTargets = await window.brover.listTargets(globalSpace.id)
+        const currentTargets = await window.brover.listTargets()
         const stale = currentTargets.filter(
           (item) => item.name === targetName || item.name === renamed
         )
@@ -56,7 +48,6 @@ test.describe('Targets CRUD Flow', () => {
         }
 
         const createdTargets = await window.brover.createTarget({
-          spaceId: globalSpace.id,
           name: targetName,
         })
         const created = createdTargets.find((item) => item.name === targetName)
@@ -77,7 +68,7 @@ test.describe('Targets CRUD Flow', () => {
         if (!recoloredTarget) throw new Error('Target not found after recolor')
 
         await window.brover.deleteTarget({ targetId: created.id })
-        const finalTargets = await window.brover.listTargets(globalSpace.id)
+        const finalTargets = await window.brover.listTargets()
 
         return {
           createdName: created.name,
