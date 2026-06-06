@@ -1,6 +1,6 @@
 # Code Context Summary
 
-Generated: 2026-06-06T02:03:39.544Z
+Generated: 2026-06-06T02:11:23.590Z
 Files: 45
 
 ## `playwright.config.ts`
@@ -130,6 +130,7 @@ Exports: `loadTerminalIconDataUrl` (FunctionDeclaration)
 
 Functions:
 - `async convertIcnsToPng(iconPath: string): Promise<string | null>`
+- `async createDefaultDeps(): Promise<TerminalIconLoaderDeps>`
 - `async loadTerminalIconDataUrl(bundlePath: string, deps: TerminalIconLoaderDeps): Promise<string | undefined>`
 - `normalizeIconFileName(iconFileName: string): string`
 - `async readBundleIconFileName(bundlePath: string): Promise<string | null>`

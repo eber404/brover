@@ -3,7 +3,7 @@ import { execFile } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
-import { app, nativeImage, type NativeImage } from 'electron'
+import type { NativeImage } from 'electron'
 
 const execFileAsync = promisify(execFile)
 
@@ -41,30 +41,38 @@ async function convertIcnsToPng(iconPath: string): Promise<string | null> {
   }
 }
 
-export async function loadTerminalIconDataUrl(
-  bundlePath: string,
-  deps: TerminalIconLoaderDeps = {
+async function createDefaultDeps(): Promise<TerminalIconLoaderDeps> {
+  const { app, nativeImage } = await import('electron')
+
+  return {
     getFileIcon: (path) => app.getFileIcon(path, { size: 'normal' }),
     readBundleIconFileName,
     fileExists: existsSync,
     createImageFromPath: nativeImage.createFromPath,
     convertIcnsToPng,
   }
+}
+
+export async function loadTerminalIconDataUrl(
+  bundlePath: string,
+  deps?: TerminalIconLoaderDeps
 ): Promise<string | undefined> {
-  const bundleIconFileName = await deps.readBundleIconFileName(bundlePath)
+  const resolvedDeps = deps ?? (await createDefaultDeps())
+
+  const bundleIconFileName = await resolvedDeps.readBundleIconFileName(bundlePath)
   if (bundleIconFileName) {
     const bundleIconPath = join(bundlePath, 'Contents', 'Resources', normalizeIconFileName(bundleIconFileName))
-    if (deps.fileExists(bundleIconPath)) {
+    if (resolvedDeps.fileExists(bundleIconPath)) {
       try {
-        const convertedBundleIconPath = await deps.convertIcnsToPng(bundleIconPath)
+        const convertedBundleIconPath = await resolvedDeps.convertIcnsToPng(bundleIconPath)
         if (convertedBundleIconPath) {
-          const convertedBundleIcon = deps.createImageFromPath(convertedBundleIconPath)
+          const convertedBundleIcon = resolvedDeps.createImageFromPath(convertedBundleIconPath)
           if (!convertedBundleIcon.isEmpty()) {
             return convertedBundleIcon.toDataURL()
           }
         }
 
-        const bundleIcon = deps.createImageFromPath(bundleIconPath)
+        const bundleIcon = resolvedDeps.createImageFromPath(bundleIconPath)
         if (!bundleIcon.isEmpty()) {
           return bundleIcon.toDataURL()
         }
@@ -75,7 +83,7 @@ export async function loadTerminalIconDataUrl(
   }
 
   try {
-    const fileIcon = await deps.getFileIcon(bundlePath)
+    const fileIcon = await resolvedDeps.getFileIcon(bundlePath)
     if (!fileIcon.isEmpty()) {
       return fileIcon.toDataURL()
     }

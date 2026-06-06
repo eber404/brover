@@ -1,4 +1,4 @@
-generatedAt: "2026-06-06T02:03:39.544Z"
+generatedAt: "2026-06-06T02:11:23.590Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 45
@@ -654,10 +654,10 @@ files[45]:
       - moduleSpecifier: electron
         defaultImport: null
         namespaceImport: null
-        namedImports[3]: app,nativeImage,type NativeImage
+        namedImports[1]: NativeImage
     exports[1]{name,kind}:
       loadTerminalIconDataUrl,FunctionDeclaration
-    functions[4]:
+    functions[5]:
       - name: convertIcnsToPng
         exported: false
         defaultExport: false
@@ -666,6 +666,13 @@ files[45]:
           iconPath,string
         returnType: Promise<string | null>
         signature: "async convertIcnsToPng(iconPath: string): Promise<string | null>"
+      - name: createDefaultDeps
+        exported: false
+        defaultExport: false
+        async: true
+        params[0]:
+        returnType: Promise<TerminalIconLoaderDeps>
+        signature: "async createDefaultDeps(): Promise<TerminalIconLoaderDeps>"
       - name: loadTerminalIconDataUrl
         exported: true
         defaultExport: false

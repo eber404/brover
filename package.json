@@ -2,6 +2,9 @@
   "name": "brover-electron-app",
   "version": "0.1.0",
   "private": true,
+  "trustedDependencies": [
+    "electron"
+  ],
   "main": "dist-electron/main/main.js",
   "scripts": {
     "dev": "concurrently \"bun:dev:renderer\" \"bun:dev:main\" \"bun:dev:electron\"",
