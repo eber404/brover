@@ -33,6 +33,9 @@ describe('SecretsDetail', () => {
       </I18nProvider>
     )
 
+    expect(screen.getByTestId('secret-reveal-toggle').className).toContain('cursor-pointer')
+    expect(screen.getByTestId('secret-copy-button').className).toContain('cursor-pointer')
+
     fireEvent.click(screen.getByRole('button', { name: /copy secret/i }))
     expect(onCopy).toHaveBeenCalledWith(false)
   })

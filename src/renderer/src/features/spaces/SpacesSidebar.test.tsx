@@ -21,6 +21,8 @@ function makeTarget(overrides: Partial<EnvTarget> = {}): EnvTarget {
 }
 
 const defaultProps = {
+  title: 'Brover',
+  subtitle: 'Local secrets manager',
   targets: [makeTarget()],
   selectedTargetId: 'target-1',
   tiedTargets: true,
@@ -46,6 +48,10 @@ describe('SpacesSidebar', () => {
     expect(screen.getByText('TARGETS')).toBeTruthy()
     expect(screen.getByText('Tied targets')).toBeTruthy()
     expect(screen.getByTestId('target-row-target-1')).toBeTruthy()
+    expect(screen.getByText('Brover · Local secrets manager')).toBeTruthy()
+    expect(screen.getByTestId('targets-list').className).toContain('flex-1')
+    expect(screen.getByTestId('targets-footer').className).toContain('min-h-[34px]')
+    expect(screen.getByTestId('targets-footer').className).toContain('items-center')
   })
 
   it('does not render old space rail affordances', () => {
@@ -62,5 +68,14 @@ describe('SpacesSidebar', () => {
     fireEvent.click(screen.getByTestId('target-add'))
 
     expect(onAddTarget).toHaveBeenCalledTimes(1)
+  })
+
+  it('adds cursor pointer to clickable affordances', () => {
+    render(<SpacesSidebar {...defaultProps} />)
+
+    expect(screen.getByTestId('target-add').className).toContain('cursor-pointer')
+    expect(screen.getByTestId('target-row-target-1').className).toContain('cursor-pointer')
+    expect(screen.getByTestId('target-color-target-1').className).toContain('cursor-pointer')
+    expect(screen.getByRole('switch').className).toContain('cursor-pointer')
   })
 })

@@ -6,6 +6,8 @@ import { Switch } from '../../components/ui/switch'
 import { useI18n } from '../../i18n'
 
 interface SpacesSidebarProps {
+  title: string
+  subtitle: string
   targets: EnvTarget[]
   selectedTargetId: string | null
   tiedTargets: boolean
@@ -24,6 +26,8 @@ interface SpacesSidebarProps {
 
 export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarProps) {
   const {
+    title,
+    subtitle,
     targets,
     selectedTargetId,
     tiedTargets,
@@ -115,7 +119,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
       <div className="flex items-center gap-2">
         <Layers className="h-4 w-4 text-text-muted" />
         <h1 className="text-sm font-semibold tracking-wide text-text-base">TARGETS</h1>
-        <button onClick={onAddTarget} className="ml-auto rounded p-1 text-text-base hover:bg-surface-hover" data-testid="target-add">
+        <button onClick={onAddTarget} className="ml-auto cursor-pointer rounded p-1 text-text-base hover:bg-surface-hover" data-testid="target-add">
           <Plus className="h-4 w-4" />
         </button>
       </div>
@@ -130,7 +134,8 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
         <Switch checked={tiedTargets} onCheckedChange={onToggleTiedTargets} label="Tied targets" />
       </div>
 
-      <div className="mt-3 grid gap-1.5 overflow-y-auto overflow-x-hidden">
+      <div data-testid="targets-list" className="mt-3 flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="grid gap-1.5">
         {targets.map((target) => (
           <div
             key={target.id}
@@ -164,13 +169,13 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
               onReorderTargets(next)
             }}
           >
-            <button type="button" className="ml-1 flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full border border-edge" data-testid={`target-color-${target.id}`} onClick={(event) => openColorMenu(target.id, event.currentTarget)}>
+            <button type="button" className="ml-1 flex h-2.5 w-2.5 cursor-pointer shrink-0 items-center justify-center rounded-full border border-edge" data-testid={`target-color-${target.id}`} onClick={(event) => openColorMenu(target.id, event.currentTarget)}>
               <span className="block h-full w-full rounded-full" style={{ backgroundColor: target.color }} />
             </button>
             <div className="min-w-0 flex-1 pr-2">{renderTargetNameCell(target)}</div>
             {editingTargetId !== target.id ? (
               <button
-                className={`shrink-0 rounded p-1 transition ${selectedTargetId === target.id ? 'text-text-muted hover:bg-surface-hover hover:text-rose-status' : 'pointer-events-none opacity-0 text-slate-500 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:hover:bg-surface-hover group-hover:hover:text-rose-status'}`}
+                className={`shrink-0 cursor-pointer rounded p-1 transition ${selectedTargetId === target.id ? 'text-text-muted hover:bg-surface-hover hover:text-rose-status' : 'pointer-events-none opacity-0 text-slate-500 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:hover:bg-surface-hover group-hover:hover:text-rose-status'}`}
                 data-testid={`target-delete-${target.id}`}
                 onClick={(event) => {
                   event.stopPropagation()
@@ -183,6 +188,14 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
             ) : null}
           </div>
         ))}
+        </div>
+      </div>
+
+      <div
+        data-testid="targets-footer"
+        className="mt-auto flex min-h-[34px] items-center justify-center text-center text-xs text-slate-500"
+      >
+        {title} · {subtitle}
       </div>
 
       <ConfirmDialog
@@ -202,11 +215,11 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
 
       {colorMenu ? (
         <div className="absolute inset-0 z-30">
-          <button type="button" className="absolute inset-0" onClick={() => setColorMenu(null)} />
+          <button type="button" className="absolute inset-0 cursor-pointer" onClick={() => setColorMenu(null)} />
           <div className="absolute flex w-44 flex-col gap-2 rounded-lg border border-edge bg-surface-overlay p-2 shadow-xl" style={{ left: colorMenu.x, top: colorMenu.y }} data-testid="target-color-menu">
             <div className="grid grid-cols-5 gap-1">
               {presetColors.map((color) => (
-                <button key={color} type="button" className="h-5 w-5 rounded-full border border-edge" style={{ backgroundColor: color }} onClick={() => applyTargetColor(colorMenu.targetId, color)} title={color} />
+                <button key={color} type="button" className="h-5 w-5 cursor-pointer rounded-full border border-edge" style={{ backgroundColor: color }} onClick={() => applyTargetColor(colorMenu.targetId, color)} title={color} />
               ))}
             </div>
             <label className="flex items-center gap-2 rounded border border-edge bg-surface-base px-2 py-1 text-[11px] text-text-base">

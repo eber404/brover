@@ -20,7 +20,7 @@ export default function ConfirmationStep({ summary, onConfirm, onBack }: Confirm
           <button
             type="button"
             onClick={onBack}
-            className="flex items-center text-text-muted hover:text-text-base transition-colors -ml-1.5 mt-0.5"
+            className="-ml-1.5 mt-0.5 flex cursor-pointer items-center text-text-muted transition-colors hover:text-text-base"
             aria-label="back"
           >
             <ArrowLeft className="h-5 w-5" />

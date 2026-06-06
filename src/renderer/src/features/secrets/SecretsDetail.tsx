@@ -59,7 +59,7 @@ export function SecretsDetail({
             <button
               data-testid="secret-reveal-toggle"
               type="button"
-              className="absolute top-1/2 right-3 -translate-y-1/2 rounded-lg p-1.5 text-text-muted transition-all duration-200 hover:bg-surface-hover hover:text-accent"
+              className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer rounded-lg p-1.5 text-text-muted transition-all duration-200 hover:bg-surface-hover hover:text-accent"
               onClick={() => {
                 if (isRevealed) {
                   setIsRevealed(false)

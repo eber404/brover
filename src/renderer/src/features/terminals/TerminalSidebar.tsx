@@ -11,8 +11,6 @@ import { useI18n } from '../../i18n'
 import { useToast } from '../../components/ui/toaster'
 
 interface TerminalSidebarProps {
-  title: string
-  subtitle: string
   locale: 'en' | 'es' | 'pt'
   onLocaleChange: (locale: 'en' | 'es' | 'pt') => void
   selectedTargetId: string | null
@@ -21,7 +19,7 @@ interface TerminalSidebarProps {
 export const TerminalSidebar = memo(function TerminalSidebar(
   props: TerminalSidebarProps
 ) {
-  const { title, subtitle, locale, onLocaleChange, selectedTargetId } = props
+  const { locale, onLocaleChange, selectedTargetId } = props
   const { t } = useI18n()
   const { toast } = useToast()
   const asideRef = useRef<HTMLElement | null>(null)
@@ -168,7 +166,7 @@ export const TerminalSidebar = memo(function TerminalSidebar(
             key={terminal.id}
             type="button"
             data-testid={`terminal-launch-${terminal.id}`}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-edge bg-[rgba(15,23,42,0.65)] transition hover:border-slate-400 hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-edge bg-[rgba(15,23,42,0.65)] transition hover:border-slate-400 hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!selectedTargetId}
             onClick={() => void launchTerminal(terminal.id)}
             onContextMenu={(event) => {
@@ -202,7 +200,7 @@ export const TerminalSidebar = memo(function TerminalSidebar(
         <button
           type="button"
           data-testid="terminal-add-button"
-          className="flex h-11 w-11 items-center justify-center rounded-xl border border-dashed border-edge text-text-base transition hover:border-slate-400 hover:text-text-emphasis"
+          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-edge text-text-base transition hover:border-slate-400 hover:text-text-emphasis"
           title={t('launch.addTerminal')}
           aria-label={t('launch.addTerminal')}
           onClick={() => void pickAndAddTerminal()}
@@ -215,7 +213,7 @@ export const TerminalSidebar = memo(function TerminalSidebar(
         <div className="absolute inset-0 z-30">
           <button
             type="button"
-            className="absolute inset-0"
+            className="absolute inset-0 cursor-pointer"
             onClick={() => setContextMenu(null)}
           />
           <div
@@ -225,30 +223,32 @@ export const TerminalSidebar = memo(function TerminalSidebar(
             <button
               type="button"
               data-testid={`terminal-remove-${contextMenu.terminalId}`}
-              className="rounded px-2 py-1.5 text-left text-xs text-rose-status hover:bg-surface-hover"
-              onClick={() => removeFavoriteTerminal(contextMenu.terminalId)}
-            >
-              {t('launch.removeTerminal')}
-            </button>
+            className="cursor-pointer rounded px-2 py-1.5 text-left text-xs text-rose-status hover:bg-surface-hover"
+            onClick={() => removeFavoriteTerminal(contextMenu.terminalId)}
+          >
+            {t('launch.removeTerminal')}
+          </button>
           </div>
         </div>
       ) : null}
 
-      <select
-        className="mt-auto w-full rounded-lg border border-edge bg-surface-base px-1 py-1 text-[10px] text-text-base outline-none focus-visible:ring-2 focus-visible:ring-accent"
-        value={locale}
-        onChange={(event) =>
-          onLocaleChange(event.target.value as 'en' | 'es' | 'pt')
-        }
+      <div
+        data-testid="terminal-footer"
+        className="mt-auto flex min-h-[34px] w-full items-center"
       >
-        <option value="en">EN</option>
-        <option value="es">ES</option>
-        <option value="pt">PT</option>
-      </select>
-
-      <p className="mt-3 text-center text-xs text-slate-500">
-        {title} · {subtitle}
-      </p>
+        <select
+          data-testid="terminal-locale-select"
+          className="w-full cursor-pointer rounded-lg border border-edge bg-surface-base px-1 py-1 text-[10px] text-text-base outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          value={locale}
+          onChange={(event) =>
+            onLocaleChange(event.target.value as 'en' | 'es' | 'pt')
+          }
+        >
+          <option value="en">EN</option>
+          <option value="es">ES</option>
+          <option value="pt">PT</option>
+        </select>
+      </div>
     </aside>
   )
 })

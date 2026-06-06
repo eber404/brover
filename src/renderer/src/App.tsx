@@ -155,11 +155,13 @@ function AppShell() {
       <div data-testid="drag-bar" className="absolute inset-x-0 right-0 top-0 z-50 h-4 w-full" style={DRAG_REGION_STYLE} />
 
       <div className="col-start-1 col-end-2 row-start-1 row-end-3">
-        <TerminalSidebar title={t('app.title')} subtitle={t('app.subtitle')} locale={locale} onLocaleChange={setLocale} selectedTargetId={selectedTargetId} />
+        <TerminalSidebar locale={locale} onLocaleChange={setLocale} selectedTargetId={selectedTargetId} />
       </div>
 
       <div className="col-start-2 col-end-3 row-start-1 row-end-3">
         <SpacesSidebar
+          title={t('app.title')}
+          subtitle={t('app.subtitle')}
           targets={targets}
           selectedTargetId={selectedTargetId}
           tiedTargets={tiedTargets}

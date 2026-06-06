@@ -82,8 +82,6 @@ describe('TerminalSidebar', () => {
     const onLocaleChange = vi.fn()
     const { container } = render(
       <TerminalSidebar
-        title="Brover"
-        subtitle="test"
         locale="en"
         onLocaleChange={onLocaleChange}
         selectedTargetId="target-1"
@@ -103,6 +101,11 @@ describe('TerminalSidebar', () => {
     expect(screen.getByTestId('terminal-icon-iterm2').getAttribute('src')).toBe('data:image/png;base64,iterm2')
     expect(screen.getByTestId('terminal-icon-iterm2').className).toContain('h-8')
     expect(screen.getByTestId('terminal-icon-iterm2').className).toContain('w-8')
+    expect(screen.getByTestId('terminal-launch-iterm2').className).toContain('cursor-pointer')
+    expect(screen.getByTestId('terminal-add-button').className).toContain('cursor-pointer')
+    expect(screen.getByTestId('terminal-footer').className).toContain('min-h-[34px]')
+    expect(screen.getByTestId('terminal-footer').className).toContain('items-center')
+    expect(screen.getByTestId('terminal-locale-select').className).toContain('cursor-pointer')
     expect(screen.getByTestId('terminal-add-button')).toBeTruthy()
     expect(screen.queryByTestId('terminal-launch-terminal')).toBeNull()
   })
@@ -110,8 +113,6 @@ describe('TerminalSidebar', () => {
   it('opens picker directly from plus button and adds picked terminal to rail', async () => {
     render(
       <TerminalSidebar
-        title="Brover"
-        subtitle="test"
         locale="en"
         onLocaleChange={vi.fn()}
         selectedTargetId="target-1"
@@ -137,8 +138,6 @@ describe('TerminalSidebar', () => {
   it('clicking terminal launches selected target', async () => {
     render(
       <TerminalSidebar
-        title="Brover"
-        subtitle="test"
         locale="en"
         onLocaleChange={vi.fn()}
         selectedTargetId="target-1"
@@ -161,8 +160,6 @@ describe('TerminalSidebar', () => {
   it('shows remove action on terminal context menu and removes favorite terminal', async () => {
     render(
       <TerminalSidebar
-        title="Brover"
-        subtitle="test"
         locale="en"
         onLocaleChange={vi.fn()}
         selectedTargetId="target-1"
@@ -199,8 +196,6 @@ describe('TerminalSidebar', () => {
 
     render(
       <TerminalSidebar
-        title="Brover"
-        subtitle="test"
         locale="en"
         onLocaleChange={vi.fn()}
         selectedTargetId="target-1"

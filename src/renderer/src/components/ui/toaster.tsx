@@ -79,7 +79,7 @@ function Toaster() {
           <span className="flex-1">{t.message}</span>
           {t.undoCallback && (
             <button
-              className="rounded px-2 py-0.5 text-xs font-medium underline hover:no-underline"
+              className="cursor-pointer rounded px-2 py-0.5 text-xs font-medium underline hover:no-underline"
               onClick={() => {
                 t.undoCallback?.()
                 remove(t.id)
@@ -88,7 +88,7 @@ function Toaster() {
               Undo
             </button>
           )}
-          <button className="ml-1 opacity-70 hover:opacity-100" onClick={() => remove(t.id)}>×</button>
+          <button className="ml-1 cursor-pointer opacity-70 hover:opacity-100" onClick={() => remove(t.id)}>×</button>
         </div>
       ))}
     </div>

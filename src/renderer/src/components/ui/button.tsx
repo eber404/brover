@@ -12,10 +12,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
   ref
 ) {
   return (
-    <button
-      ref={ref}
-      className={cn(
-        'inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-50',
+      <button
+        ref={ref}
+        className={cn(
+        'inline-flex cursor-pointer items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
         variant === 'default' && 'bg-accent text-slate-950 hover:bg-[#67d0ff]',
         variant === 'outline' && 'border border-edge bg-transparent text-text-base hover:bg-surface-overlay',
         variant === 'destructive' && 'border border-rose-action bg-rose-on text-rose-status hover:bg-rose-hover',

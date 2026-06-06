@@ -122,7 +122,7 @@ export default function TerminalPreferencesStep({
             <button
               type="button"
               onClick={onBack}
-              className="flex items-center text-text-muted transition-colors hover:text-text-base -ml-1.5 mt-0.5"
+              className="-ml-1.5 mt-0.5 flex cursor-pointer items-center text-text-muted transition-colors hover:text-text-base"
               aria-label="back"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -193,7 +193,7 @@ export default function TerminalPreferencesStep({
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
-                      className="rounded p-1 text-text-muted transition-colors hover:bg-surface-hover hover:text-text-base disabled:opacity-40"
+                      className="cursor-pointer rounded p-1 text-text-muted transition-colors hover:bg-surface-hover hover:text-text-base disabled:cursor-not-allowed disabled:opacity-40"
                       onClick={(event) => {
                         event.stopPropagation()
                         moveFavorite(terminal.id, 'up')
@@ -205,7 +205,7 @@ export default function TerminalPreferencesStep({
                     </button>
                     <button
                       type="button"
-                      className="rounded p-1 text-text-muted transition-colors hover:bg-surface-hover hover:text-text-base disabled:opacity-40"
+                      className="cursor-pointer rounded p-1 text-text-muted transition-colors hover:bg-surface-hover hover:text-text-base disabled:cursor-not-allowed disabled:opacity-40"
                       onClick={(event) => {
                         event.stopPropagation()
                         moveFavorite(terminal.id, 'down')

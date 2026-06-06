@@ -127,7 +127,7 @@ export default function RetroactiveReviewStep({
               <button
                 type="button"
                 onClick={onBack}
-                className="flex items-center text-text-muted hover:text-text-base transition-colors -ml-1.5 mt-0.5"
+                className="-ml-1.5 mt-0.5 flex cursor-pointer items-center text-text-muted transition-colors hover:text-text-base"
                 aria-label="back"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -152,7 +152,7 @@ export default function RetroactiveReviewStep({
                 <button
                   type="button"
                   onClick={() => toggleCollapse(group.filePath)}
-                  className="flex w-full items-center justify-between py-1 text-sm font-semibold uppercase tracking-wide text-text-muted hover:text-text-base transition-colors"
+                  className="flex w-full cursor-pointer items-center justify-between py-1 text-sm font-semibold uppercase tracking-wide text-text-muted transition-colors hover:text-text-base"
                 >
                   <span>{fileName(group.filePath)}</span>
                   {isCollapsed ? (
@@ -187,7 +187,7 @@ export default function RetroactiveReviewStep({
                             e.stopPropagation()
                             toggleReveal(v.id)
                           }}
-                          className="text-text-muted hover:text-accent transition-colors"
+                          className="cursor-pointer text-text-muted transition-colors hover:text-accent"
                           aria-label={
                             revealedIds.has(v.id)
                               ? t('onboarding.review.hide')
