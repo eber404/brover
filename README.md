@@ -120,6 +120,13 @@ Build:
 npm run build
 ```
 
+Package unsigned macOS DMG locally:
+
+```sh
+npm run dist:mac:x64
+npm run dist:mac:arm64
+```
+
 ---
 
 ## Test
@@ -143,6 +150,15 @@ npm run test:e2e
 ```
 
 E2E uses isolated temp DB paths (`BROVER_DB_PATH`) and cleans artifacts after each test.
+
+---
+
+## Release
+
+- push tag in format `v*` such as `v0.1.0`;
+- GitHub Actions builds one macOS `x64` DMG and one macOS `arm64` DMG on native macOS runners;
+- workflow publishes both installers to GitHub Releases;
+- current releases are unsigned and not notarized, so macOS may warn on first open until Apple signing is added.
 
 ---
 

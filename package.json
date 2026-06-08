@@ -14,6 +14,10 @@
     "build": "bun run build:renderer && bun run build:main",
     "build:renderer": "vite build",
     "build:main": "tsup src/main/main.ts src/preload/preload.ts --format cjs --out-dir dist-electron --external electron",
+    "dist": "bun run build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --publish never",
+    "dist:mac": "bun run build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg --publish never",
+    "dist:mac:x64": "bun run build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg --x64 --publish never",
+    "dist:mac:arm64": "bun run build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg --arm64 --publish never",
     "preview": "vite preview",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage --coverage.reporter=text --coverage.reporter=lcov --coverage.reporter=html --coverage.reporter=json-summary",
@@ -25,6 +29,28 @@
     "tscontext": "/opt/homebrew/bin/bun /Users/eber/dev/tscontext/src/cli.ts extract --repo . --out .tscontext/code-context --profile default",
     "precommit": "bun run tsc && bun run test && bun run tscontext && git add .tscontext/code-context.toon .tscontext/code-context.md",
     "postinstall": "[ -d .git ] && git config core.hooksPath .githooks && chmod +x .githooks/pre-commit || true"
+  },
+  "build": {
+    "appId": "com.eber404.brover",
+    "productName": "Brover",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dmg"
+      ],
+      "artifactName": "Brover-${version}-${arch}.${ext}",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    }
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -52,6 +78,7 @@
     "autoprefixer": "^10.4.22",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
+    "electron-builder": "^26.0.12",
     "electron": "^39.2.3",
     "eslint": "^9.39.1",
     "eslint-plugin-react": "^7.37.5",
