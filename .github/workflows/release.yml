@@ -10,17 +10,8 @@ on:
 
 jobs:
   build-macos:
-    name: Build macOS ${{ matrix.arch }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: x64
-            os: macos-13
-          - arch: arm64
-            os: macos-14
-
-    runs-on: ${{ matrix.os }}
+    name: Build macOS installers
+    runs-on: macos-14
 
     steps:
       - uses: actions/checkout@v6
@@ -45,16 +36,27 @@ jobs:
       - name: Build app bundles
         run: bun run build
 
-      - name: Build macOS DMG
+      - name: Build macOS arm64 DMG
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: bunx electron-builder --mac dmg --${{ matrix.arch }} --publish never
+        run: bunx electron-builder --mac dmg --arm64 --publish never
 
-      - name: Upload DMG artifact
+      - name: Upload arm64 DMG artifact
         uses: actions/upload-artifact@v7
         with:
-          name: Brover-${{ matrix.arch }}
-          path: release/*.dmg
+          name: Brover-arm64
+          path: release/Brover-*-arm64.dmg
+
+      - name: Build macOS x64 DMG
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: bunx electron-builder --mac dmg --x64 --publish never
+
+      - name: Upload x64 DMG artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Brover-x64
+          path: release/Brover-*-x64.dmg
 
   publish-release:
     name: Publish GitHub Release
