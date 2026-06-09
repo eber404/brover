@@ -157,7 +157,10 @@ E2E uses isolated temp DB paths (`BROVER_DB_PATH`) and cleans artifacts after ea
 
 - push tag in format `v*` such as `v0.1.0`;
 - GitHub Actions builds one macOS `x64` DMG and one macOS `arm64` DMG on native macOS runners;
-- workflow publishes both installers to GitHub Releases;
+- private repo release remains internal;
+- workflow also publishes public binary assets to `https://github.com/eber404/brover-releases` for Homebrew distribution;
+- workflow updates cask in `https://github.com/eber404/homebrew-brover`;
+- repo secrets required in private app repo: `BROVER_RELEASES_TOKEN`, `HOMEBREW_TAP_TOKEN`;
 - current releases are unsigned and not notarized, so macOS may warn on first open until Apple signing is added.
 
 ---

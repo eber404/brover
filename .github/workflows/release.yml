@@ -8,6 +8,10 @@ on:
     tags:
       - 'v*'
 
+env:
+  PUBLIC_RELEASE_REPO: eber404/brover-releases
+  HOMEBREW_TAP_REPO: eber404/homebrew-brover
+
 jobs:
   build-macos:
     name: Build macOS installers
@@ -59,7 +63,7 @@ jobs:
           path: release/Brover-*-x64.dmg
 
   publish-release:
-    name: Publish GitHub Release
+    name: Publish Private Release
     runs-on: ubuntu-latest
     needs: build-macos
 
@@ -73,3 +77,87 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/**/*.dmg
+
+  publish-public-release:
+    name: Publish Public Binary Release
+    runs-on: ubuntu-latest
+    needs: build-macos
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Publish public release assets
+        env:
+          GH_TOKEN: ${{ secrets.BROVER_RELEASES_TOKEN }}
+        run: |
+          set -euo pipefail
+          arm64_asset=$(echo artifacts/Brover-arm64/*.dmg)
+          x64_asset=$(echo artifacts/Brover-x64/*.dmg)
+          release_notes=$(mktemp)
+          cat > "$release_notes" <<EOF
+          Public Brover binary release.
+
+          Artifacts:
+          - macOS Apple Silicon (arm64) DMG
+          - macOS Intel (x64) DMG
+
+          Note: unsigned and not notarized yet.
+          EOF
+
+          if gh release view "$GITHUB_REF_NAME" -R "$PUBLIC_RELEASE_REPO" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$arm64_asset" "$x64_asset" --clobber -R "$PUBLIC_RELEASE_REPO"
+          else
+            gh release create "$GITHUB_REF_NAME" "$arm64_asset" "$x64_asset" --title "$GITHUB_REF_NAME" --notes-file "$release_notes" -R "$PUBLIC_RELEASE_REPO"
+          fi
+
+  update-homebrew-cask:
+    name: Update Homebrew Cask
+    runs-on: ubuntu-latest
+    needs: publish-public-release
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Update tap cask
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          set -euo pipefail
+          arm64_asset=$(echo artifacts/Brover-arm64/*.dmg)
+          x64_asset=$(echo artifacts/Brover-x64/*.dmg)
+          arm64_sha=$(shasum -a 256 "$arm64_asset" | awk '{print $1}')
+          x64_sha=$(shasum -a 256 "$x64_asset" | awk '{print $1}')
+
+          gh repo clone "$HOMEBREW_TAP_REPO" tap
+          cat > tap/Casks/brover.rb <<EOF
+          cask "brover" do
+            arch arm: "arm64", intel: "x64"
+
+            version "${GITHUB_REF_NAME#v}"
+            sha256 arm: "$arm64_sha",
+                   intel: "$x64_sha"
+
+            url "https://github.com/eber404/brover-releases/releases/download/v#{version}/Brover-#{version}-#{arch}.dmg"
+            name "Brover"
+            desc "Local environment secret manager for macOS"
+            homepage "https://github.com/eber404/brover-releases"
+
+            app "Brover.app"
+
+            zap trash: "~/Library/Application Support/brover"
+          end
+          EOF
+
+          cd tap
+          if git diff --quiet; then
+            exit 0
+          fi
+          git add Casks/brover.rb
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "chore: update brover cask to ${GITHUB_REF_NAME#v}"
+          git push origin main
