@@ -1,6 +1,6 @@
 # Code Context Summary
 
-Generated: 2026-06-09T19:56:30.403Z
+Generated: 2026-06-09T19:59:45.671Z
 Files: 45
 
 ## `playwright.config.ts`
@@ -102,7 +102,8 @@ Functions:
 - `createSecretStore({
   platform,
   isE2E,
-}: { platform: NodeJS.Platform isE2E: boolean }): SecretStore`
+  isDev,
+}: { platform: NodeJS.Platform isE2E: boolean isDev: boolean }): SecretStore`
 
 ## `src/main/store.ts`
 

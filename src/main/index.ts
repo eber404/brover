@@ -46,7 +46,7 @@ async function bootstrap() {
   const dbPath =
     process.env.BROVER_DB_PATH ??
     join(app.getPath('appData'), dbDir, 'config.json')
-  const store = new BroverStore(dbPath, createSecretStore({ platform: process.platform, isE2E }))
+  const store = new BroverStore(dbPath, createSecretStore({ platform: process.platform, isE2E, isDev }))
   const authSessionCache = createAuthSessionCache()
   const macSecretAuthPrompt = createMacSecretAuthPrompt(systemPreferences)
   const authGate = createSecretAuthGate(async (reason: string) => {

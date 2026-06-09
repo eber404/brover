@@ -3,11 +3,13 @@ import { MacOSKeytarSecretStore, MemorySecretStore, UnsupportedSecretStore, type
 export function createSecretStore({
   platform,
   isE2E,
+  isDev,
 }: {
   platform: NodeJS.Platform
   isE2E: boolean
+  isDev: boolean
 }): SecretStore {
-  if (isE2E) {
+  if (isE2E || isDev) {
     return new MemorySecretStore()
   }
 

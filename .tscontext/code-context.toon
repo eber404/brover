@@ -1,4 +1,4 @@
-generatedAt: "2026-06-09T19:56:30.403Z"
+generatedAt: "2026-06-09T19:59:45.671Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 45
@@ -382,9 +382,9 @@ files[45]:
         defaultExport: false
         async: false
         params[1]{name,type}:
-          "{\n  platform,\n  isE2E,\n}","{ platform: NodeJS.Platform isE2E: boolean }"
+          "{\n  platform,\n  isE2E,\n  isDev,\n}","{ platform: NodeJS.Platform isE2E: boolean isDev: boolean }"
         returnType: SecretStore
-        signature: "createSecretStore({\n  platform,\n  isE2E,\n}: { platform: NodeJS.Platform isE2E: boolean }): SecretStore"
+        signature: "createSecretStore({\n  platform,\n  isE2E,\n  isDev,\n}: { platform: NodeJS.Platform isE2E: boolean isDev: boolean }): SecretStore"
     reactComponents[0]:
     types[0]:
     classes[0]:
