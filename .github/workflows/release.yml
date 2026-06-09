@@ -112,7 +112,7 @@ jobs:
             gh release create "$GITHUB_REF_NAME" "$arm64_asset" "$x64_asset" --title "$GITHUB_REF_NAME" --notes-file "$release_notes" -R "$PUBLIC_RELEASE_REPO"
           fi
 
-      - name: Update cask in brover-releases
+      - name: Update cask in homebrew-brover
         env:
           GH_TOKEN: ${{ secrets.BROVER_RELEASES_TOKEN }}
         run: |
