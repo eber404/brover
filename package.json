@@ -1,6 +1,6 @@
 {
   "name": "brover-electron-app",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "trustedDependencies": [
     "electron"
@@ -43,6 +43,7 @@
     ],
     "asar": true,
     "mac": {
+      "icon": "assets/icon.icns",
       "category": "public.app-category.developer-tools",
       "target": [
         "dmg"
