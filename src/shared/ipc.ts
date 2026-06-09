@@ -41,17 +41,6 @@ export interface BroverAPI {
     pickTerminalApp: () => Promise<{ canceled: boolean; terminal?: TerminalApp; error?: string; appName?: string }>
   }
 
-  // Temporary compat surface while renderer/main migrate fully.
-  getTiedTargets: () => Promise<boolean>
-  setTiedTargets: (tiedTargets: boolean) => Promise<boolean>
-  listTargets: () => Promise<Environment[]>
-  createTarget: (payload: { name: string }) => Promise<Environment[]>
-  deleteTarget: (payload: { targetId: string }) => Promise<Environment[]>
-  reorderTargets: (payload: { orderedTargetIds: string[] }) => Promise<Environment[]>
-  renameTarget: (payload: { targetId: string; name: string }) => Promise<Environment[]>
-  setTargetColor: (payload: { targetId: string; color: string }) => Promise<Environment[]>
-  setActiveTarget: (payload: { targetId: string }) => Promise<Environment[]>
-
   onboarding: {
     getStatus: () => Promise<OnboardingStatus>
     scanDotfiles: () => Promise<ScanResult>

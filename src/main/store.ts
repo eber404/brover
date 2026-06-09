@@ -527,17 +527,6 @@ export class BroverStore {
     return db.environments.map((environment) => this.toPublicEnvironment(environment))
   }
 
-  // Temporary wrappers while renderer/main migrate.
-  async getTiedTargets(): Promise<boolean> { return this.getSharedSecretNames() }
-  async setTiedTargets(tiedTargets: boolean): Promise<boolean> { return this.setSharedSecretNames(tiedTargets) }
-  async listTargets(): Promise<Environment[]> { return this.listEnvironments() }
-  async createTarget(payload: { name: string }): Promise<Environment[]> { return this.createEnvironment(payload) }
-  async deleteTarget(payload: { targetId: string }): Promise<Environment[]> { return this.deleteEnvironment({ environmentId: payload.targetId }) }
-  async reorderTargets(payload: { orderedTargetIds: string[] }): Promise<Environment[]> { return this.reorderEnvironments({ orderedEnvironmentIds: payload.orderedTargetIds }) }
-  async renameTarget(payload: { targetId: string; name: string }): Promise<Environment[]> { return this.renameEnvironment({ environmentId: payload.targetId, name: payload.name }) }
-  async setTargetColor(payload: { targetId: string; color: string }): Promise<Environment[]> { return this.setEnvironmentColor({ environmentId: payload.targetId, color: payload.color }) }
-  async setActiveTarget(payload: { targetId: string }): Promise<Environment[]> { return this.setActiveEnvironment({ environmentId: payload.targetId }) }
-
   private async readTextFile(path: string): Promise<string> {
     try {
       return await readFile(path, 'utf8')

@@ -195,7 +195,7 @@ describe('BroverStore', () => {
     })
 
     it('createEnv throws if duplicate in target', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: defaultTarget.id, value: 'secret1' })
@@ -221,7 +221,7 @@ describe('BroverStore', () => {
     })
 
     it('deleteEnv removes from store and metadata', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
       await store.createEnv({ name: 'TO_DELETE', profile: defaultTarget.id, value: 'secret' })

@@ -60,18 +60,18 @@ async function bootstrap() {
 
   const terminalLauncher = createTerminalLauncher()
 
-  async function listActiveTargetIds(): Promise<string[]> {
-    return (await store.listTargets())
-      .filter(target => target.isActive)
-      .map(target => target.id)
+  async function listActiveEnvironmentIds(): Promise<string[]> {
+    return (await store.listEnvironments())
+      .filter(env => env.isActive)
+      .map(env => env.id)
   }
 
-  terminalLauncher.startupCleanup(await listActiveTargetIds())
+  terminalLauncher.startupCleanup(await listActiveEnvironmentIds())
 
   app.on('will-quit', () => {
-    void listActiveTargetIds()
-      .then(activeTargetIds => {
-        terminalLauncher.shutdownCleanup(activeTargetIds)
+    void listActiveEnvironmentIds()
+      .then(activeEnvironmentIds => {
+        terminalLauncher.shutdownCleanup(activeEnvironmentIds)
       })
       .catch(() => {
         terminalLauncher.shutdownCleanup([])
@@ -281,16 +281,6 @@ async function bootstrap() {
       return failure(error)
     }
   })
-
-  ipcMain.handle('targets:get-tied', () => store.getSharedSecretNames())
-  ipcMain.handle('targets:set-tied', (_, tiedTargets: boolean) => store.setSharedSecretNames(tiedTargets))
-  ipcMain.handle('targets:list', () => store.listEnvironments())
-  ipcMain.handle('targets:create', (_, payload: { name: string }) => store.createEnvironment(payload))
-  ipcMain.handle('targets:delete', (_, payload: { targetId: string }) => store.deleteEnvironment({ environmentId: payload.targetId }))
-  ipcMain.handle('targets:reorder', (_, payload: { orderedTargetIds: string[] }) => store.reorderEnvironments({ orderedEnvironmentIds: payload.orderedTargetIds }))
-  ipcMain.handle('targets:rename', (_, payload: { targetId: string; name: string }) => store.renameEnvironment({ environmentId: payload.targetId, name: payload.name }))
-  ipcMain.handle('targets:set-color', (_, payload: { targetId: string; color: string }) => store.setEnvironmentColor({ environmentId: payload.targetId, color: payload.color }))
-  ipcMain.handle('targets:set-active', (_, payload: { targetId: string }) => store.setActiveEnvironment({ environmentId: payload.targetId }))
 
   ipcMain.handle('onboarding:get-status', () => store.getOnboardingStatus())
 

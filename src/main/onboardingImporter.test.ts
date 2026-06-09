@@ -381,8 +381,8 @@ describe('runFreshStartImport', () => {
 
     await runFreshStartImport(store, scanResult)
 
-    const targets = await store.listTargets()
-    expect(targets).toHaveLength(0)
+    const environments = await store.listEnvironments()
+    expect(environments).toHaveLength(0)
   })
 
   it('throws if onboarding already completed', async () => {

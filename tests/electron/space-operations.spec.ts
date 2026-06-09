@@ -38,12 +38,12 @@ test.describe('Target Scope Operations Flow', () => {
 
     const result = await window.evaluate(
       async ({ targetName, renamed }) => {
-        const targets = await window.brover.createTarget({ name: targetName })
+        const targets = await window.brover.createEnvironment({ name: targetName })
         const created = targets.find((item) => item.name === targetName)
         if (!created) throw new Error('Failed to create target')
 
-        const updated = await window.brover.renameTarget({
-          targetId: created.id,
+        const updated = await window.brover.renameEnvironment({
+          environmentId: created.id,
           name: renamed,
         })
         const afterRename = updated.find((item) => item.id === created.id)
@@ -65,9 +65,9 @@ test.describe('Target Scope Operations Flow', () => {
     await window.waitForFunction(() => Boolean(window.brover))
 
     const result = await window.evaluate(async () => {
-        const initialTied = await window.brover.getTiedTargets()
-        const afterToggle = await window.brover.setTiedTargets(!initialTied)
-        const afterToggleAgain = await window.brover.setTiedTargets(initialTied)
+        const initialTied = await window.brover.getSharedSecretNames()
+        const afterToggle = await window.brover.setSharedSecretNames(!initialTied)
+        const afterToggleAgain = await window.brover.setSharedSecretNames(initialTied)
 
         return {
           initialTied,
@@ -81,20 +81,20 @@ test.describe('Target Scope Operations Flow', () => {
     expect(result.afterToggleAgainTied).toBe(false)
   })
 
-  test('renameTarget rejects empty name', async () => {
+  test('renameEnvironment rejects empty name', async () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
     const targetName = `pw-target-${Date.now()}`
 
     const result = await window.evaluate(async ({ targetName }) => {
-      const targets = await window.brover.createTarget({ name: targetName })
+      const targets = await window.brover.createEnvironment({ name: targetName })
       const created = targets.find((item) => item.name === targetName)
       if (!created) throw new Error('Failed to create target')
 
       try {
-        await window.brover.renameTarget({
-          targetId: created.id,
+        await window.brover.renameEnvironment({
+          environmentId: created.id,
           name: '   ',
         })
         return { success: false }

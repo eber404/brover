@@ -35,13 +35,13 @@ test.describe('Targets Delete All Flow', () => {
 
     const result = await window.evaluate(
       async () => {
-        await window.brover.createTarget({ name: `delete-all-${Date.now()}` })
-        await window.brover.createTarget({ name: `delete-all-${Date.now()}-2` })
+        await window.brover.createEnvironment({ name: `delete-all-${Date.now()}` })
+        await window.brover.createEnvironment({ name: `delete-all-${Date.now()}-2` })
 
-        let targets = await window.brover.listTargets()
+        let targets = await window.brover.listEnvironments()
         while (targets.length > 0) {
-          await window.brover.deleteTarget({ targetId: targets[0].id })
-          targets = await window.brover.listTargets()
+          await window.brover.deleteEnvironment({ environmentId: targets[0].id })
+          targets = await window.brover.listEnvironments()
         }
         return {
           targetCount: targets.length,

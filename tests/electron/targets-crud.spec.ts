@@ -39,36 +39,36 @@ test.describe('Targets CRUD Flow', () => {
 
     const result = await window.evaluate(
       async ({ targetName, renamed, updatedColor }) => {
-        const currentTargets = await window.brover.listTargets()
+        const currentTargets = await window.brover.listEnvironments()
         const stale = currentTargets.filter(
           (item) => item.name === targetName || item.name === renamed
         )
         for (const item of stale) {
-          await window.brover.deleteTarget({ targetId: item.id })
+          await window.brover.deleteEnvironment({ environmentId: item.id })
         }
 
-        const createdTargets = await window.brover.createTarget({
+        const createdTargets = await window.brover.createEnvironment({
           name: targetName,
         })
         const created = createdTargets.find((item) => item.name === targetName)
         if (!created) throw new Error('Target not created')
 
-        const renamedTargets = await window.brover.renameTarget({
-          targetId: created.id,
+        const renamedTargets = await window.brover.renameEnvironment({
+          environmentId: created.id,
           name: renamed,
         })
         const renamedTarget = renamedTargets.find((item) => item.id === created.id)
         if (!renamedTarget) throw new Error('Target not found after rename')
 
-        const recoloredTargets = await window.brover.setTargetColor({
-          targetId: created.id,
+        const recoloredTargets = await window.brover.setEnvironmentColor({
+          environmentId: created.id,
           color: updatedColor,
         })
         const recoloredTarget = recoloredTargets.find((item) => item.id === created.id)
         if (!recoloredTarget) throw new Error('Target not found after recolor')
 
-        await window.brover.deleteTarget({ targetId: created.id })
-        const finalTargets = await window.brover.listTargets()
+        await window.brover.deleteEnvironment({ environmentId: created.id })
+        const finalTargets = await window.brover.listEnvironments()
 
         return {
           createdName: created.name,

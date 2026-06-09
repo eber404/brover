@@ -24,15 +24,6 @@ const api: BroverAPI = {
   setEnvironmentColor: (payload) => ipcRenderer.invoke('environments:set-color', payload),
   setActiveEnvironment: (payload) => ipcRenderer.invoke('environments:set-active', payload),
 
-  getTiedTargets: () => ipcRenderer.invoke('environments:get-shared-secret-names'),
-  setTiedTargets: (tiedTargets) => ipcRenderer.invoke('environments:set-shared-secret-names', tiedTargets),
-  listTargets: () => ipcRenderer.invoke('environments:list'),
-  createTarget: (payload) => ipcRenderer.invoke('environments:create', payload),
-  deleteTarget: (payload) => ipcRenderer.invoke('environments:delete', { environmentId: payload.targetId }),
-  reorderTargets: (payload) => ipcRenderer.invoke('environments:reorder', { orderedEnvironmentIds: payload.orderedTargetIds }),
-  renameTarget: (payload) => ipcRenderer.invoke('environments:rename', { environmentId: payload.targetId, name: payload.name }),
-  setTargetColor: (payload) => ipcRenderer.invoke('environments:set-color', { environmentId: payload.targetId, color: payload.color }),
-  setActiveTarget: (payload) => ipcRenderer.invoke('environments:set-active', { environmentId: payload.targetId }),
   secretExists: (profile, name) => ipcRenderer.invoke('secrets:exists', { profile, name }),
   launch: {
     terminal: (environmentId, terminalApp) => ipcRenderer.invoke('launch:terminal', { environmentId, terminalApp }),

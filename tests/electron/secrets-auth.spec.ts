@@ -35,7 +35,7 @@ test.describe('Secrets Auth Flow', () => {
     await window.waitForFunction(() => Boolean(window.brover))
 
     const target = await window.evaluate(async () => {
-      const targets = await window.brover.createTarget({
+      const targets = await window.brover.createEnvironment({
         name: `secret-target-${Date.now()}`,
       })
       return targets.find((item) => item.isActive) ?? targets[0]

@@ -34,7 +34,7 @@ test.describe('Secret Delete Confirmation', () => {
     await window.waitForFunction(() => Boolean(window.brover))
 
     const target = await window.evaluate(async () => {
-      const targets = await window.brover.createTarget({
+      const targets = await window.brover.createEnvironment({
         name: `delete-target-${Date.now()}`,
       })
       return targets.find((t) => t.isActive) ?? targets[0]
@@ -79,7 +79,7 @@ test.describe('Secret Delete Confirmation', () => {
     await window.waitForFunction(() => Boolean(window.brover))
 
     const target = await window.evaluate(async () => {
-      const targets = await window.brover.createTarget({
+      const targets = await window.brover.createEnvironment({
         name: `delete-target-${Date.now()}`,
       })
       return targets.find((t) => t.isActive) ?? targets[0]

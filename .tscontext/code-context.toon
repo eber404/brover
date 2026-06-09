@@ -1,4 +1,4 @@
-generatedAt: "2026-06-09T17:20:07.313Z"
+generatedAt: "2026-06-09T19:02:33.667Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 45
@@ -520,7 +520,7 @@ files[45]:
       - name: BroverStore
         exported: true
         defaultExport: false
-        publicMethods[27]:
+        publicMethods[18]:
           - name: getOnboardingStatus
             async: true
             params[0]:
@@ -626,58 +626,6 @@ files[45]:
               payload,"{ environmentId: string }"
             returnType: "Promise<Environment[]>"
             signature: "async setActiveEnvironment(payload: { environmentId: string }): Promise<Environment[]>"
-          - name: getTiedTargets
-            async: true
-            params[0]:
-            returnType: Promise<boolean>
-            signature: "async getTiedTargets(): Promise<boolean>"
-          - name: setTiedTargets
-            async: true
-            params[1]{name,type}:
-              tiedTargets,boolean
-            returnType: Promise<boolean>
-            signature: "async setTiedTargets(tiedTargets: boolean): Promise<boolean>"
-          - name: listTargets
-            async: true
-            params[0]:
-            returnType: "Promise<Environment[]>"
-            signature: "async listTargets(): Promise<Environment[]>"
-          - name: createTarget
-            async: true
-            params[1]{name,type}:
-              payload,"{ name: string }"
-            returnType: "Promise<Environment[]>"
-            signature: "async createTarget(payload: { name: string }): Promise<Environment[]>"
-          - name: deleteTarget
-            async: true
-            params[1]{name,type}:
-              payload,"{ targetId: string }"
-            returnType: "Promise<Environment[]>"
-            signature: "async deleteTarget(payload: { targetId: string }): Promise<Environment[]>"
-          - name: reorderTargets
-            async: true
-            params[1]{name,type}:
-              payload,"{ orderedTargetIds: string[] }"
-            returnType: "Promise<Environment[]>"
-            signature: "async reorderTargets(payload: { orderedTargetIds: string[] }): Promise<Environment[]>"
-          - name: renameTarget
-            async: true
-            params[1]{name,type}:
-              payload,"{ targetId: string; name: string }"
-            returnType: "Promise<Environment[]>"
-            signature: "async renameTarget(payload: { targetId: string; name: string }): Promise<Environment[]>"
-          - name: setTargetColor
-            async: true
-            params[1]{name,type}:
-              payload,"{ targetId: string; color: string }"
-            returnType: "Promise<Environment[]>"
-            signature: "async setTargetColor(payload: { targetId: string; color: string }): Promise<Environment[]>"
-          - name: setActiveTarget
-            async: true
-            params[1]{name,type}:
-              payload,"{ targetId: string }"
-            returnType: "Promise<Environment[]>"
-            signature: "async setActiveTarget(payload: { targetId: string }): Promise<Environment[]>"
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/main/terminalIconLoader.ts
@@ -1898,7 +1846,7 @@ files[45]:
         exported: true
         defaultExport: false
         text: "export interface BroverAPI { listEnvs: () => Promise<EnvMetadata[]> createEnv: (payload: { name: string; profile: string; value: string; description?: string..."
-        properties[30]: "listEnvs: () => Promise<EnvMetadata[]>","createEnv: (payload: { name: string; profile: string; value: string; description?: string }) => Promise<SecretActionResult>","revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>","copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>","updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","updateEnvConfirmed: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>","getSharedSecretNames: () => Promise<boolean>","setSharedSecretNames: (sharedSecretNames: boolean) => Promise<boolean>","listEnvironments: () => Promise<Environment[]>","createEnvironment: (payload: { name: string }) => Promise<Environment[]>","deleteEnvironment: (payload: { environmentId: string }) => Promise<Environment[]>","reorderEnvironments: (payload: { orderedEnvironmentIds: string[] }) => Promise<Environment[]>","renameEnvironment: (payload: { environmentId: string; name: string }) => Promise<Environment[]>","secretExists: (profile: string, name: string) => Promise<boolean>","setEnvironmentColor: (payload: { environmentId: string; color: string }) => Promise<Environment[]>","setActiveEnvironment: (payload: { environmentId: string }) => Promise<Environment[]>","launch: { terminal: (environmentId: string, terminalApp: string) => Promise<{ success: boolean }> listTerminals: () => Promise<{ terminals: TerminalApp[] }> ...","getTiedTargets: () => Promise<boolean>","setTiedTargets: (tiedTargets: boolean) => Promise<boolean>","listTargets: () => Promise<Environment[]>","createTarget: (payload: { name: string }) => Promise<Environment[]>","deleteTarget: (payload: { targetId: string }) => Promise<Environment[]>","reorderTargets: (payload: { orderedTargetIds: string[] }) => Promise<Environment[]>","renameTarget: (payload: { targetId: string; name: string }) => Promise<Environment[]>","setTargetColor: (payload: { targetId: string; color: string }) => Promise<Environment[]>","setActiveTarget: (payload: { targetId: string }) => Promise<Environment[]>","onboarding: { getStatus: () => Promise<OnboardingStatus> scanDotfiles: () => Promise<ScanResult> runRetroactive: (payload: RetroactivePayload) => Promise<Onb..."
+        properties[21]: "listEnvs: () => Promise<EnvMetadata[]>","createEnv: (payload: { name: string; profile: string; value: string; description?: string }) => Promise<SecretActionResult>","revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>","copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>","updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","updateEnvConfirmed: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>","getSharedSecretNames: () => Promise<boolean>","setSharedSecretNames: (sharedSecretNames: boolean) => Promise<boolean>","listEnvironments: () => Promise<Environment[]>","createEnvironment: (payload: { name: string }) => Promise<Environment[]>","deleteEnvironment: (payload: { environmentId: string }) => Promise<Environment[]>","reorderEnvironments: (payload: { orderedEnvironmentIds: string[] }) => Promise<Environment[]>","renameEnvironment: (payload: { environmentId: string; name: string }) => Promise<Environment[]>","secretExists: (profile: string, name: string) => Promise<boolean>","setEnvironmentColor: (payload: { environmentId: string; color: string }) => Promise<Environment[]>","setActiveEnvironment: (payload: { environmentId: string }) => Promise<Environment[]>","launch: { terminal: (environmentId: string, terminalApp: string) => Promise<{ success: boolean }> listTerminals: () => Promise<{ terminals: TerminalApp[] }> ...","onboarding: { getStatus: () => Promise<OnboardingStatus> scanDotfiles: () => Promise<ScanResult> runRetroactive: (payload: RetroactivePayload) => Promise<Onb..."
     classes[0]:
     exportedConstants[0]:
     exportedHooks[0]:

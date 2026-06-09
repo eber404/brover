@@ -37,7 +37,7 @@ test.describe('Env Toggle Flow', () => {
 
     const result = await window.evaluate(
       async ({ secretName }) => {
-        const targets = await window.brover.createTarget({
+        const targets = await window.brover.createEnvironment({
           name: `env-target-${Date.now()}`,
         })
         const target = targets.find((t) => t.isActive) ?? targets[0]

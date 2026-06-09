@@ -38,11 +38,11 @@ test.describe('Targets Cleanup Flow', () => {
 
     const result = await window.evaluate(
       async ({ defaultTargetName, secretName }) => {
-        const targets = await window.brover.createTarget({ name: defaultTargetName })
+        const targets = await window.brover.createEnvironment({ name: defaultTargetName })
         const defaultTarget = targets.find((item) => item.name === defaultTargetName)
         if (!defaultTarget) throw new Error('No default target created')
 
-        const extraTarget = await window.brover.createTarget({
+        const extraTarget = await window.brover.createEnvironment({
           name: 'prod',
         })
         const prodTarget = extraTarget.find((item) => item.name === 'prod')
@@ -65,10 +65,10 @@ test.describe('Targets Cleanup Flow', () => {
           (env) => env.profile === defaultTarget.id || env.profile === prodTarget.id
         )
 
-        await window.brover.deleteTarget({ targetId: prodTarget.id })
-        await window.brover.deleteTarget({ targetId: defaultTarget.id })
+        await window.brover.deleteEnvironment({ environmentId: prodTarget.id })
+        await window.brover.deleteEnvironment({ environmentId: defaultTarget.id })
 
-        const targetsAfter = await window.brover.listTargets()
+        const targetsAfter = await window.brover.listEnvironments()
         const envsAfter = await window.brover.listEnvs()
         const spaceEnvsAfter = envsAfter.filter(
           (env) => env.profile === defaultTarget.id || env.profile === prodTarget.id
