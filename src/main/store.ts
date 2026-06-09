@@ -199,20 +199,18 @@ export class BroverStore {
     const envs = Array.isArray(parsed.envs) ? (parsed.envs as EnvMetadata[]) : []
     const hasRootEnvMetadata = rootTargets.some((target) => envs.some((env) => env.profile === target.id))
 
-    if (allRootTargetsLookLikeDotfiles && !hasRootEnvMetadata) {
-      const [firstTarget] = rootTargets
-      if (firstTarget) {
-        return [
-          {
-            ...firstTarget,
-            name: 'default',
-            isActive: true,
-          },
-        ]
-      }
-    }
+    if (!allRootTargetsLookLikeDotfiles || hasRootEnvMetadata) return normalizedTargets
 
-    return normalizedTargets
+    const [firstTarget] = rootTargets
+    if (!firstTarget) return normalizedTargets
+
+    return [
+      {
+        ...firstTarget,
+        name: 'default',
+        isActive: true,
+      },
+    ]
   }
 
   private async readDB(): Promise<DBShape> {

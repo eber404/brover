@@ -75,10 +75,10 @@ export function getLaunchPreferences(
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      const normalized = normalizeLaunchPreferences(JSON.parse(stored), validTerminalIds)
-      if (normalized) return normalized
-    }
+    const normalized = stored
+      ? normalizeLaunchPreferences(JSON.parse(stored), validTerminalIds)
+      : null
+    if (normalized) return normalized
 
     const legacy = localStorage.getItem(LEGACY_STORAGE_KEY)
     if (legacy && validTerminalIds.includes(legacy)) {

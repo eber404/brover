@@ -63,10 +63,8 @@ export default function TerminalPreferencesStep({
     setFavoriteIds((prev) => {
       const index = prev.indexOf(terminalId)
       if (index < 0) return prev
-      if (direction === 'up') {
-        if (index === 0) return prev
-        return moveItem(prev, index, index - 1)
-      }
+      if (direction === 'up' && index === 0) return prev
+      if (direction === 'up') return moveItem(prev, index, index - 1)
       if (index === prev.length - 1) return prev
       return moveItem(prev, index, index + 1)
     })
@@ -142,16 +140,13 @@ export default function TerminalPreferencesStep({
           {orderedTerminals.map((terminal) => {
             const favoriteIndex = favoriteIds.indexOf(terminal.id)
             const isFavorite = favoriteIndex >= 0
+            const favoriteCardClassName = `flex items-center gap-3 px-4 py-3 transition-colors ${isFavorite ? 'border-blue-500 ring-1 ring-blue-500' : 'hover:border-edge/40'} ${draggingTerminalId === terminal.id ? 'opacity-50' : ''}`
 
             return (
               <Card
                 key={terminal.id}
                 data-testid={`favorite-terminal-${terminal.id}`}
-                className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                  isFavorite ? 'border-blue-500 ring-1 ring-blue-500' : 'hover:border-edge/40'
-                } ${
-                  draggingTerminalId === terminal.id ? 'opacity-50' : ''
-                }`}
+                className={favoriteCardClassName}
                 onClick={() => toggleFavorite(terminal.id)}
                 draggable={isFavorite}
                 onDragStart={(event) => {
@@ -189,7 +184,7 @@ export default function TerminalPreferencesStep({
                   </div>
                 </div>
 
-                {isFavorite ? (
+                {isFavorite && (
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
@@ -216,7 +211,7 @@ export default function TerminalPreferencesStep({
                       <ArrowDown className="h-4 w-4" />
                     </button>
                   </div>
-                ) : null}
+                )}
               </Card>
             )
           })}

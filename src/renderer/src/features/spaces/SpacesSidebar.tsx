@@ -51,6 +51,9 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
   const [colorMenu, setColorMenu] = useState<{ targetId: string; x: number; y: number } | null>(null)
   const [nameTooltip, setNameTooltip] = useState<{ text: string; x: number; y: number } | null>(null)
   const [draggingTargetId, setDraggingTargetId] = useState<string | null>(null)
+  const pendingDeleteDescription = pendingDeleteTarget
+    ? `Remove ${pendingDeleteTarget.name} and target-scoped values.`
+    : ''
 
   function applyTargetColor(targetId: string, color: string) {
     onUpdateTargetColor(targetId, color)
@@ -173,7 +176,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
               <span className="block h-full w-full rounded-full" style={{ backgroundColor: target.color }} />
             </button>
             <div className="min-w-0 flex-1 pr-2">{renderTargetNameCell(target)}</div>
-            {editingTargetId !== target.id ? (
+            {editingTargetId !== target.id && (
               <button
                 className={`shrink-0 cursor-pointer rounded p-1 transition ${selectedTargetId === target.id ? 'text-text-muted hover:bg-surface-hover hover:text-rose-status' : 'pointer-events-none opacity-0 text-slate-500 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:hover:bg-surface-hover group-hover:hover:text-rose-status'}`}
                 data-testid={`target-delete-${target.id}`}
@@ -185,7 +188,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
-            ) : null}
+            )}
           </div>
         ))}
         </div>
@@ -204,7 +207,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
           if (!open) setPendingDeleteTarget(null)
         }}
         title="Delete target?"
-        description={pendingDeleteTarget ? `Remove ${pendingDeleteTarget.name} and target-scoped values.` : ''}
+        description={pendingDeleteDescription}
         confirmLabel="Delete"
         cancelLabel="Cancel"
         destructive
@@ -213,7 +216,7 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
         }}
       />
 
-      {colorMenu ? (
+      {colorMenu && (
         <div className="absolute inset-0 z-30">
           <button type="button" className="absolute inset-0 cursor-pointer" onClick={() => setColorMenu(null)} />
           <div className="absolute flex w-44 flex-col gap-2 rounded-lg border border-edge bg-surface-overlay p-2 shadow-xl" style={{ left: colorMenu.x, top: colorMenu.y }} data-testid="target-color-menu">
@@ -233,13 +236,13 @@ export const SpacesSidebar = memo(function SpacesSidebar(props: SpacesSidebarPro
             </label>
           </div>
         </div>
-      ) : null}
+      )}
 
-      {nameTooltip ? (
+      {nameTooltip && (
         <div className="pointer-events-none absolute z-30 max-w-[260px] rounded-md border border-edge bg-surface-overlay px-2 py-1 text-xs text-text-emphasis shadow-lg" style={{ left: nameTooltip.x, top: nameTooltip.y }}>
           {nameTooltip.text}
         </div>
-      ) : null}
+      )}
     </aside>
   )
 })

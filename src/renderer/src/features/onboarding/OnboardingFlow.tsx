@@ -120,32 +120,28 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     ? computePreviewSummary(retroactivePayload.scanResult, retroactivePayload.selection.selectedSensitiveIds)
     : null
 
+  const freshStartLoadingContent = freshStartError ? (
+    <div className="flex min-h-screen items-center justify-center bg-surface-base p-6">
+      <Card className="flex w-full max-w-md flex-col items-center gap-4 p-8 text-center">
+        <p className="text-rose-status">{freshStartError}</p>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleBack}>
+            Back
+          </Button>
+          <Button onClick={() => void startFreshStart()}>Retry</Button>
+        </div>
+      </Card>
+    </div>
+  ) : (
+    <div className="flex min-h-screen items-center justify-center bg-surface-base">
+      <p className="text-text-muted">Preparing fresh start...</p>
+    </div>
+  )
+
   const content = (() => {
     if (step === 'welcome') return <WelcomeStep onSelectMode={handleModeSelect} />
     if (step === 'review') return <RetroactiveReviewStep onContinue={handleRetroactiveContinue} onBack={handleBack} />
-    if (step === 'fresh-start-loading') {
-      if (freshStartError) {
-        return (
-          <div className="flex min-h-screen items-center justify-center bg-surface-base p-6">
-            <Card className="flex w-full max-w-md flex-col items-center gap-4 p-8 text-center">
-              <p className="text-rose-status">{freshStartError}</p>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handleBack}>
-                  Back
-                </Button>
-                <Button onClick={() => void startFreshStart()}>Retry</Button>
-              </div>
-            </Card>
-          </div>
-        )
-      }
-
-      return (
-        <div className="flex min-h-screen items-center justify-center bg-surface-base">
-          <p className="text-text-muted">Preparing fresh start...</p>
-        </div>
-      )
-    }
+    if (step === 'fresh-start-loading') return freshStartLoadingContent
     if (step === 'confirmation') {
       return (
         <ConfirmationStep

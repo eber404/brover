@@ -303,21 +303,13 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   let listContent: ReactNode
   const isFiltered = (searchQuery ?? '').trim().length > 0
   if (filteredEnvs.length === 0) {
-    if (isFiltered) {
-      listContent = (
-        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-edge bg-surface-card p-4 text-center">
-          <KeyRound className="h-6 w-6 text-text-muted" />
-          <div className="text-sm font-medium text-text-base">{t('secrets.noResults')}</div>
-        </div>
-      )
-    } else {
-      listContent = (
-        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-edge bg-surface-card p-4 text-center">
-          <KeyRound className="h-6 w-6 text-text-muted" />
-          <div className="text-sm font-medium text-text-base">{t('secrets.noSecrets')}</div>
-        </div>
-      )
-    }
+    const emptyStateLabel = isFiltered ? t('secrets.noResults') : t('secrets.noSecrets')
+    listContent = (
+      <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-edge bg-surface-card p-4 text-center">
+        <KeyRound className="h-6 w-6 text-text-muted" />
+        <div className="text-sm font-medium text-text-base">{emptyStateLabel}</div>
+      </div>
+    )
   } else {
     listContent = (
       <div className="grid gap-2">

@@ -1,6 +1,6 @@
 {
   "name": "brover-electron-app",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "trustedDependencies": [
     "electron"
@@ -27,7 +27,7 @@
     "tsc": "bunx tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx",
     "tscontext": "/opt/homebrew/bin/bun /Users/eber/dev/tscontext/src/cli.ts extract --repo . --out .tscontext/code-context --profile default",
-    "precommit": "bun run tsc && bun run test && bun run tscontext && git add .tscontext/code-context.toon .tscontext/code-context.md",
+    "precommit": "bun run lint && bun run tsc && bun run test && bun run tscontext && git add .tscontext/code-context.toon .tscontext/code-context.md",
     "postinstall": "[ -d .git ] && git config core.hooksPath .githooks && chmod +x .githooks/pre-commit || true"
   },
   "build": {

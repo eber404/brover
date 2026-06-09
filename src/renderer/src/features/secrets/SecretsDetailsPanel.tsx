@@ -35,6 +35,20 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
     deleteLabel,
   } = props
 
+  const deleteButton = canDelete ? (
+    <div className="px-4 pb-4">
+      <Button
+        data-testid="secret-delete-bottom"
+        className="mt-4 w-full shrink-0"
+        variant="destructive"
+        onClick={onDelete}
+      >
+        <Trash2 className="mr-2 h-4 w-4" />
+        {deleteLabel}
+      </Button>
+    </div>
+  ) : null
+
   return (
     <section className="flex h-full flex-col bg-panel/80 pt-4">
       <div className="flex-1 overflow-y-auto">
@@ -50,20 +64,7 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
           />
         </div>
       </div>
-
-      {canDelete ? (
-        <div className="px-4 pb-4">
-          <Button
-            data-testid="secret-delete-bottom"
-            className="mt-4 w-full shrink-0"
-            variant="destructive"
-            onClick={onDelete}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            {deleteLabel}
-          </Button>
-        </div>
-      ) : null}
+      {deleteButton}
     </section>
   )
 })

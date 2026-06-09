@@ -18,18 +18,22 @@ const reasonByAction: Record<Exclude<SecretAction, 'copy'>, string> = {
 export function createSecretAuthGate(prompt: AuthPrompt, cache?: AuthSessionCache) {
   return {
     async authorize(action: SecretAction, context?: SecretActionContext) {
-      if (action === 'copy' && context?.isRevealed) return
+      const targetId = context?.targetId ?? ''
+      const grantTargetId = context?.targetId
+      const isHiddenCopy = action === 'copy' && !context?.isRevealed
 
-      if (action === 'copy' && !context?.isRevealed) {
-        if (cache?.isAuthorized(context?.targetId ?? '')) return
+      if (action === 'copy' && context?.isRevealed) return
+      if (isHiddenCopy && cache?.isAuthorized(targetId)) return
+
+      if (isHiddenCopy) {
         await prompt('Authenticate to copy hidden secret')
-        if (context?.targetId) cache?.grant(context.targetId)
+        grantTargetId && cache?.grant(grantTargetId)
         return
       }
 
-      if (cache?.isAuthorized(context?.targetId ?? '')) return
+      if (cache?.isAuthorized(targetId)) return
       await prompt(reasonByAction[action as Exclude<SecretAction, 'copy'>])
-      if (context?.targetId) cache?.grant(context.targetId)
+      grantTargetId && cache?.grant(grantTargetId)
     },
   }
 }

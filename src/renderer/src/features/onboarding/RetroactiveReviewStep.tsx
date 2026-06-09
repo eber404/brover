@@ -155,53 +155,45 @@ export default function RetroactiveReviewStep({
                   className="flex w-full cursor-pointer items-center justify-between py-1 text-sm font-semibold uppercase tracking-wide text-text-muted transition-colors hover:text-text-base"
                 >
                   <span>{fileName(group.filePath)}</span>
-                  {isCollapsed ? (
-                    <ChevronRight className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
+                  {isCollapsed && <ChevronRight className="h-4 w-4" />}
+                  {!isCollapsed && <ChevronDown className="h-4 w-4" />}
                 </button>
                 {!isCollapsed && (
                   <div className="mt-2 flex flex-col gap-1.5">
-                    {group.variables.map((v) => (
-                      <Card
-                        key={v.id}
-                        className={`flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors ${
-                          selectedIds.has(v.id)
-                            ? 'border-blue-500 ring-1 ring-blue-500'
-                            : 'hover:border-edge/40'
-                        }`}
-                        onClick={() => toggleSelection(v.id)}
-                      >
-                        <div className="flex flex-1 flex-col gap-0.5">
-                          <span className="font-mono text-sm text-text-base">
-                            {v.name}
-                          </span>
-                          <span className="text-xs text-text-muted">
-                            {revealedIds.has(v.id) ? v.value : '••••••'}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            toggleReveal(v.id)
-                          }}
-                          className="cursor-pointer text-text-muted transition-colors hover:text-accent"
-                          aria-label={
-                            revealedIds.has(v.id)
-                              ? t('onboarding.review.hide')
-                              : t('onboarding.review.reveal')
-                          }
+                    {group.variables.map((v) => {
+                      const isSelected = selectedIds.has(v.id)
+                      const isRevealed = revealedIds.has(v.id)
+                      const cardClassName = `flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'hover:border-edge/40'}`
+                      const valueLabel = isRevealed ? v.value : '••••••'
+                      const revealLabel = isRevealed ? t('onboarding.review.hide') : t('onboarding.review.reveal')
+
+                      return (
+                        <Card
+                          key={v.id}
+                          className={cardClassName}
+                          onClick={() => toggleSelection(v.id)}
                         >
-                          {revealedIds.has(v.id) ? (
-                            <EyeOff className="h-5 w-5" />
-                          ) : (
-                            <Eye className="h-5 w-5" />
-                          )}
-                        </button>
-                      </Card>
-                    ))}
+                          <div className="flex flex-1 flex-col gap-0.5">
+                            <span className="font-mono text-sm text-text-base">
+                              {v.name}
+                            </span>
+                            <span className="text-xs text-text-muted">{valueLabel}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleReveal(v.id)
+                            }}
+                            className="cursor-pointer text-text-muted transition-colors hover:text-accent"
+                            aria-label={revealLabel}
+                          >
+                            {isRevealed && <EyeOff className="h-5 w-5" />}
+                            {!isRevealed && <Eye className="h-5 w-5" />}
+                          </button>
+                        </Card>
+                      )
+                    })}
                   </div>
                 )}
               </div>

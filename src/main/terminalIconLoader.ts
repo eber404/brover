@@ -60,25 +60,22 @@ export async function loadTerminalIconDataUrl(
   const resolvedDeps = deps ?? (await createDefaultDeps())
 
   const bundleIconFileName = await resolvedDeps.readBundleIconFileName(bundlePath)
-  if (bundleIconFileName) {
-    const bundleIconPath = join(bundlePath, 'Contents', 'Resources', normalizeIconFileName(bundleIconFileName))
-    if (resolvedDeps.fileExists(bundleIconPath)) {
-      try {
-        const convertedBundleIconPath = await resolvedDeps.convertIcnsToPng(bundleIconPath)
-        if (convertedBundleIconPath) {
-          const convertedBundleIcon = resolvedDeps.createImageFromPath(convertedBundleIconPath)
-          if (!convertedBundleIcon.isEmpty()) {
-            return convertedBundleIcon.toDataURL()
-          }
-        }
+  const bundleIconPath = bundleIconFileName
+    ? join(bundlePath, 'Contents', 'Resources', normalizeIconFileName(bundleIconFileName))
+    : null
 
-        const bundleIcon = resolvedDeps.createImageFromPath(bundleIconPath)
-        if (!bundleIcon.isEmpty()) {
-          return bundleIcon.toDataURL()
-        }
-      } catch {
-        // Fall through to app bundle file icon.
-      }
+  if (bundleIconPath && resolvedDeps.fileExists(bundleIconPath)) {
+    try {
+      const convertedBundleIconPath = await resolvedDeps.convertIcnsToPng(bundleIconPath)
+      const convertedBundleIcon = convertedBundleIconPath
+        ? resolvedDeps.createImageFromPath(convertedBundleIconPath)
+        : null
+      if (convertedBundleIcon && !convertedBundleIcon.isEmpty()) return convertedBundleIcon.toDataURL()
+
+      const bundleIcon = resolvedDeps.createImageFromPath(bundleIconPath)
+      if (!bundleIcon.isEmpty()) return bundleIcon.toDataURL()
+    } catch {
+      // Fall through to app bundle file icon.
     }
   }
 

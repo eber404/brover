@@ -40,6 +40,11 @@ export function SecretsDetail({
     return <p className="text-text-muted">{t('secrets.selectSecret')}</p>
   }
 
+  const currentSecretValue = isRevealed ? revealValue : '••••••••'
+  const secretAriaLabel = isRevealed ? 'Hide secret' : 'Reveal secret'
+  const currentSecretTitle = hasValue ? 'Rotate Secret' : t('secrets.defineTitle')
+  const updateActionLabel = hasValue ? t('secrets.updateValue') : t('secrets.saveValue')
+
   return (
     <div className="grid gap-3">
       <div>
@@ -47,13 +52,13 @@ export function SecretsDetail({
         <div className="text-xs text-text-muted">Target: {targetName}</div>
       </div>
 
-      {hasValue ? (
+      {hasValue && (
         <div className="grid gap-2 rounded-xl border border-edge bg-surface-card p-3">
           <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">Current Secret</div>
           <div className="relative">
             <Input
               readOnly
-              value={isRevealed ? revealValue : '••••••••'}
+              value={currentSecretValue}
               className="pr-11 font-mono"
             />
             <button
@@ -67,9 +72,10 @@ export function SecretsDetail({
                 }
                 onReveal()
               }}
-              aria-label={isRevealed ? 'Hide secret' : 'Reveal secret'}
+              aria-label={secretAriaLabel}
             >
-              {isRevealed ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {isRevealed && <EyeOff className="h-4 w-4" />}
+              {!isRevealed && <Eye className="h-4 w-4" />}
             </button>
           </div>
           <Button
@@ -84,12 +90,10 @@ export function SecretsDetail({
             </span>
           </Button>
         </div>
-      ) : null}
+      )}
 
       <div className="grid gap-2 rounded-xl border border-edge bg-surface-card p-3">
-        <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">
-          {hasValue ? 'Rotate Secret' : t('secrets.defineTitle')}
-        </div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">{currentSecretTitle}</div>
         <Input
           data-testid="secret-update-input"
           placeholder={t('secrets.secretValue')}
@@ -108,7 +112,7 @@ export function SecretsDetail({
         >
           <span className="flex items-center gap-2">
             <RotateCw className="h-4 w-4 text-accent transition-all duration-200 group-hover:text-[#67d0ff] group-hover:scale-110" />
-            {hasValue ? t('secrets.updateValue') : t('secrets.saveValue')}
+            {updateActionLabel}
           </span>
         </Button>
       </div>

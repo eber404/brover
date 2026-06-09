@@ -28,12 +28,12 @@ function SecretsTestWrapper(props: Partial<Parameters<typeof useSecretsPanel>[0]
     setRevealValue: props.setRevealValue ?? (() => {}),
   })
 
+  const selectedEnvName = panel.selectedEnv ? panel.selectedEnv.name : 'none'
+
   return (
     <div>
       {panel.center}
-      <div data-testid="selected-env">
-        {panel.selectedEnv ? panel.selectedEnv.name : 'none'}
-      </div>
+      <div data-testid="selected-env">{selectedEnvName}</div>
       <button data-testid="reveal-btn" onClick={() => panel.revealEnv()}>Reveal</button>
       <button data-testid="copy-btn" onClick={() => panel.copyEnv(false)}>Copy</button>
       <button data-testid="update-btn" onClick={() => panel.updateEnvValue('new-val')}>Update</button>

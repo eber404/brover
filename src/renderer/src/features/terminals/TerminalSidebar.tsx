@@ -131,14 +131,15 @@ export const TerminalSidebar = memo(function TerminalSidebar(
 
   async function pickAndAddTerminal() {
     const result = await window.brover.launch.pickTerminalApp()
-    if (result.canceled) {
+    if (result.canceled) return
+
+    const unsupportedTerminal = !result.terminal && result.error === 'UNSUPPORTED_TERMINAL_APP'
+    if (unsupportedTerminal) {
+      toast(`${result.appName ?? 'App'} ${t('launch.notTerminal')}`, 'error')
       return
     }
 
     if (!result.terminal) {
-      if (result.error === 'UNSUPPORTED_TERMINAL_APP') {
-        toast(`${result.appName ?? 'App'} ${t('launch.notTerminal')}`, 'error')
-      }
       return
     }
 
@@ -183,14 +184,15 @@ export const TerminalSidebar = memo(function TerminalSidebar(
             title={terminal.name}
             aria-label={terminal.name}
           >
-            {terminal.iconDataUrl ? (
+            {terminal.iconDataUrl && (
               <img
                 data-testid={`terminal-icon-${terminal.id}`}
                 src={terminal.iconDataUrl}
                 alt={terminal.name}
                 className="h-8 w-8 rounded-md"
               />
-            ) : (
+            )}
+            {!terminal.iconDataUrl && (
               <span className="text-xs font-semibold text-text-base">
                 {terminal.name.slice(0, 2).toUpperCase()}
               </span>
@@ -209,7 +211,7 @@ export const TerminalSidebar = memo(function TerminalSidebar(
         </button>
       </div>
 
-      {contextMenu ? (
+      {contextMenu && (
         <div className="absolute inset-0 z-30">
           <button
             type="button"
@@ -223,14 +225,14 @@ export const TerminalSidebar = memo(function TerminalSidebar(
             <button
               type="button"
               data-testid={`terminal-remove-${contextMenu.terminalId}`}
-            className="cursor-pointer rounded px-2 py-1.5 text-left text-xs text-rose-status hover:bg-surface-hover"
-            onClick={() => removeFavoriteTerminal(contextMenu.terminalId)}
-          >
-            {t('launch.removeTerminal')}
-          </button>
+              className="cursor-pointer rounded px-2 py-1.5 text-left text-xs text-rose-status hover:bg-surface-hover"
+              onClick={() => removeFavoriteTerminal(contextMenu.terminalId)}
+            >
+              {t('launch.removeTerminal')}
+            </button>
           </div>
         </div>
-      ) : null}
+      )}
 
       <div
         data-testid="terminal-footer"

@@ -83,7 +83,6 @@ describe('terminalLauncher', () => {
       ])
       const { statSync } = require('fs')
       const mode = statSync(result.commandPath!).mode
-      // eslint-disable-next-line no-bitwise
       expect(mode & 0o777).toBe(0o755)
       rmSync(result.commandPath!)
     })

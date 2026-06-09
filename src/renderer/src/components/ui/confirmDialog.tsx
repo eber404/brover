@@ -23,6 +23,8 @@ export function ConfirmDialog({
   destructive = false,
   onConfirm,
 }: ConfirmDialogProps) {
+  const confirmVariant = destructive ? 'destructive' : 'success'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xs">
@@ -33,7 +35,7 @@ export function ConfirmDialog({
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>{cancelLabel}</Button>
           <Button
-            variant={destructive ? 'destructive' : 'success'}
+            variant={confirmVariant}
             onClick={() => {
               onConfirm?.()
               onOpenChange(false)
