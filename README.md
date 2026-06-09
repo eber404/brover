@@ -100,6 +100,12 @@ Development:
 npm run dev
 ```
 
+Install via Homebrew:
+
+```sh
+brew install --cask eber404/brover/brover
+```
+
 Build:
 
 ```sh
