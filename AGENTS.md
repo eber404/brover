@@ -192,7 +192,7 @@ For broad/multi-file discovery, consult the auto-generated symbol map:
 ## Storage conventions
 
 - Secret account key format: `environmentId:ENV_NAME`.
-- Metadata JSON path: app data directory `brover/config.json` (or `BROVER_DB_PATH` override in tests).
+- Metadata JSON path: app data directory `brover/config.json` (or `brover-dev/config.json` in dev mode). Override with `BROVER_DB_PATH` env var.
 
 ---
 
