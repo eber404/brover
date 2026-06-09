@@ -85,4 +85,47 @@ test.describe('Targets CRUD Flow', () => {
     expect(result.recoloredColor).toBe(updatedColor)
     expect(result.existsAfterDelete).toBe(false)
   })
+
+  test('shared secret names defaults off and syncs names when enabled', async () => {
+    const window = await electronApp.firstWindow()
+    await window.waitForFunction(() => Boolean(window.brover))
+
+    const result = await window.evaluate(async () => {
+      const sharedByDefault = await window.brover.getSharedSecretNames()
+
+      const environments = await window.brover.listEnvironments()
+      let dev = environments.find((item) => item.name === 'dev')
+      if (!dev) {
+        const created = await window.brover.createEnvironment({ name: 'dev' })
+        dev = created.find((item) => item.name === 'dev') ?? null
+      }
+
+      let prod = (await window.brover.listEnvironments()).find((item) => item.name === 'prod')
+      if (!prod) {
+        const created = await window.brover.createEnvironment({ name: 'prod' })
+        prod = created.find((item) => item.name === 'prod') ?? null
+      }
+
+      if (!dev || !prod) throw new Error('Missing environments')
+
+      await window.brover.createEnv({ name: 'LOCAL_ONLY', profile: dev.id, value: 'secret' })
+      const localOnly = await window.brover.listEnvs()
+      const localOnlyInProd = localOnly.some((env) => env.profile === prod.id && env.name === 'LOCAL_ONLY')
+
+      await window.brover.setSharedSecretNames(true)
+      await window.brover.createEnv({ name: 'SHARED_ENV', profile: dev.id, value: 'secret' })
+      const sharedAfterCreate = await window.brover.listEnvs()
+      const sharedCount = sharedAfterCreate.filter((env) => env.name === 'SHARED_ENV').length
+
+      return {
+        sharedByDefault,
+        localOnlyInProd,
+        sharedCount,
+      }
+    })
+
+    expect(result.sharedByDefault).toBe(false)
+    expect(result.localOnlyInProd).toBe(false)
+    expect(result.sharedCount).toBe(2)
+  })
 })

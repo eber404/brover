@@ -23,7 +23,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
-          targetName="dev"
+          environmentName="dev"
           revealValue=""
           hasValue={true}
           onReveal={() => {}}
@@ -45,7 +45,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
-          targetName="dev"
+          environmentName="dev"
           revealValue=""
           hasValue={true}
           onReveal={() => {}}
@@ -68,7 +68,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
-          targetName="dev"
+          environmentName="dev"
           revealValue="secret123"
           hasValue={true}
           onReveal={onReveal}
@@ -93,7 +93,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
-          targetName="dev"
+          environmentName="dev"
           revealValue=""
           hasValue={true}
           onReveal={onReveal}
@@ -119,7 +119,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
-          targetName="dev"
+          environmentName="dev"
           revealValue=""
           hasValue={true}
           onReveal={() => {}}
@@ -142,7 +142,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
-          targetName="dev"
+          environmentName="dev"
           revealValue=""
           hasValue={true}
           onReveal={() => {}}
@@ -165,7 +165,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
-          targetName="dev"
+          environmentName="dev"
           revealValue="secret123"
           hasValue={true}
           onReveal={() => {}}
@@ -182,7 +182,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env2}
-          targetName="dev"
+          environmentName="dev"
           revealValue=""
           hasValue={true}
           onReveal={() => {}}
@@ -200,7 +200,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
-          targetName="dev"
+          environmentName="dev"
           revealValue="secret123"
           hasValue={true}
           onReveal={() => {}}
@@ -214,7 +214,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
-          targetName="dev"
+          environmentName="dev"
           revealValue=""
           hasValue={true}
           onReveal={() => {}}
@@ -238,7 +238,7 @@ describe('SecretsDetail', () => {
       <I18nProvider>
         <SecretsDetail
           env={env}
-          targetName="dev"
+          environmentName="dev"
           revealValue=""
           hasValue={false}
           onReveal={() => {}}

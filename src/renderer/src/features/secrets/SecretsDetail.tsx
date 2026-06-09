@@ -7,7 +7,7 @@ import { Input } from '../../components/ui/input'
 
 interface SecretsDetailProps {
   env: EnvMetadata | null
-  targetName: string
+  environmentName: string
   revealValue: string
   hasValue: boolean
   onReveal: () => void
@@ -17,7 +17,7 @@ interface SecretsDetailProps {
 
 export function SecretsDetail({
   env,
-  targetName,
+  environmentName,
   revealValue,
   hasValue,
   onReveal,
@@ -49,7 +49,7 @@ export function SecretsDetail({
     <div className="grid gap-3">
       <div>
         <div className="text-lg font-semibold">{env.name}</div>
-        <div className="text-xs text-text-muted">Target: {targetName}</div>
+        <div className="text-xs text-text-muted">{t('common.environment')}: {environmentName}</div>
       </div>
 
       {hasValue && (

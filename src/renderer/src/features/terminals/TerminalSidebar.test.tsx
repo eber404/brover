@@ -84,7 +84,7 @@ describe('TerminalSidebar', () => {
       <TerminalSidebar
         locale="en"
         onLocaleChange={onLocaleChange}
-        selectedTargetId="target-1"
+        selectedEnvironmentId="environment-1"
       />
     )
 
@@ -115,7 +115,7 @@ describe('TerminalSidebar', () => {
       <TerminalSidebar
         locale="en"
         onLocaleChange={vi.fn()}
-        selectedTargetId="target-1"
+        selectedEnvironmentId="environment-1"
       />
     )
 
@@ -140,7 +140,7 @@ describe('TerminalSidebar', () => {
       <TerminalSidebar
         locale="en"
         onLocaleChange={vi.fn()}
-        selectedTargetId="target-1"
+        selectedEnvironmentId="environment-1"
       />
     )
 
@@ -153,7 +153,7 @@ describe('TerminalSidebar', () => {
     fireEvent.click(screen.getByTestId('terminal-launch-iterm2'))
 
     await waitFor(() => {
-      expect(launchTerminal).toHaveBeenCalledWith('target-1', 'iterm2')
+      expect(launchTerminal).toHaveBeenCalledWith('environment-1', 'iterm2')
     })
   })
 
@@ -162,7 +162,7 @@ describe('TerminalSidebar', () => {
       <TerminalSidebar
         locale="en"
         onLocaleChange={vi.fn()}
-        selectedTargetId="target-1"
+        selectedEnvironmentId="environment-1"
       />
     )
 
@@ -198,7 +198,7 @@ describe('TerminalSidebar', () => {
       <TerminalSidebar
         locale="en"
         onLocaleChange={vi.fn()}
-        selectedTargetId="target-1"
+        selectedEnvironmentId="environment-1"
       />
     )
 

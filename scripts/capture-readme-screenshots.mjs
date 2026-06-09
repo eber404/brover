@@ -58,32 +58,32 @@ async function main() {
     await onboardingWindow.locator('input[placeholder*="Search secrets"]').waitFor({ state: 'visible' })
 
     await onboardingWindow.evaluate(async () => {
-      const targets = await window.brover.listTargets()
-      const defaultTarget = targets[0]
-      if (!defaultTarget) return null
+      const environments = await window.brover.listEnvironments()
+      const defaultEnvironment = environments[0]
+      if (!defaultEnvironment) return null
 
-      await window.brover.renameTarget({
-        targetId: defaultTarget.id,
+      await window.brover.renameEnvironment({
+        environmentId: defaultEnvironment.id,
         name: 'dev',
       })
-      await window.brover.setActiveTarget({ targetId: defaultTarget.id })
+      await window.brover.setActiveEnvironment({ environmentId: defaultEnvironment.id })
 
       const createUserResult = await window.brover.createEnv({
         name: 'POSTGRES_USER',
-        profile: defaultTarget.id,
+        profile: defaultEnvironment.id,
         value: 'postgres',
       })
       const createPassResult = await window.brover.createEnv({
         name: 'POSTGRES_PASS',
-        profile: defaultTarget.id,
+        profile: defaultEnvironment.id,
         value: 'super-secret',
       })
-      await window.brover.setTargetColor({ targetId: defaultTarget.id, color: '#f97316' })
-      await window.brover.createTarget({ name: 'prod' })
-      const nextTargets = await window.brover.listTargets()
-      const prodTarget = nextTargets.find((target) => target.name === 'prod')
-      if (prodTarget) {
-        await window.brover.setTargetColor({ targetId: prodTarget.id, color: '#ff4d5a' })
+      await window.brover.setEnvironmentColor({ environmentId: defaultEnvironment.id, color: '#f97316' })
+      await window.brover.createEnvironment({ name: 'prod' })
+      const nextEnvironments = await window.brover.listEnvironments()
+      const prodEnvironment = nextEnvironments.find((environment) => environment.name === 'prod')
+      if (prodEnvironment) {
+        await window.brover.setEnvironmentColor({ environmentId: prodEnvironment.id, color: '#ff4d5a' })
       }
     })
 

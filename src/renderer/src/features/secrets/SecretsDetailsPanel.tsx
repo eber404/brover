@@ -7,7 +7,7 @@ import { SecretsDetail } from './SecretsDetail'
 interface SecretsDetailsPanelProps {
   title: string
   env: EnvMetadata | null
-  targetName: string
+  environmentName: string
   revealValue: string
   hasValue: boolean
   onReveal: () => void
@@ -24,7 +24,7 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
   const {
     title,
     env,
-    targetName,
+    environmentName,
     revealValue,
     hasValue,
     onReveal,
@@ -55,7 +55,7 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
         <div className="px-4">
           <SecretsDetail
             env={env}
-            targetName={targetName}
+            environmentName={environmentName}
             revealValue={revealValue}
             hasValue={hasValue}
             onReveal={onReveal}

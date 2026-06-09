@@ -1,6 +1,6 @@
 import type {
   EnvMetadata,
-  EnvTarget,
+  Environment,
   OnboardingStatus,
   RetroactiveSelection,
   ScanResult,
@@ -25,21 +25,32 @@ export interface BroverAPI {
   deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>
   toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>
 
-  getTiedTargets: () => Promise<boolean>
-  setTiedTargets: (tiedTargets: boolean) => Promise<boolean>
-  listTargets: () => Promise<EnvTarget[]>
-  createTarget: (payload: { name: string }) => Promise<EnvTarget[]>
-  deleteTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>
-  reorderTargets: (payload: { orderedTargetIds: string[] }) => Promise<EnvTarget[]>
-  renameTarget: (payload: { targetId: string; name: string }) => Promise<EnvTarget[]>
+  getSharedSecretNames: () => Promise<boolean>
+  setSharedSecretNames: (sharedSecretNames: boolean) => Promise<boolean>
+  listEnvironments: () => Promise<Environment[]>
+  createEnvironment: (payload: { name: string }) => Promise<Environment[]>
+  deleteEnvironment: (payload: { environmentId: string }) => Promise<Environment[]>
+  reorderEnvironments: (payload: { orderedEnvironmentIds: string[] }) => Promise<Environment[]>
+  renameEnvironment: (payload: { environmentId: string; name: string }) => Promise<Environment[]>
   secretExists: (profile: string, name: string) => Promise<boolean>
-  setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>
-  setActiveTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>
+  setEnvironmentColor: (payload: { environmentId: string; color: string }) => Promise<Environment[]>
+  setActiveEnvironment: (payload: { environmentId: string }) => Promise<Environment[]>
   launch: {
-    terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }>
+    terminal: (environmentId: string, terminalApp: string) => Promise<{ success: boolean }>
     listTerminals: () => Promise<{ terminals: TerminalApp[] }>
     pickTerminalApp: () => Promise<{ canceled: boolean; terminal?: TerminalApp; error?: string; appName?: string }>
   }
+
+  // Temporary compat surface while renderer/main migrate fully.
+  getTiedTargets: () => Promise<boolean>
+  setTiedTargets: (tiedTargets: boolean) => Promise<boolean>
+  listTargets: () => Promise<Environment[]>
+  createTarget: (payload: { name: string }) => Promise<Environment[]>
+  deleteTarget: (payload: { targetId: string }) => Promise<Environment[]>
+  reorderTargets: (payload: { orderedTargetIds: string[] }) => Promise<Environment[]>
+  renameTarget: (payload: { targetId: string; name: string }) => Promise<Environment[]>
+  setTargetColor: (payload: { targetId: string; color: string }) => Promise<Environment[]>
+  setActiveTarget: (payload: { targetId: string }) => Promise<Environment[]>
 
   onboarding: {
     getStatus: () => Promise<OnboardingStatus>

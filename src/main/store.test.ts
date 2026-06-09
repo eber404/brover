@@ -92,7 +92,7 @@ describe('BroverStore onboarding', () => {
     }
   })
 
-  it('legacy spaces tiedSecrets migrate to global tiedTargets', async () => {
+  it('legacy spaces tiedSecrets migrate to shared secret names', async () => {
     const { store, cleanup } = createStore({
       envs: [],
       spaces: [
@@ -118,16 +118,16 @@ describe('BroverStore onboarding', () => {
     })
 
     try {
-      await expect(store.getTiedTargets()).resolves.toBe(false)
-      const targets = await store.listTargets()
-      expect(targets).toHaveLength(1)
-      expect(targets[0]?.name).toBe('Repo')
+      await expect(store.getSharedSecretNames()).resolves.toBe(false)
+      const environments = await store.listEnvironments()
+      expect(environments).toHaveLength(1)
+      expect(environments[0]?.name).toBe('Repo')
     } finally {
       cleanup()
     }
   })
 
-  it('legacy per-space default targets flatten into root-level targets and stay visible after activation changes', async () => {
+  it('legacy per-space default targets flatten into root-level environments and stay visible after activation changes', async () => {
     const { store, cleanup } = createStore({
       envs: [],
       spaces: [
@@ -169,21 +169,21 @@ describe('BroverStore onboarding', () => {
     })
 
     try {
-      const initialTargets = await store.listTargets()
-      expect(initialTargets.map((target) => target.name)).toEqual(['API', 'Web'])
+      const initialEnvironments = await store.listEnvironments()
+      expect(initialEnvironments.map((environment) => environment.name)).toEqual(['API', 'Web'])
 
-      await store.setActiveTarget({ targetId: 'target-2' })
+      await store.setActiveEnvironment({ environmentId: 'target-2' })
 
-      const updatedTargets = await store.listTargets()
-      expect(updatedTargets.map((target) => target.name)).toEqual(['API', 'Web'])
-      expect(updatedTargets.filter((target) => target.isActive)).toHaveLength(1)
-      expect(updatedTargets.find((target) => target.isActive)?.id).toBe('target-2')
+      const updatedEnvironments = await store.listEnvironments()
+      expect(updatedEnvironments.map((environment) => environment.name)).toEqual(['API', 'Web'])
+      expect(updatedEnvironments.filter((environment) => environment.isActive)).toHaveLength(1)
+      expect(updatedEnvironments.find((environment) => environment.isActive)?.id).toBe('target-2')
     } finally {
       cleanup()
     }
   })
 
-  it('collapses fresh-start dotfile targets without envs into a single default target', async () => {
+  it('keeps fresh-start dotfile environments separate when no env metadata exists yet', async () => {
     const { store, cleanup } = createStore({
       envs: [],
       targets: [
@@ -205,11 +205,10 @@ describe('BroverStore onboarding', () => {
     })
 
     try {
-      const targets = await store.listTargets()
-      expect(targets).toHaveLength(1)
-      expect(targets[0]?.id).toBe('target-1')
-      expect(targets[0]?.name).toBe('default')
-      expect(targets[0]?.isActive).toBe(true)
+      const environments = await store.listEnvironments()
+      expect(environments).toHaveLength(2)
+      expect(environments.map((environment) => environment.name)).toEqual(['.bash_profile', '.zshrc'])
+      expect(environments.find((environment) => environment.isActive)?.id).toBe('target-1')
     } finally {
       cleanup()
     }

@@ -55,18 +55,18 @@
     "mode": {
       "retroactive": {
         "title": "Import from dotfiles",
-        "desc": "Scan existing dotfiles, move selected secrets into Brover targets, and remove imported lines from the source files.",
+        "desc": "Scan existing dotfiles, move selected secrets into Brover environments, and remove imported lines from the source files.",
         "action": "Start import"
       },
       "freshStart": {
         "title": "Start fresh",
-        "desc": "Pick dotfiles to create Brover targets without importing values or changing source files.",
+        "desc": "Pick dotfiles to create Brover environments without importing values or changing source files.",
         "action": "Start fresh"
       }
     },
     "confirmation": {
       "title": "Review import plan",
-      "subtitle": "Brover will create one target per selected dotfile before you finish setup.",
+      "subtitle": "Brover will create one environment per selected dotfile before you finish setup.",
       "toStore": "Secrets to store in Keychain",
       "toRemove": "Lines to remove from dotfiles",
       "ignoredNonSensitive": "Non-sensitive variables ignored",
@@ -75,7 +75,7 @@
     },
     "review": {
       "title": "Review scanned variables",
-      "subtitle": "Select which variables contain sensitive values to move into secure Brover targets.",
+      "subtitle": "Select which variables contain sensitive values to move into secure Brover environments.",
       "loading": "Scanning dotfiles...",
       "error": "Failed to scan dotfiles",
       "warnings": "Scan completed with warnings:",
@@ -93,8 +93,8 @@
       "continue": "Start managing secrets →"
     }
   },
-  "spaces": {
-    "tiedTargetsTooltip": "Keep secret names synced across all targets. Values remain target-specific."
+  "environments": {
+    "sharedSecretNamesTooltip": "Keep secret names synced across all environments. Values remain environment-specific."
   },
   "launch": {
     "launch": "Launch",
@@ -107,7 +107,7 @@
   "common": {
     "refresh": "Refresh",
     "details": "Details",
-    "profile": "Profile",
+    "environment": "Environment",
     "unsupportedBackend": "Secure storage not implemented for this OS yet.",
     "secretCreated": "Secret created",
     "secretCopied": "Secret copied",

@@ -6,8 +6,8 @@ import { BroverStore, MemorySecretStore } from './store'
 import { runRetroactiveImport } from './onboardingImporter'
 import type { ScanResult, RetroactiveSelection } from '../shared/models'
 
-describe('onboardingImporter skip space', () => {
-  it('does not create space for file with zero selected secrets', async () => {
+describe('onboardingImporter skip environment', () => {
+  it('does not create environment for file with zero selected secrets', async () => {
     const root = await mkdtemp(join(tmpdir(), 'brover-import-skip-'))
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -30,11 +30,11 @@ describe('onboardingImporter skip space', () => {
     expect(summary.importedSensitive).toBe(0)
     expect(summary.ignoredNonSensitive).toBe(1)
 
-    const targets = await store.listTargets()
-    expect(targets).toHaveLength(0)
+    const environments = await store.listEnvironments()
+    expect(environments).toHaveLength(0)
   })
 
-  it('creates target only for files with selected secrets', async () => {
+  it('creates environment only for files with selected secrets', async () => {
     const root = await mkdtemp(join(tmpdir(), 'brover-import-partial-'))
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -67,8 +67,8 @@ describe('onboardingImporter skip space', () => {
     expect(summary.importedSensitive).toBe(1)
     expect(summary.ignoredNonSensitive).toBe(1)
 
-    const targets = await store.listTargets()
-    expect(targets).toHaveLength(1)
-    expect(targets[0]?.name).toBe('.env')
+    const environments = await store.listEnvironments()
+    expect(environments).toHaveLength(1)
+    expect(environments[0]?.name).toBe('.env')
   })
 })

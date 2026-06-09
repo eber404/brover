@@ -55,18 +55,18 @@
     "mode": {
       "retroactive": {
         "title": "Importar de dotfiles",
-        "desc": "Escaneie dotfiles existentes, mova segredos selecionados para targets do Brover e remova as linhas importadas dos arquivos de origem.",
+        "desc": "Escaneie dotfiles existentes, mova segredos selecionados para environments do Brover e remova as linhas importadas dos arquivos de origem.",
         "action": "Iniciar importacao"
       },
       "freshStart": {
         "title": "Começar do zero",
-        "desc": "Escolha dotfiles para criar targets do Brover sem importar valores nem alterar arquivos de origem.",
+        "desc": "Escolha dotfiles para criar environments do Brover sem importar valores nem alterar arquivos de origem.",
         "action": "Começar do zero"
       }
     },
     "confirmation": {
       "title": "Rever plano de importacao",
-      "subtitle": "O Brover criara um target por dotfile selecionado antes de concluir a configuracao.",
+      "subtitle": "O Brover criara um environment por dotfile selecionado antes de concluir a configuracao.",
       "toStore": "Segredos a armazenar no Keychain",
       "toRemove": "Linhas a remover dos dotfiles",
       "ignoredNonSensitive": "Variaveis nao sensiveis ignoradas",
@@ -75,7 +75,7 @@
     },
     "review": {
       "title": "Revisar variaveis escaneadas",
-      "subtitle": "Selecione quais variaveis contem valores sensiveis para mover para targets seguros do Brover.",
+      "subtitle": "Selecione quais variaveis contem valores sensiveis para mover para environments seguros do Brover.",
       "loading": "Escaneando dotfiles...",
       "error": "Falha ao escanear dotfiles",
       "warnings": "Escaneamento concluido com avisos:",
@@ -93,8 +93,8 @@
       "continue": "Começar a gerenciar segredos →"
     }
   },
-  "spaces": {
-    "tiedTargetsTooltip": "Manter nomes de segredos sincronizados em todos os targets. Valores permanecem especificos de cada target."
+  "environments": {
+    "sharedSecretNamesTooltip": "Manter nomes de segredos sincronizados em todos os environments. Valores permanecem especificos de cada environment."
   },
   "launch": {
     "launch": "Launch",
@@ -107,7 +107,7 @@
   "common": {
     "refresh": "Atualizar",
     "details": "Detalhes",
-    "profile": "Perfil",
+    "environment": "Environment",
     "unsupportedBackend": "Armazenamento seguro nao implementado para este SO ainda.",
     "secretCreated": "Segredo criado",
     "secretCopied": "Segredo copiado",

@@ -18,8 +18,8 @@ const mockEnv = {
 
 function SecretsTestWrapper(props: Partial<Parameters<typeof useSecretsPanel>[0]> = {}) {
   const panel = useSecretsPanel({
-    selectedTargetId: 'target-1',
-    targetName: props.targetName ?? 'dev',
+    selectedEnvironmentId: 'target-1',
+    environmentName: props.environmentName ?? 'dev',
     envs: props.envs ?? [],
     filteredEnvs: props.filteredEnvs ?? [],
     selectedEnvId: props.selectedEnvId ?? '',
@@ -77,7 +77,7 @@ describe('SecretsPanel', () => {
     window.brover = {}
   })
 
-  it('renders target name in header', () => {
+  it('renders environment name in header', () => {
     render(
       <I18nProvider>
         <ToastProvider>
@@ -103,11 +103,11 @@ describe('SecretsPanel', () => {
     expect(screen.queryByTestId('launch-menu-button')).toBeNull()
   })
 
-  it('renders empty string targetName gracefully', () => {
+  it('renders empty string environmentName gracefully', () => {
     render(
       <I18nProvider>
         <ToastProvider>
-          <SecretsTestWrapper targetName="" />
+          <SecretsTestWrapper environmentName="" />
         </ToastProvider>
       </I18nProvider>
     )

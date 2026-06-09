@@ -6,8 +6,8 @@ import { BroverStore } from './store'
 
 const ENV_ASSIGNMENT = /^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=/
 
-async function createTargetForFile(store: BroverStore, filePath: string): Promise<string> {
-  const existingNames = new Set((await store.listTargets()).map((target) => target.name.toLowerCase()))
+async function createEnvironmentForFile(store: BroverStore, filePath: string): Promise<string> {
+  const existingNames = new Set((await store.listEnvironments()).map((environment) => environment.name.toLowerCase()))
   const baseName = filePath === 'default' ? 'default' : basename(filePath)
   let name = baseName
   let suffix = 2
@@ -17,13 +17,13 @@ async function createTargetForFile(store: BroverStore, filePath: string): Promis
     suffix += 1
   }
 
-  const targets = await store.createTarget({ name })
-  const createdTarget = targets.find((target) => target.name === name)
-  if (!createdTarget) {
-    throw new Error(`Failed to create target for ${filePath}`)
+  const environments = await store.createEnvironment({ name })
+  const createdEnvironment = environments.find((environment) => environment.name === name)
+  if (!createdEnvironment) {
+    throw new Error(`Failed to create environment for ${filePath}`)
   }
 
-  return createdTarget.id
+  return createdEnvironment.id
 }
 
 export async function runFreshStartImport(
@@ -35,14 +35,12 @@ export async function runFreshStartImport(
     throw new Error('Onboarding already completed')
   }
 
-  const createdTargetIds: string[] = []
+  const createdEnvironmentIds: string[] = []
 
   try {
-    const hasParseableEntries = scanResult.files.some((file) => file.variables.length > 0)
-    const existingTargets = await store.listTargets()
-
-    if (hasParseableEntries && existingTargets.length === 0) {
-      createdTargetIds.push(await createTargetForFile(store, 'default'))
+    for (const file of scanResult.files) {
+      if (file.variables.length === 0) continue
+      createdEnvironmentIds.push(await createEnvironmentForFile(store, file.filePath))
     }
 
     return {
@@ -52,9 +50,9 @@ export async function runFreshStartImport(
       ignoredWithReason: [],
     }
   } catch (err) {
-    for (const targetId of createdTargetIds) {
+    for (const environmentId of createdEnvironmentIds) {
       try {
-        await store.deleteTarget({ targetId })
+        await store.deleteEnvironment({ environmentId })
       } catch {
         // Best-effort cleanup
       }
@@ -78,7 +76,7 @@ export async function runRetroactiveImport(
   let removedFromDotfiles = 0
   let ignoredNonSensitive = 0
   const ignoredWithReason: { filePath: string; reason: string }[] = []
-  const createdTargetIds: string[] = []
+  const createdEnvironmentIds: string[] = []
 
   try {
     for (const file of scanResult.files) {
@@ -90,23 +88,23 @@ export async function runRetroactiveImport(
         continue
       }
 
-      const targetId = await createTargetForFile(store, file.filePath)
-      createdTargetIds.push(targetId)
+      const environmentId = await createEnvironmentForFile(store, file.filePath)
+      createdEnvironmentIds.push(environmentId)
 
       for (const v of fileSensitiveVars) {
         const existingEnv = (await store.listEnvs()).find(
-          (env) => env.profile === targetId && env.name === v.name
+          (env) => env.profile === environmentId && env.name === v.name
         )
         if (existingEnv) {
           await store.updateEnv({
             id: existingEnv.id,
-            profile: targetId,
+            profile: environmentId,
             name: v.name,
             value: v.value,
             description: existingEnv.description,
           })
         } else {
-          await store.createEnv({ name: v.name, profile: targetId, value: v.value })
+          await store.createEnv({ name: v.name, profile: environmentId, value: v.value })
         }
         importedSensitive++
       }
@@ -142,9 +140,9 @@ export async function runRetroactiveImport(
       ignoredWithReason,
     }
   } catch (err) {
-    for (const targetId of createdTargetIds) {
+    for (const environmentId of createdEnvironmentIds) {
       try {
-        await store.deleteTarget({ targetId })
+        await store.deleteEnvironment({ environmentId })
       } catch {
         // Best-effort cleanup
       }

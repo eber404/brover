@@ -1,4 +1,4 @@
-generatedAt: "2026-06-09T15:58:49.991Z"
+generatedAt: "2026-06-09T17:20:07.313Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 45
@@ -246,7 +246,7 @@ files[45]:
       runFreshStartImport,FunctionDeclaration
       runRetroactiveImport,FunctionDeclaration
     functions[3]:
-      - name: createTargetForFile
+      - name: createEnvironmentForFile
         exported: false
         defaultExport: false
         async: true
@@ -254,7 +254,7 @@ files[45]:
           store,BroverStore
           filePath,string
         returnType: Promise<string>
-        signature: "async createTargetForFile(store: BroverStore, filePath: string): Promise<string>"
+        signature: "async createEnvironmentForFile(store: BroverStore, filePath: string): Promise<string>"
       - name: runFreshStartImport
         exported: true
         defaultExport: false
@@ -407,7 +407,7 @@ files[45]:
       - moduleSpecifier: ../shared/models
         defaultImport: null
         namespaceImport: null
-        namedImports[3]: EnvMetadata,EnvTarget,OnboardingStatus
+        namedImports[3]: EnvMetadata,Environment,OnboardingStatus
       - moduleSpecifier: ../shared/validators
         defaultImport: null
         namespaceImport: null
@@ -419,13 +419,13 @@ files[45]:
       SecretStore,InterfaceDeclaration
       UnsupportedSecretStore,ClassDeclaration
     functions[1]:
-      - name: randomTargetColor
+      - name: randomEnvironmentColor
         exported: false
         defaultExport: false
         async: false
         params[0]:
         returnType: string
-        signature: "randomTargetColor(): string"
+        signature: "randomEnvironmentColor(): string"
     reactComponents[0]:
     types[1]:
       - name: SecretStore
@@ -520,7 +520,7 @@ files[45]:
       - name: BroverStore
         exported: true
         defaultExport: false
-        publicMethods[18]:
+        publicMethods[27]:
           - name: getOnboardingStatus
             async: true
             params[0]:
@@ -574,6 +574,58 @@ files[45]:
               id,string
             returnType: "Promise<EnvMetadata[]>"
             signature: "async toggleEnvEnabled(id: string): Promise<EnvMetadata[]>"
+          - name: getSharedSecretNames
+            async: true
+            params[0]:
+            returnType: Promise<boolean>
+            signature: "async getSharedSecretNames(): Promise<boolean>"
+          - name: setSharedSecretNames
+            async: true
+            params[1]{name,type}:
+              sharedSecretNames,boolean
+            returnType: Promise<boolean>
+            signature: "async setSharedSecretNames(sharedSecretNames: boolean): Promise<boolean>"
+          - name: listEnvironments
+            async: true
+            params[0]:
+            returnType: "Promise<Environment[]>"
+            signature: "async listEnvironments(): Promise<Environment[]>"
+          - name: createEnvironment
+            async: true
+            params[1]{name,type}:
+              payload,"{ name: string }"
+            returnType: "Promise<Environment[]>"
+            signature: "async createEnvironment(payload: { name: string }): Promise<Environment[]>"
+          - name: deleteEnvironment
+            async: true
+            params[1]{name,type}:
+              payload,"{ environmentId: string }"
+            returnType: "Promise<Environment[]>"
+            signature: "async deleteEnvironment(payload: { environmentId: string }): Promise<Environment[]>"
+          - name: reorderEnvironments
+            async: true
+            params[1]{name,type}:
+              payload,"{ orderedEnvironmentIds: string[] }"
+            returnType: "Promise<Environment[]>"
+            signature: "async reorderEnvironments(payload: { orderedEnvironmentIds: string[] }): Promise<Environment[]>"
+          - name: renameEnvironment
+            async: true
+            params[1]{name,type}:
+              payload,"{ environmentId: string; name: string }"
+            returnType: "Promise<Environment[]>"
+            signature: "async renameEnvironment(payload: { environmentId: string; name: string }): Promise<Environment[]>"
+          - name: setEnvironmentColor
+            async: true
+            params[1]{name,type}:
+              payload,"{ environmentId: string; color: string }"
+            returnType: "Promise<Environment[]>"
+            signature: "async setEnvironmentColor(payload: { environmentId: string; color: string }): Promise<Environment[]>"
+          - name: setActiveEnvironment
+            async: true
+            params[1]{name,type}:
+              payload,"{ environmentId: string }"
+            returnType: "Promise<Environment[]>"
+            signature: "async setActiveEnvironment(payload: { environmentId: string }): Promise<Environment[]>"
           - name: getTiedTargets
             async: true
             params[0]:
@@ -587,46 +639,45 @@ files[45]:
             signature: "async setTiedTargets(tiedTargets: boolean): Promise<boolean>"
           - name: listTargets
             async: true
-            params[1]{name,type}:
-              spaceId,string
-            returnType: "Promise<EnvTarget[]>"
-            signature: "async listTargets(spaceId: string): Promise<EnvTarget[]>"
+            params[0]:
+            returnType: "Promise<Environment[]>"
+            signature: "async listTargets(): Promise<Environment[]>"
           - name: createTarget
             async: true
             params[1]{name,type}:
-              payload,"{ name: string; spaceId?: string }"
-            returnType: "Promise<EnvTarget[]>"
-            signature: "async createTarget(payload: { name: string; spaceId?: string }): Promise<EnvTarget[]>"
+              payload,"{ name: string }"
+            returnType: "Promise<Environment[]>"
+            signature: "async createTarget(payload: { name: string }): Promise<Environment[]>"
           - name: deleteTarget
             async: true
             params[1]{name,type}:
               payload,"{ targetId: string }"
-            returnType: "Promise<EnvTarget[]>"
-            signature: "async deleteTarget(payload: { targetId: string }): Promise<EnvTarget[]>"
+            returnType: "Promise<Environment[]>"
+            signature: "async deleteTarget(payload: { targetId: string }): Promise<Environment[]>"
           - name: reorderTargets
             async: true
             params[1]{name,type}:
-              payload,"{ orderedTargetIds: string[]; spaceId?: string }"
-            returnType: "Promise<EnvTarget[]>"
-            signature: "async reorderTargets(payload: { orderedTargetIds: string[]; spaceId?: string }): Promise<EnvTarget[]>"
+              payload,"{ orderedTargetIds: string[] }"
+            returnType: "Promise<Environment[]>"
+            signature: "async reorderTargets(payload: { orderedTargetIds: string[] }): Promise<Environment[]>"
           - name: renameTarget
             async: true
             params[1]{name,type}:
               payload,"{ targetId: string; name: string }"
-            returnType: "Promise<EnvTarget[]>"
-            signature: "async renameTarget(payload: { targetId: string; name: string }): Promise<EnvTarget[]>"
+            returnType: "Promise<Environment[]>"
+            signature: "async renameTarget(payload: { targetId: string; name: string }): Promise<Environment[]>"
           - name: setTargetColor
             async: true
             params[1]{name,type}:
               payload,"{ targetId: string; color: string }"
-            returnType: "Promise<EnvTarget[]>"
-            signature: "async setTargetColor(payload: { targetId: string; color: string }): Promise<EnvTarget[]>"
+            returnType: "Promise<Environment[]>"
+            signature: "async setTargetColor(payload: { targetId: string; color: string }): Promise<Environment[]>"
           - name: setActiveTarget
             async: true
             params[1]{name,type}:
-              payload,"{ targetId: string; spaceId?: string }"
-            returnType: "Promise<EnvTarget[]>"
-            signature: "async setActiveTarget(payload: { targetId: string; spaceId?: string }): Promise<EnvTarget[]>"
+              payload,"{ targetId: string }"
+            returnType: "Promise<Environment[]>"
+            signature: "async setActiveTarget(payload: { targetId: string }): Promise<Environment[]>"
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/main/terminalIconLoader.ts
@@ -841,7 +892,7 @@ files[45]:
       - moduleSpecifier: ../../shared/models
         defaultImport: null
         namespaceImport: null
-        namedImports[2]: EnvMetadata,EnvTarget
+        namedImports[2]: EnvMetadata,Environment
       - moduleSpecifier: ./components/ui/confirmDialog
         defaultImport: null
         namespaceImport: null
@@ -862,10 +913,10 @@ files[45]:
         defaultImport: null
         namespaceImport: null
         namedImports[1]: useSecretsPanel
-      - moduleSpecifier: ./features/spaces/SpacesSidebar
+      - moduleSpecifier: ./features/environments/EnvironmentsSidebar
         defaultImport: null
         namespaceImport: null
-        namedImports[1]: SpacesSidebar
+        namedImports[1]: EnvironmentsSidebar
       - moduleSpecifier: ./features/secrets/SecretsCenterPanel
         defaultImport: null
         namespaceImport: null
@@ -1148,6 +1199,41 @@ files[45]:
         params[0]:
         returnType: ToastContextValue
         signature: "useToast(): ToastContextValue"
+  - path: src/renderer/src/features/environments/EnvironmentsSidebar.tsx
+    imports[6]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: memo,useRef,useState
+      - moduleSpecifier: lucide-react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[3]: Layers,Plus,Trash2
+      - moduleSpecifier: ../../../../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Environment
+      - moduleSpecifier: ../../components/ui/confirmDialog
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: ConfirmDialog
+      - moduleSpecifier: ../../components/ui/switch
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: Switch
+      - moduleSpecifier: ../../i18n
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useI18n
+    exports[1]{name,kind}:
+      EnvironmentsSidebar,VariableDeclaration
+    functions[0]:
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[1]{name,defaultExport}:
+      EnvironmentsSidebar,false
+    exportedHooks[0]:
   - path: src/renderer/src/features/launch/preferences.ts
     imports[0]:
     exports[5]{name,kind}:
@@ -1529,11 +1615,11 @@ files[45]:
         defaultExport: false
         async: false
         params[1]{name,type}:
-          "{\n  env,\n  targetName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}",SecretsDetailProps
+          "{\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}",SecretsDetailProps
         returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "SecretsDetail({\n  env,\n  targetName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}: SecretsDetailProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "SecretsDetail({\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}: SecretsDetailProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
-      SecretsDetail,true,false,function,"{\n  env,\n  targetName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}",SecretsDetailProps
+      SecretsDetail,true,false,function,"{\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}",SecretsDetailProps
     types[0]:
     classes[0]:
     exportedConstants[0]:
@@ -1643,41 +1729,6 @@ files[45]:
           props,SecretsPanelProps
         returnType: "{ center: import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ..."
         signature: "useSecretsPanel(props: SecretsPanelProps): { center: import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ..."
-  - path: src/renderer/src/features/spaces/SpacesSidebar.tsx
-    imports[6]:
-      - moduleSpecifier: react
-        defaultImport: null
-        namespaceImport: null
-        namedImports[3]: memo,useRef,useState
-      - moduleSpecifier: lucide-react
-        defaultImport: null
-        namespaceImport: null
-        namedImports[3]: Layers,Plus,Trash2
-      - moduleSpecifier: ../../../../shared/models
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: EnvTarget
-      - moduleSpecifier: ../../components/ui/confirmDialog
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: ConfirmDialog
-      - moduleSpecifier: ../../components/ui/switch
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: Switch
-      - moduleSpecifier: ../../i18n
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: useI18n
-    exports[1]{name,kind}:
-      SpacesSidebar,VariableDeclaration
-    functions[0]:
-    reactComponents[0]:
-    types[0]:
-    classes[0]:
-    exportedConstants[1]{name,defaultExport}:
-      SpacesSidebar,false
-    exportedHooks[0]:
   - path: src/renderer/src/features/terminals/TerminalSidebar.tsx
     imports[6]:
       - moduleSpecifier: react
@@ -1829,7 +1880,7 @@ files[45]:
       - moduleSpecifier: ./models
         defaultImport: null
         namespaceImport: null
-        namedImports[8]: EnvMetadata,EnvTarget,OnboardingStatus,RetroactiveSelection,ScanResult,SecretActionResult,OnboardingSummary,TerminalApp
+        namedImports[8]: EnvMetadata,Environment,OnboardingStatus,RetroactiveSelection,ScanResult,SecretActionResult,OnboardingSummary,TerminalApp
     exports[2]{name,kind}:
       BroverAPI,InterfaceDeclaration
       RetroactivePayload,InterfaceDeclaration
@@ -1847,15 +1898,16 @@ files[45]:
         exported: true
         defaultExport: false
         text: "export interface BroverAPI { listEnvs: () => Promise<EnvMetadata[]> createEnv: (payload: { name: string; profile: string; value: string; description?: string..."
-        properties[21]: "listEnvs: () => Promise<EnvMetadata[]>","createEnv: (payload: { name: string; profile: string; value: string; description?: string }) => Promise<SecretActionResult>","revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>","copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>","updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","updateEnvConfirmed: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>","getTiedTargets: () => Promise<boolean>","setTiedTargets: (tiedTargets: boolean) => Promise<boolean>","listTargets: () => Promise<EnvTarget[]>","createTarget: (payload: { name: string }) => Promise<EnvTarget[]>","deleteTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>","reorderTargets: (payload: { orderedTargetIds: string[] }) => Promise<EnvTarget[]>","renameTarget: (payload: { targetId: string; name: string }) => Promise<EnvTarget[]>","secretExists: (profile: string, name: string) => Promise<boolean>","setTargetColor: (payload: { targetId: string; color: string }) => Promise<EnvTarget[]>","setActiveTarget: (payload: { targetId: string }) => Promise<EnvTarget[]>","launch: { terminal: (targetId: string, terminalApp: string) => Promise<{ success: boolean }> listTerminals: () => Promise<{ terminals: TerminalApp[] }> pickT...","onboarding: { getStatus: () => Promise<OnboardingStatus> scanDotfiles: () => Promise<ScanResult> runRetroactive: (payload: RetroactivePayload) => Promise<Onb..."
+        properties[30]: "listEnvs: () => Promise<EnvMetadata[]>","createEnv: (payload: { name: string; profile: string; value: string; description?: string }) => Promise<SecretActionResult>","revealEnv: (payload: { profile: string; name: string }) => Promise<SecretActionResult>","copyEnv: (payload: { profile: string; name: string; isRevealed: boolean }) => Promise<SecretActionResult>","updateEnv: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","updateEnvConfirmed: (payload: { id: string; profile: string; name: string; value: string; description?: string }) => Promise<SecretActionResult>","deleteEnv: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","deleteEnvConfirmed: (payload: { id: string; profile: string; name: string }) => Promise<SecretActionResult>","toggleEnvEnabled: (id: string) => Promise<EnvMetadata[]>","getSharedSecretNames: () => Promise<boolean>","setSharedSecretNames: (sharedSecretNames: boolean) => Promise<boolean>","listEnvironments: () => Promise<Environment[]>","createEnvironment: (payload: { name: string }) => Promise<Environment[]>","deleteEnvironment: (payload: { environmentId: string }) => Promise<Environment[]>","reorderEnvironments: (payload: { orderedEnvironmentIds: string[] }) => Promise<Environment[]>","renameEnvironment: (payload: { environmentId: string; name: string }) => Promise<Environment[]>","secretExists: (profile: string, name: string) => Promise<boolean>","setEnvironmentColor: (payload: { environmentId: string; color: string }) => Promise<Environment[]>","setActiveEnvironment: (payload: { environmentId: string }) => Promise<Environment[]>","launch: { terminal: (environmentId: string, terminalApp: string) => Promise<{ success: boolean }> listTerminals: () => Promise<{ terminals: TerminalApp[] }> ...","getTiedTargets: () => Promise<boolean>","setTiedTargets: (tiedTargets: boolean) => Promise<boolean>","listTargets: () => Promise<Environment[]>","createTarget: (payload: { name: string }) => Promise<Environment[]>","deleteTarget: (payload: { targetId: string }) => Promise<Environment[]>","reorderTargets: (payload: { orderedTargetIds: string[] }) => Promise<Environment[]>","renameTarget: (payload: { targetId: string; name: string }) => Promise<Environment[]>","setTargetColor: (payload: { targetId: string; color: string }) => Promise<Environment[]>","setActiveTarget: (payload: { targetId: string }) => Promise<Environment[]>","onboarding: { getStatus: () => Promise<OnboardingStatus> scanDotfiles: () => Promise<ScanResult> runRetroactive: (payload: RetroactivePayload) => Promise<Onb..."
     classes[0]:
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/shared/models.ts
     imports[0]:
-    exports[12]{name,kind}:
+    exports[13]{name,kind}:
+      Environment,InterfaceDeclaration
       EnvMetadata,InterfaceDeclaration
-      EnvTarget,InterfaceDeclaration
+      EnvTarget,TypeAliasDeclaration
       OnboardingStatus,InterfaceDeclaration
       OnboardingSummary,InterfaceDeclaration
       RetroactiveSelection,InterfaceDeclaration
@@ -1868,7 +1920,7 @@ files[45]:
       UNSUPPORTED_SECRET_BACKEND,VariableDeclaration
     functions[0]:
     reactComponents[0]:
-    types[11]:
+    types[12]:
       - name: EnvMetadata
         kind: interface
         exported: true
@@ -1887,11 +1939,11 @@ files[45]:
         defaultExport: false
         text: "export interface TerminalApp { id: string name: string bundlePath: string installed: boolean iconDataUrl?: string }"
         properties[5]: "id: string","name: string","bundlePath: string","installed: boolean","iconDataUrl?: string"
-      - name: EnvTarget
+      - name: Environment
         kind: interface
         exported: true
         defaultExport: false
-        text: "export interface EnvTarget { id: string name: string color: string isActive: boolean updatedAt: string }"
+        text: "export interface Environment { id: string name: string color: string isActive: boolean updatedAt: string }"
         properties[5]: "id: string","name: string","color: string","isActive: boolean","updatedAt: string"
       - name: OnboardingStatus
         kind: interface
@@ -1935,6 +1987,12 @@ files[45]:
         defaultExport: false
         text: "export interface OnboardingSummary { importedSensitive: number removedFromDotfiles: number ignoredNonSensitive: number ignoredWithReason: { filePath: string;..."
         properties[4]: "importedSensitive: number","removedFromDotfiles: number","ignoredNonSensitive: number","ignoredWithReason: { filePath: string; reason: string }[]"
+      - name: EnvTarget
+        kind: typeAlias
+        exported: true
+        defaultExport: false
+        text: export type EnvTarget = Environment
+        properties[0]:
     classes[0]:
     exportedConstants[1]{name,defaultExport,literalValue}:
       UNSUPPORTED_SECRET_BACKEND,false,UNSUPPORTED_SECRET_BACKEND

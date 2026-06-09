@@ -60,7 +60,7 @@ test.describe('Target Scope Operations Flow', () => {
     expect(result.renamedName).toBe(renamed)
   })
 
-  test('toggle tied targets', async () => {
+  test('toggle shared secret names', async () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
@@ -76,9 +76,9 @@ test.describe('Target Scope Operations Flow', () => {
         }
       })
 
-    expect(result.initialTied).toBe(true)
-    expect(result.afterToggleTied).toBe(false)
-    expect(result.afterToggleAgainTied).toBe(true)
+    expect(result.initialTied).toBe(false)
+    expect(result.afterToggleTied).toBe(true)
+    expect(result.afterToggleAgainTied).toBe(false)
   })
 
   test('renameTarget rejects empty name', async () => {

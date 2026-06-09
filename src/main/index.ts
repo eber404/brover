@@ -78,41 +78,16 @@ async function bootstrap() {
       })
   })
 
-  ipcMain.handle('targets:get-tied', () => store.getTiedTargets())
-  ipcMain.handle('targets:set-tied', (_, tiedTargets: boolean) =>
-    store.setTiedTargets(tiedTargets)
-  )
-  ipcMain.handle('targets:list', () => store.listTargets())
-  ipcMain.handle('targets:create', (_, payload: { name: string }) =>
-    store.createTarget(payload)
-  )
-  ipcMain.handle('targets:delete', (_, payload: { targetId: string }) =>
-    store.deleteTarget(payload)
-  )
-  ipcMain.handle('targets:reorder', (_, payload: { orderedTargetIds: string[] }) =>
-    store.reorderTargets(payload)
-  )
-  ipcMain.handle('targets:rename', (_, payload: { targetId: string; name: string }) =>
-    store.renameTarget(payload)
-  )
-  ipcMain.handle('targets:set-color', (_, payload: { targetId: string; color: string }) =>
-    store.setTargetColor(payload)
-  )
-  ipcMain.handle(
-    'targets:set-active',
-    (_, payload: { targetId: string }) =>
-      store.setActiveTarget(payload)
-  )
-  ipcMain.handle('launch:terminal', async (_, payload: { targetId: string; terminalApp: string }) => {
+  ipcMain.handle('launch:terminal', async (_, payload: { environmentId: string; terminalApp: string }) => {
     try {
       const envs = await store.listEnvs()
-      const targetEnvs = envs.filter(e => e.profile === payload.targetId)
+      const environmentEnvs = envs.filter(e => e.profile === payload.environmentId)
       const entries: { name: string; value: string }[] = []
-      for (const env of targetEnvs) {
-        const value = await store.secrets.get(`${payload.targetId}:${env.name}`)
+      for (const env of environmentEnvs) {
+        const value = await store.secrets.get(`${payload.environmentId}:${env.name}`)
         if (value != null) entries.push({ name: env.name, value })
       }
-      await terminalLauncher.launch(payload.targetId, payload.terminalApp, entries)
+      await terminalLauncher.launch(payload.environmentId, payload.terminalApp, entries)
       return { success: true }
     } catch (e) {
       return { success: false, error: String(e) }
@@ -162,6 +137,30 @@ async function bootstrap() {
 
   ipcMain.handle('secrets:exists', (_, payload: { profile: string; name: string }) =>
     store.secretExists(payload.profile, payload.name)
+  )
+
+  ipcMain.handle('environments:get-shared-secret-names', () => store.getSharedSecretNames())
+  ipcMain.handle('environments:set-shared-secret-names', (_, sharedSecretNames: boolean) =>
+    store.setSharedSecretNames(sharedSecretNames)
+  )
+  ipcMain.handle('environments:list', () => store.listEnvironments())
+  ipcMain.handle('environments:create', (_, payload: { name: string }) =>
+    store.createEnvironment(payload)
+  )
+  ipcMain.handle('environments:delete', (_, payload: { environmentId: string }) =>
+    store.deleteEnvironment(payload)
+  )
+  ipcMain.handle('environments:reorder', (_, payload: { orderedEnvironmentIds: string[] }) =>
+    store.reorderEnvironments(payload)
+  )
+  ipcMain.handle('environments:rename', (_, payload: { environmentId: string; name: string }) =>
+    store.renameEnvironment(payload)
+  )
+  ipcMain.handle('environments:set-color', (_, payload: { environmentId: string; color: string }) =>
+    store.setEnvironmentColor(payload)
+  )
+  ipcMain.handle('environments:set-active', (_, payload: { environmentId: string }) =>
+    store.setActiveEnvironment(payload)
   )
 
   ipcMain.handle('envs:list', () => store.listEnvs())
@@ -282,6 +281,16 @@ async function bootstrap() {
       return failure(error)
     }
   })
+
+  ipcMain.handle('targets:get-tied', () => store.getSharedSecretNames())
+  ipcMain.handle('targets:set-tied', (_, tiedTargets: boolean) => store.setSharedSecretNames(tiedTargets))
+  ipcMain.handle('targets:list', () => store.listEnvironments())
+  ipcMain.handle('targets:create', (_, payload: { name: string }) => store.createEnvironment(payload))
+  ipcMain.handle('targets:delete', (_, payload: { targetId: string }) => store.deleteEnvironment({ environmentId: payload.targetId }))
+  ipcMain.handle('targets:reorder', (_, payload: { orderedTargetIds: string[] }) => store.reorderEnvironments({ orderedEnvironmentIds: payload.orderedTargetIds }))
+  ipcMain.handle('targets:rename', (_, payload: { targetId: string; name: string }) => store.renameEnvironment({ environmentId: payload.targetId, name: payload.name }))
+  ipcMain.handle('targets:set-color', (_, payload: { targetId: string; color: string }) => store.setEnvironmentColor({ environmentId: payload.targetId, color: payload.color }))
+  ipcMain.handle('targets:set-active', (_, payload: { targetId: string }) => store.setActiveEnvironment({ environmentId: payload.targetId }))
 
   ipcMain.handle('onboarding:get-status', () => store.getOnboardingStatus())
 

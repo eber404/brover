@@ -15,13 +15,13 @@ describe('BroverStore startup', () => {
     store = new BroverStore(dbPath, new MemorySecretStore())
   })
 
-  it('does not auto-create any target on empty DB', async () => {
-    const targets = await store.listTargets()
-    expect(targets).toHaveLength(0)
+  it('does not auto-create any environment on empty DB', async () => {
+    const environments = await store.listEnvironments()
+    expect(environments).toHaveLength(0)
   })
 
-  it('default target name is default', async () => {
-    const targets = await store.createTarget({ name: 'default' })
-    expect(targets[0].name).toBe('default')
+  it('default environment name is default', async () => {
+    const environments = await store.createEnvironment({ name: 'default' })
+    expect(environments[0].name).toBe('default')
   })
 })

@@ -15,36 +15,37 @@ describe('BroverStore', () => {
     store = new BroverStore(dbPath, new MemorySecretStore())
   })
 
-  describe('Targets', () => {
-    it('listTargets returns empty array on empty DB', async () => {
-      const targets = await store.listTargets()
-      expect(targets).toHaveLength(0)
+  describe('Environments', () => {
+    it('listEnvironments returns empty array on empty DB', async () => {
+      const environments = await store.listEnvironments()
+      expect(environments).toHaveLength(0)
     })
 
-    it('createTarget adds root-level target', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+    it('createEnvironment adds root-level environment', async () => {
+      const environments = await store.createEnvironment({ name: 'default' })
 
-      expect(targets).toHaveLength(1)
-      expect(targets[0]?.name).toBe('default')
-      expect(targets[0]?.isActive).toBe(true)
+      expect(environments).toHaveLength(1)
+      expect(environments[0]?.name).toBe('default')
+      expect(environments[0]?.isActive).toBe(true)
     })
 
-    it('createTarget throws if name empty', async () => {
-      await expect(store.createTarget({ name: '   ' })).rejects.toThrow('Target name required')
+    it('createEnvironment throws if name empty', async () => {
+      await expect(store.createEnvironment({ name: '   ' })).rejects.toThrow('Environment name required')
     })
 
-    it('createTarget throws on duplicate name', async () => {
-      await store.createTarget({ name: 'prod' })
-      await expect(store.createTarget({ name: 'prod' })).rejects.toThrow('Target name already exists')
+    it('createEnvironment throws on duplicate name', async () => {
+      await store.createEnvironment({ name: 'prod' })
+      await expect(store.createEnvironment({ name: 'prod' })).rejects.toThrow('Environment name already exists')
     })
 
-    it('createTarget clones envs when tiedTargets is true', async () => {
-      const initialTargets = await store.createTarget({ name: 'default' })
+    it('createEnvironment clones envs when shared secret names is true', async () => {
+      await store.setSharedSecretNames(true)
+      const initialTargets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = initialTargets.find((target) => target.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: defaultTarget.id, value: 'secret1' })
 
-      const stagingTargets = await store.createTarget({ name: 'staging' })
+      const stagingTargets = await store.createEnvironment({ name: 'staging' })
       const stagingTarget = stagingTargets.find((target) => target.name === 'staging')!
 
       const allEnvs = await store.listEnvs()
@@ -52,14 +53,14 @@ describe('BroverStore', () => {
       expect(stagingEnvs.find((env) => env.name === 'API_KEY')).toBeDefined()
     })
 
-    it('createTarget does not clone envs when tiedTargets is false', async () => {
-      await store.setTiedTargets(false)
-      const initialTargets = await store.createTarget({ name: 'default' })
+    it('createEnvironment does not clone envs when shared secret names is false', async () => {
+      await store.setSharedSecretNames(false)
+      const initialTargets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = initialTargets.find((target) => target.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: defaultTarget.id, value: 'secret1' })
 
-      const prodTargets = await store.createTarget({ name: 'prod' })
+      const prodTargets = await store.createEnvironment({ name: 'prod' })
       const prodTarget = prodTargets.find((target) => target.name === 'prod')!
 
       const allEnvs = await store.listEnvs()
@@ -67,82 +68,82 @@ describe('BroverStore', () => {
       expect(prodEnvs).toHaveLength(0)
     })
 
-    it('deleteTarget removes secrets from store', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+    it('deleteEnvironment removes secrets from store', async () => {
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
       await store.createEnv({ name: 'SECRET', profile: defaultTarget.id, value: 'hunter2' })
 
-      await store.deleteTarget({ targetId: defaultTarget.id })
+      await store.deleteEnvironment({ environmentId: defaultTarget.id })
 
-      const remaining = await store.listTargets()
+      const remaining = await store.listEnvironments()
       expect(remaining.find((target) => target.id === defaultTarget.id)).toBeUndefined()
     })
 
-    it('deleteTarget promotes next target if deleted was active', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+    it('deleteEnvironment promotes next environment if deleted was active', async () => {
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
-      await store.createTarget({ name: 'staging' })
-      await store.setActiveTarget({ targetId: defaultTarget.id })
+      await store.createEnvironment({ name: 'staging' })
+      await store.setActiveEnvironment({ environmentId: defaultTarget.id })
 
-      await store.deleteTarget({ targetId: defaultTarget.id })
+      await store.deleteEnvironment({ environmentId: defaultTarget.id })
 
-      const remaining = await store.listTargets()
+      const remaining = await store.listEnvironments()
       expect(remaining.find((target) => target.isActive)?.name).toBe('staging')
     })
 
-    it('renameTarget updates target name', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+    it('renameEnvironment updates environment name', async () => {
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
-      const updated = await store.renameTarget({ targetId: defaultTarget.id, name: 'production' })
+      const updated = await store.renameEnvironment({ environmentId: defaultTarget.id, name: 'production' })
       expect(updated.find((target) => target.id === defaultTarget.id)?.name).toBe('production')
     })
 
-    it('renameTarget throws if name empty', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+    it('renameEnvironment throws if name empty', async () => {
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
-      await expect(store.renameTarget({ targetId: defaultTarget.id, name: '  ' })).rejects.toThrow('Target name required')
+      await expect(store.renameEnvironment({ environmentId: defaultTarget.id, name: '  ' })).rejects.toThrow('Environment name required')
     })
 
-    it('renameTarget throws on duplicate name', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+    it('renameEnvironment throws on duplicate name', async () => {
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
-      await store.createTarget({ name: 'staging' })
-      await expect(store.renameTarget({ targetId: defaultTarget.id, name: 'staging' })).rejects.toThrow('Target name already exists')
+      await store.createEnvironment({ name: 'staging' })
+      await expect(store.renameEnvironment({ environmentId: defaultTarget.id, name: 'staging' })).rejects.toThrow('Environment name already exists')
     })
 
-    it('setTargetColor updates color', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+    it('setEnvironmentColor updates color', async () => {
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
-      const updated = await store.setTargetColor({ targetId: defaultTarget.id, color: '#ff0000' })
+      const updated = await store.setEnvironmentColor({ environmentId: defaultTarget.id, color: '#ff0000' })
       expect(updated.find((target) => target.id === defaultTarget.id)?.color).toBe('#ff0000')
     })
 
-    it('setActiveTarget marks only one active target', async () => {
-      await store.createTarget({ name: 'default' })
-      const stagingTargets = await store.createTarget({ name: 'staging' })
+    it('setActiveEnvironment marks only one active environment', async () => {
+      await store.createEnvironment({ name: 'default' })
+      const stagingTargets = await store.createEnvironment({ name: 'staging' })
       const stagingTarget = stagingTargets.find((target) => target.name === 'staging')!
 
-      await store.setActiveTarget({ targetId: stagingTarget.id })
+      await store.setActiveEnvironment({ environmentId: stagingTarget.id })
 
-      const finalTargets = await store.listTargets()
+      const finalTargets = await store.listEnvironments()
       expect(finalTargets.filter((target) => target.isActive)).toHaveLength(1)
       expect(finalTargets.find((target) => target.isActive)?.id).toBe(stagingTarget.id)
     })
 
-    it('reorderTargets reorders root-level targets', async () => {
-      const defaultTargets = await store.createTarget({ name: 'default' })
+    it('reorderEnvironments reorders root-level environments', async () => {
+      const defaultTargets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = defaultTargets.find((target) => target.name === 'default')!
-      const stagingTargets = await store.createTarget({ name: 'staging' })
+      const stagingTargets = await store.createEnvironment({ name: 'staging' })
       const stagingTarget = stagingTargets.find((target) => target.name === 'staging')!
 
-      const reordered = await store.reorderTargets({
-        orderedTargetIds: [stagingTarget.id, defaultTarget.id],
+      const reordered = await store.reorderEnvironments({
+        orderedEnvironmentIds: [stagingTarget.id, defaultTarget.id],
       })
 
       expect(reordered[0]?.id).toBe(stagingTarget.id)
@@ -152,7 +153,7 @@ describe('BroverStore', () => {
 
   describe('Envs', () => {
     it('createEnv saves secret to store and creates metadata', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: defaultTarget.id, value: 'secret123' })
@@ -161,12 +162,13 @@ describe('BroverStore', () => {
       expect(revealed).toBe('secret123')
     })
 
-    it('createEnv propagates to all targets when tiedTargets is true', async () => {
-      const defaultTargets = await store.createTarget({ name: 'default' })
+    it('createEnv propagates to all environments when shared secret names is true', async () => {
+      await store.setSharedSecretNames(true)
+      const defaultTargets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = defaultTargets.find((target) => target.name === 'default')!
 
-      await store.createTarget({ name: 'staging' })
-      const stagingTargets = await store.listTargets()
+      await store.createEnvironment({ name: 'staging' })
+      const stagingTargets = await store.listEnvironments()
       const stagingTarget = stagingTargets.find((target) => target.name === 'staging')!
 
       await store.createEnv({ name: 'DATABASE_URL', profile: defaultTarget.id, value: 'postgres://local' })
@@ -179,14 +181,14 @@ describe('BroverStore', () => {
     })
 
     it('createEnv throws if invalid env name', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
       await expect(store.createEnv({ name: '123invalid', profile: defaultTarget.id, value: 'x' })).rejects.toThrow('Invalid env name')
     })
 
     it('createEnv throws if empty value', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
       await expect(store.createEnv({ name: 'API_KEY', profile: defaultTarget.id, value: '' })).rejects.toThrow('Secret value required')
@@ -197,11 +199,11 @@ describe('BroverStore', () => {
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: defaultTarget.id, value: 'secret1' })
-      await expect(store.createEnv({ name: 'API_KEY', profile: defaultTarget.id, value: 'secret2' })).rejects.toThrow('Secret already exists in this target')
+      await expect(store.createEnv({ name: 'API_KEY', profile: defaultTarget.id, value: 'secret2' })).rejects.toThrow('Secret already exists in this environment')
     })
 
     it('updateEnv updates metadata and optionally value', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
       await store.createEnv({ name: 'API_KEY', profile: defaultTarget.id, value: 'old' })
@@ -232,11 +234,12 @@ describe('BroverStore', () => {
       expect(revealed).toBeNull()
     })
 
-    it('deleteEnv removes from all targets when tiedTargets is true', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+    it('deleteEnv removes from all environments when shared secret names is true', async () => {
+      await store.setSharedSecretNames(true)
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
-      await store.createTarget({ name: 'staging' })
+      await store.createEnvironment({ name: 'staging' })
       await store.createEnv({ name: 'SHARED', profile: defaultTarget.id, value: 'secret' })
 
       const envs = await store.listEnvs()
@@ -249,7 +252,7 @@ describe('BroverStore', () => {
     })
 
     it('toggleEnvEnabled flips enabled state by id', async () => {
-      const targets = await store.createTarget({ name: 'default' })
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
       await store.createEnv({ name: 'TOGGLE_ME', profile: defaultTarget.id, value: 'secret' })
@@ -264,9 +267,9 @@ describe('BroverStore', () => {
       expect(toggledAgain.find((env) => env.id === created.id)?.enabled).toBe(true)
     })
 
-    it('deleteEnv removes only local env when tiedTargets is false', async () => {
-      await store.setTiedTargets(false)
-      const targets = await store.createTarget({ name: 'default' })
+    it('deleteEnv removes only local env when shared secret names is false', async () => {
+      await store.setSharedSecretNames(false)
+      const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
       await store.createEnv({ name: 'LOCAL_ENV', profile: defaultTarget.id, value: 'secret1' })
@@ -281,14 +284,14 @@ describe('BroverStore', () => {
     })
   })
 
-  describe('Tied targets', () => {
-    it('defaults tiedTargets to true', async () => {
-      await expect(store.getTiedTargets()).resolves.toBe(true)
+  describe('Shared secret names', () => {
+    it('defaults sharedSecretNames to false', async () => {
+      await expect(store.getSharedSecretNames()).resolves.toBe(false)
     })
 
-    it('setTiedTargets persists global flag', async () => {
-      await store.setTiedTargets(false)
-      await expect(store.getTiedTargets()).resolves.toBe(false)
+    it('setSharedSecretNames persists global flag', async () => {
+      await store.setSharedSecretNames(true)
+      await expect(store.getSharedSecretNames()).resolves.toBe(true)
     })
   })
 
@@ -303,7 +306,7 @@ describe('BroverStore', () => {
       await writeFile(dbPath, corruptedDB)
 
       const freshStore = new BroverStore(dbPath, new MemorySecretStore())
-      const targets = await freshStore.listTargets()
+      const targets = await freshStore.listEnvironments()
 
       expect(targets).toHaveLength(0)
     })

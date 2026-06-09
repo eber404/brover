@@ -11,7 +11,7 @@ async function tempDir(): Promise<string> {
 }
 
 describe('runRetroactiveImport', () => {
-  it('creates targets from dotfiles', async () => {
+  it('creates environments from dotfiles', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -31,9 +31,9 @@ describe('runRetroactiveImport', () => {
     const summary = await runRetroactiveImport(store, scanResult, selection)
     expect(summary.importedSensitive).toBe(1)
 
-    const targets = await store.listTargets()
-    expect(targets).toHaveLength(1)
-    expect(targets[0]?.name).toBe('.env')
+    const environments = await store.listEnvironments()
+    expect(environments).toHaveLength(1)
+    expect(environments[0]?.name).toBe('.env')
   })
 
   it('writes sensitive values to SecretStore', async () => {
@@ -58,13 +58,13 @@ describe('runRetroactiveImport', () => {
 
     await runRetroactiveImport(store, scanResult, selection)
 
-    const targets = await store.listTargets()
-    const target = targets.find((item) => item.name === '.env')!
+    const environments = await store.listEnvironments()
+    const environment = environments.find((item) => item.name === '.env')!
 
-    const apiKey = await store.revealEnv(target.id, 'API_KEY')
+    const apiKey = await store.revealEnv(environment.id, 'API_KEY')
     expect(apiKey).toBe('abc123')
 
-    const dbUrl = await store.revealEnv(target.id, 'DB_URL')
+    const dbUrl = await store.revealEnv(environment.id, 'DB_URL')
     expect(dbUrl).toBe('postgres://db')
   })
 
@@ -120,14 +120,14 @@ describe('runRetroactiveImport', () => {
     expect(summary.importedSensitive).toBe(1)
     expect(summary.ignoredNonSensitive).toBe(1)
 
-    const targets = await store.listTargets()
-    const target = targets.find((item) => item.name === '.env')!
+    const environments = await store.listEnvironments()
+    const environment = environments.find((item) => item.name === '.env')!
 
-    const revealed = await store.revealEnv(target.id, 'PUBLIC')
+    const revealed = await store.revealEnv(environment.id, 'PUBLIC')
     expect(revealed).toBeNull()
   })
 
-  it('keeps duplicate names as separate targets', async () => {
+  it('keeps duplicate names as separate environments', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -158,16 +158,16 @@ describe('runRetroactiveImport', () => {
     const summary = await runRetroactiveImport(store, scanResult, selection)
     expect(summary.importedSensitive).toBe(2)
 
-    const targets = await store.listTargets()
-    expect(targets).toHaveLength(2)
+    const environments = await store.listEnvironments()
+    expect(environments).toHaveLength(2)
 
-    const zshrcTarget = targets.find(s => s.name === '.zshrc')!
-    const bashrcTarget = targets.find(s => s.name === '.bashrc')!
+    const zshrcEnvironment = environments.find(s => s.name === '.zshrc')!
+    const bashrcEnvironment = environments.find(s => s.name === '.bashrc')!
 
-    const zshValue = await store.revealEnv(zshrcTarget.id, 'TOKEN')
+    const zshValue = await store.revealEnv(zshrcEnvironment.id, 'TOKEN')
     expect(zshValue).toBe('secret1')
 
-    const bashValue = await store.revealEnv(bashrcTarget.id, 'TOKEN')
+    const bashValue = await store.revealEnv(bashrcEnvironment.id, 'TOKEN')
     expect(bashValue).toBe('secret2')
   })
 
@@ -233,31 +233,41 @@ describe('runRetroactiveImport', () => {
 })
 
 describe('runFreshStartImport', () => {
-  it('creates a single default target for fresh start', async () => {
+  it('creates one environment per dotfile for fresh start', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
 
     const filePath = join(root, '.env')
+    const secondFilePath = join(root, '.zshrc')
     await writeFile(filePath, 'SECRET=supersecret\nKEY=value\n', 'utf8')
+    await writeFile(secondFilePath, 'OTHER=value\n', 'utf8')
 
     const scanResult: ScanResult = {
-      files: [{
-        filePath,
-        variables: [
-          { id: 'v1', name: 'SECRET', value: 'supersecret', sourceFile: filePath },
-          { id: 'v2', name: 'KEY', value: 'value', sourceFile: filePath },
-        ],
-      }],
+      files: [
+        {
+          filePath,
+          variables: [
+            { id: 'v1', name: 'SECRET', value: 'supersecret', sourceFile: filePath },
+            { id: 'v2', name: 'KEY', value: 'value', sourceFile: filePath },
+          ],
+        },
+        {
+          filePath: secondFilePath,
+          variables: [
+            { id: 'v3', name: 'OTHER', value: 'value', sourceFile: secondFilePath },
+          ],
+        },
+      ],
       warnings: [],
     }
 
     const summary = await runFreshStartImport(store, scanResult)
     expect(summary.importedSensitive).toBe(0)
 
-    const targets = await store.listTargets()
-    expect(targets).toHaveLength(1)
-    expect(targets[0]?.name).toBe('default')
+    const environments = await store.listEnvironments()
+    expect(environments).toHaveLength(2)
+    expect(environments.map((environment) => environment.name)).toEqual(['.env', '.zshrc'])
   })
 
   it('does not import any variable values', async () => {
@@ -281,13 +291,13 @@ describe('runFreshStartImport', () => {
 
     await runFreshStartImport(store, scanResult)
 
-    const targets = await store.listTargets()
-    const target = targets.find((item) => item.name === 'default')!
+    const environments = await store.listEnvironments()
+    const environment = environments.find((item) => item.name === '.env')!
 
-    const apiKey = await store.revealEnv(target.id, 'API_KEY')
+    const apiKey = await store.revealEnv(environment.id, 'API_KEY')
     expect(apiKey).toBeNull()
 
-    const dbUrl = await store.revealEnv(target.id, 'DB_URL')
+    const dbUrl = await store.revealEnv(environment.id, 'DB_URL')
     expect(dbUrl).toBeNull()
   })
 
@@ -348,12 +358,12 @@ describe('runFreshStartImport', () => {
 
     await runFreshStartImport(store, scanResult)
 
-    const targets = await store.listTargets()
-    expect(targets).toHaveLength(1)
-    expect(targets[0]?.name).toBe('default')
+    const environments = await store.listEnvironments()
+    expect(environments).toHaveLength(2)
+    expect(environments.map((environment) => environment.name)).toEqual(['.zshrc', '.bashrc'])
   })
 
-  it('does not create targets for files without parseable env entries', async () => {
+  it('does not create environments for files without parseable env entries', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())

@@ -3,7 +3,7 @@
 [![CI](https://github.com/eber404/brover/actions/workflows/ci.yml/badge.svg)](https://github.com/eber404/brover/actions/workflows/ci.yml)
 [![Coverage](https://github.com/eber404/brover/raw/badges/coverage-badge.svg)](https://github.com/eber404/brover/tree/badges)
 
-Brover is macOS desktop app for managing local environment secrets across spaces and targets.
+Brover is macOS desktop app for managing local environment secrets across environments and launch terminals.
 
 ## Status
 
@@ -21,20 +21,20 @@ Brover is macOS desktop app for managing local environment secrets across spaces
 
 ## Features
 
-- spaces + targets workflow for local environments;
-- target-scoped secret values stored in macOS Keychain;
+- environments workflow for local setups;
+- environment-scoped secret values stored in macOS Keychain;
 - auth-gated reveal, copy, update, and delete actions;
 - local JSON persistence for non-sensitive metadata only;
 - onboarding from existing dotfiles or fresh start setup;
-- ephemeral terminal launch with target envs, without editing dotfiles during normal use.
+- ephemeral terminal launch with environment variables injected into selected terminal, without editing dotfiles during normal use.
 
 ## How It Works
 
-- organize secrets by space and target;
+- organize secrets by environment;
 - keep secret values in Keychain and metadata in local app data;
 - reuse one auth session for sensitive actions until in-memory TTL expires;
 - optionally import selected plaintext values from existing dotfiles on first run;
-- launch Warp, iTerm2, or Terminal with target envs loaded for current session only.
+- launch Warp, iTerm2, or Terminal with selected environment loaded for current session only.
 
 ## Requirements
 

@@ -60,7 +60,7 @@ test.describe('Onboarding First-Run Flow', () => {
     await expect(freshStartBtn).toBeVisible()
   })
 
-  test('retroactive path: imports selected sensitive vars and removes from dotfiles', async () => {
+  test('retroactive path: imports selected sensitive vars into one environment per dotfile and removes from dotfiles', async () => {
     const window = await launchApp()
 
     await window.getByText('Start import →').click()
@@ -89,16 +89,18 @@ test.describe('Onboarding First-Run Flow', () => {
     const bashrc = readFileSync(join(homeDir, '.bashrc'), 'utf8')
     expect(bashrc).toContain('DB_URL=postgres://localhost')
 
-    const targets = await window.evaluate(() => window.brover.listTargets())
-    const dotfileTarget = targets.find((target) => target.name === '.zshrc')
-    expect(dotfileTarget).toBeDefined()
+    const environments = await window.evaluate(() => window.brover.listEnvironments())
+    const zshrcEnvironment = environments.find((environment) => environment.name === '.zshrc')
+    const bashrcEnvironment = environments.find((environment) => environment.name === '.bashrc')
+    expect(zshrcEnvironment).toBeDefined()
+    expect(bashrcEnvironment).toBeUndefined()
 
     const envs = await window.evaluate(() => window.brover.listEnvs())
-    const importedEnv = envs.find((env) => env.profile === dotfileTarget!.id)
+    const importedEnv = envs.find((env) => env.profile === zshrcEnvironment!.id)
     expect(importedEnv?.name).toBe('API_KEY')
   })
 
-  test('fresh start creates default target without env import', async () => {
+  test('fresh start creates one environment per dotfile without env import', async () => {
     const window = await launchApp()
 
     await window.getByText('Start fresh →').click()
@@ -111,9 +113,9 @@ test.describe('Onboarding First-Run Flow', () => {
     )
     await expect(searchInput).toBeVisible({ timeout: 10000 })
 
-    const targets = await window.evaluate(() => window.brover.listTargets())
-    expect(targets).toHaveLength(1)
-    expect(targets[0]?.name).toBe('default')
+    const environments = await window.evaluate(() => window.brover.listEnvironments())
+    expect(environments).toHaveLength(2)
+    expect(environments.map((environment) => environment.name).sort()).toEqual(['.bashrc', '.zshrc'])
   })
 
   test('second launch skips onboarding after completion', async () => {

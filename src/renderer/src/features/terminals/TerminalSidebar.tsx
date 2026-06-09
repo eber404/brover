@@ -13,13 +13,13 @@ import { useToast } from '../../components/ui/toaster'
 interface TerminalSidebarProps {
   locale: 'en' | 'es' | 'pt'
   onLocaleChange: (locale: 'en' | 'es' | 'pt') => void
-  selectedTargetId: string | null
+  selectedEnvironmentId: string | null
 }
 
 export const TerminalSidebar = memo(function TerminalSidebar(
   props: TerminalSidebarProps
 ) {
-  const { locale, onLocaleChange, selectedTargetId } = props
+  const { locale, onLocaleChange, selectedEnvironmentId } = props
   const { t } = useI18n()
   const { toast } = useToast()
   const asideRef = useRef<HTMLElement | null>(null)
@@ -80,11 +80,11 @@ export const TerminalSidebar = memo(function TerminalSidebar(
   }, [launchPreferences.favoriteTerminalIds, terminals])
 
   async function launchTerminal(terminalId: string) {
-    if (!selectedTargetId) return
+    if (!selectedEnvironmentId) return
     const nextPreferences = promoteLaunchDefault(launchPreferences, terminalId)
     setLaunchPreferences(nextPreferences)
     saveLaunchPreferences(nextPreferences)
-    await window.brover.launch.terminal(selectedTargetId, terminalId)
+    await window.brover.launch.terminal(selectedEnvironmentId, terminalId)
   }
 
   function addFavoriteTerminal(terminalId: string) {
@@ -168,7 +168,7 @@ export const TerminalSidebar = memo(function TerminalSidebar(
             type="button"
             data-testid={`terminal-launch-${terminal.id}`}
             className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-edge bg-[rgba(15,23,42,0.65)] transition hover:border-slate-400 hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={!selectedTargetId}
+            disabled={!selectedEnvironmentId}
             onClick={() => void launchTerminal(terminal.id)}
             onContextMenu={(event) => {
               event.preventDefault()

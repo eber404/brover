@@ -20,8 +20,8 @@ import { Input } from '../../components/ui/input'
 import { useToast } from '../../components/ui/toaster'
 
 interface SecretsPanelProps {
-  selectedTargetId: string | null
-  targetName: string
+  selectedEnvironmentId: string | null
+  environmentName: string
   envs: EnvMetadata[]
   filteredEnvs: EnvMetadata[]
   selectedEnvId: string
@@ -60,8 +60,8 @@ const SecretRow = memo(function SecretRow(props: SecretRowProps) {
 export function useSecretsPanel(props: SecretsPanelProps) {
   const { t } = useI18n()
   const {
-    selectedTargetId,
-    targetName,
+    selectedEnvironmentId,
+    environmentName,
     envs,
     filteredEnvs,
     selectedEnvId,
@@ -124,10 +124,10 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   }
 
   async function createEnv() {
-    if (!selectedTargetId) return
+    if (!selectedEnvironmentId) return
     const result = await window.brover.createEnv({
       name: newEnvName.trim().toUpperCase(),
-      profile: selectedTargetId,
+      profile: selectedEnvironmentId,
       value: newEnvValue,
       description: newEnvDescription,
     })
@@ -330,7 +330,8 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       <>
         <Card className="mb-3 border-transparent bg-transparent p-0">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold text-text-emphasis">{targetName}</h2>
+            <h2 className="text-lg font-semibold text-text-emphasis">{environmentName}</h2>
+            
             <div className="flex items-center gap-2">
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>

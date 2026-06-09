@@ -22,13 +22,15 @@ export interface TerminalApp {
   iconDataUrl?: string
 }
 
-export interface EnvTarget {
+export interface Environment {
   id: string
   name: string
   color: string
   isActive: boolean
   updatedAt: string
 }
+
+export type EnvTarget = Environment
 
 export interface OnboardingStatus {
   completedAt?: string

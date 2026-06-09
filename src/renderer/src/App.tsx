@@ -1,12 +1,12 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
-import type { EnvMetadata, EnvTarget } from '../../shared/models'
+import type { EnvMetadata, Environment } from '../../shared/models'
 import { ConfirmDialog } from './components/ui/confirmDialog'
 import { ToastProvider } from './components/ui/toaster'
 import { I18nProvider, useI18n } from './i18n'
 import OnboardingFlow from './features/onboarding/OnboardingFlow'
 import { useSecretsPanel } from './features/secrets/SecretsPanel'
-import { SpacesSidebar } from './features/spaces/SpacesSidebar'
+import { EnvironmentsSidebar } from './features/environments/EnvironmentsSidebar'
 import { SecretsCenterPanel } from './features/secrets/SecretsCenterPanel'
 import { SecretsDetailsPanel } from './features/secrets/SecretsDetailsPanel'
 import { TerminalSidebar } from './features/terminals/TerminalSidebar'
@@ -18,34 +18,34 @@ const DRAG_REGION_STYLE = {
 function AppShell() {
   const { t, locale, setLocale } = useI18n()
   const [searchText, setSearchText] = useState('')
-  const [targets, setTargets] = useState<EnvTarget[]>([])
+  const [environments, setEnvironments] = useState<Environment[]>([])
   const [envs, setEnvs] = useState<EnvMetadata[]>([])
-  const [tiedTargets, setTiedTargets] = useState(true)
-  const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null)
+  const [sharedSecretNames, setSharedSecretNames] = useState(false)
+  const [selectedEnvironmentId, setSelectedEnvironmentId] = useState<string | null>(null)
   const [selectedEnvId, setSelectedEnvId] = useState('')
   const [revealValue, setRevealValue] = useState('')
-  const [editingTargetId, setEditingTargetId] = useState<string | null>(null)
+  const [editingEnvironmentId, setEditingEnvironmentId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const deferredSearchText = useDeferredValue(searchText)
 
   const refreshAll = useCallback(async () => {
-    const [nextTargets, nextEnvs, nextTiedTargets] = await Promise.all([
-      window.brover.listTargets(),
+    const [nextEnvironments, nextEnvs, nextSharedSecretNames] = await Promise.all([
+      window.brover.listEnvironments(),
       window.brover.listEnvs(),
-      window.brover.getTiedTargets(),
+      window.brover.getSharedSecretNames(),
     ])
 
-    setTargets(nextTargets)
+    setEnvironments(nextEnvironments)
     setEnvs(nextEnvs)
-    setTiedTargets(nextTiedTargets)
+    setSharedSecretNames(nextSharedSecretNames)
 
-    const fallbackTargetId = nextTargets.find((target) => target.isActive)?.id ?? nextTargets[0]?.id ?? null
-    setSelectedTargetId((current) => {
-      if (current && nextTargets.some((target) => target.id === current)) {
+    const fallbackEnvironmentId = nextEnvironments.find((environment) => environment.isActive)?.id ?? nextEnvironments[0]?.id ?? null
+    setSelectedEnvironmentId((current) => {
+      if (current && nextEnvironments.some((environment) => environment.id === current)) {
         return current
       }
 
-      return fallbackTargetId
+      return fallbackEnvironmentId
     })
   }, [])
 
@@ -53,28 +53,28 @@ function AppShell() {
     void refreshAll()
   }, [refreshAll])
 
-  const selectedTarget = useMemo(
-    () => targets.find((target) => target.id === selectedTargetId) ?? null,
-    [targets, selectedTargetId]
+  const selectedEnvironment = useMemo(
+    () => environments.find((environment) => environment.id === selectedEnvironmentId) ?? null,
+    [environments, selectedEnvironmentId]
   )
 
-  const targetEnvs = useMemo(
-    () => envs.filter((env) => env.profile === selectedTargetId),
-    [envs, selectedTargetId]
+  const environmentEnvs = useMemo(
+    () => envs.filter((env) => env.profile === selectedEnvironmentId),
+    [envs, selectedEnvironmentId]
   )
 
   const filteredEnvs = useMemo(() => {
     const query = deferredSearchText.trim().toLowerCase()
-    if (!query) return targetEnvs
-    return targetEnvs.filter(
+    if (!query) return environmentEnvs
+    return environmentEnvs.filter(
       (item) => item.name.toLowerCase().includes(query) || (item.description ?? '').toLowerCase().includes(query)
     )
-  }, [deferredSearchText, targetEnvs])
+  }, [deferredSearchText, environmentEnvs])
 
   const secretsPanel = useSecretsPanel({
-    selectedTargetId,
-    targetName: selectedTarget?.name ?? '',
-    envs: targetEnvs,
+    selectedEnvironmentId,
+    environmentName: selectedEnvironment?.name ?? '',
+    envs: environmentEnvs,
     filteredEnvs,
     selectedEnvId,
     searchQuery: deferredSearchText,
@@ -86,10 +86,10 @@ function AppShell() {
   useEffect(() => {
     setSelectedEnvId('')
     setRevealValue('')
-  }, [selectedTargetId])
+  }, [selectedEnvironmentId])
 
-  const addTarget = useCallback(async () => {
-    const existingNames = new Set(targets.map((target) => target.name.trim().toLowerCase()))
+  const addEnvironment = useCallback(async () => {
+    const existingNames = new Set(environments.map((environment) => environment.name.trim().toLowerCase()))
     const baseName = 'env'
     let name = baseName
     let index = 1
@@ -98,51 +98,51 @@ function AppShell() {
       index += 1
     }
 
-    const updated = await window.brover.createTarget({ name })
-    setTargets(updated)
-    const created = updated.find((target) => target.name === name)
+    const updated = await window.brover.createEnvironment({ name })
+    setEnvironments(updated)
+    const created = updated.find((environment) => environment.name === name)
     if (!created) return
-    setEditingTargetId(created.id)
+    setEditingEnvironmentId(created.id)
     setEditingName('')
-  }, [targets])
+  }, [environments])
 
-  const deleteTarget = useCallback(
-    async (targetId: string) => {
-      const updated = await window.brover.deleteTarget({ targetId })
-      setTargets(updated)
-      if (selectedTargetId === targetId) {
-        const next = updated.find((target) => target.isActive) ?? updated[0]
-        setSelectedTargetId(next?.id ?? null)
+  const deleteEnvironment = useCallback(
+    async (environmentId: string) => {
+      const updated = await window.brover.deleteEnvironment({ environmentId })
+      setEnvironments(updated)
+      if (selectedEnvironmentId === environmentId) {
+        const next = updated.find((environment) => environment.isActive) ?? updated[0]
+        setSelectedEnvironmentId(next?.id ?? null)
       }
     },
-    [selectedTargetId]
+    [selectedEnvironmentId]
   )
 
-  const saveTargetRename = useCallback(
-    async (targetId: string) => {
+  const saveEnvironmentRename = useCallback(
+    async (environmentId: string) => {
       const name = editingName.trim()
-      setEditingTargetId(null)
+      setEditingEnvironmentId(null)
       if (!name) return
-      setTargets(await window.brover.renameTarget({ targetId, name }))
+      setEnvironments(await window.brover.renameEnvironment({ environmentId, name }))
     },
     [editingName]
   )
 
-  const updateTargetColor = useCallback(async (targetId: string, color: string) => {
-    setTargets(await window.brover.setTargetColor({ targetId, color }))
+  const updateEnvironmentColor = useCallback(async (environmentId: string, color: string) => {
+    setEnvironments(await window.brover.setEnvironmentColor({ environmentId, color }))
   }, [])
 
-  const reorderTargets = useCallback(async (orderedTargetIds: string[]) => {
-    setTargets(await window.brover.reorderTargets({ orderedTargetIds }))
+  const reorderEnvironments = useCallback(async (orderedEnvironmentIds: string[]) => {
+    setEnvironments(await window.brover.reorderEnvironments({ orderedEnvironmentIds }))
   }, [])
 
-  const toggleTiedTargets = useCallback(async () => {
-    setTiedTargets(await window.brover.setTiedTargets(!tiedTargets))
-  }, [tiedTargets])
+  const toggleSharedSecretNames = useCallback(async () => {
+    setSharedSecretNames(await window.brover.setSharedSecretNames(!sharedSecretNames))
+  }, [sharedSecretNames])
 
-  const setActiveTarget = useCallback(async (targetId: string) => {
-    setTargets(await window.brover.setActiveTarget({ targetId }))
-    setSelectedTargetId(targetId)
+  const setActiveEnvironment = useCallback(async (environmentId: string) => {
+    setEnvironments(await window.brover.setActiveEnvironment({ environmentId }))
+    setSelectedEnvironmentId(environmentId)
   }, [])
 
   const onSearchChange = useCallback((value: string) => {
@@ -155,30 +155,30 @@ function AppShell() {
       <div data-testid="drag-bar" className="absolute inset-x-0 right-0 top-0 z-50 h-4 w-full" style={DRAG_REGION_STYLE} />
 
       <div className="col-start-1 col-end-2 row-start-1 row-end-3">
-        <TerminalSidebar locale={locale} onLocaleChange={setLocale} selectedTargetId={selectedTargetId} />
+        <TerminalSidebar locale={locale} onLocaleChange={setLocale} selectedEnvironmentId={selectedEnvironmentId} />
       </div>
 
       <div className="col-start-2 col-end-3 row-start-1 row-end-3">
-        <SpacesSidebar
+        <EnvironmentsSidebar
           title={t('app.title')}
           subtitle={t('app.subtitle')}
-          targets={targets}
-          selectedTargetId={selectedTargetId}
-          tiedTargets={tiedTargets}
-          editingTargetId={editingTargetId}
+          environments={environments}
+          selectedEnvironmentId={selectedEnvironmentId}
+          sharedSecretNames={sharedSecretNames}
+          editingEnvironmentId={editingEnvironmentId}
           editingName={editingName}
           onEditNameChange={setEditingName}
-          onAddTarget={() => void addTarget()}
-          onStartRenameTarget={(targetId, currentName) => {
-            setEditingTargetId(targetId)
+          onAddEnvironment={() => void addEnvironment()}
+          onStartRenameEnvironment={(environmentId, currentName) => {
+            setEditingEnvironmentId(environmentId)
             setEditingName(currentName)
           }}
-          onSaveRenameTarget={(targetId) => void saveTargetRename(targetId)}
-          onSelectTarget={(targetId) => void setActiveTarget(targetId)}
-          onUpdateTargetColor={(targetId, color) => void updateTargetColor(targetId, color)}
-          onReorderTargets={(orderedTargetIds) => void reorderTargets(orderedTargetIds)}
-          onDeleteTarget={(targetId) => void deleteTarget(targetId)}
-          onToggleTiedTargets={() => void toggleTiedTargets()}
+          onSaveRenameEnvironment={(environmentId) => void saveEnvironmentRename(environmentId)}
+          onSelectEnvironment={(environmentId) => void setActiveEnvironment(environmentId)}
+          onUpdateEnvironmentColor={(environmentId, color) => void updateEnvironmentColor(environmentId, color)}
+          onReorderEnvironments={(orderedEnvironmentIds) => void reorderEnvironments(orderedEnvironmentIds)}
+          onDeleteEnvironment={(environmentId) => void deleteEnvironment(environmentId)}
+          onToggleSharedSecretNames={() => void toggleSharedSecretNames()}
         />
       </div>
 
@@ -215,7 +215,7 @@ function AppShell() {
         <SecretsDetailsPanel
           title={t('common.details')}
           env={secretsPanel.selectedEnv}
-          targetName={selectedTarget?.name ?? '-'}
+          environmentName={selectedEnvironment?.name ?? '-'}
           revealValue={revealValue}
           hasValue={secretsPanel.hasValue}
           onReveal={() => void secretsPanel.revealEnv()}

@@ -12,8 +12,8 @@ Brover is an Electron desktop app for local environment secret management.
 
 1. Never persist secret values in JSON or logs.
 2. Keep auth gates for reveal/copy(hidden)/update/delete.
-3. Use target-scoped value and enabled state.
-4. Respect per-space `tiedSecrets` toggle (`Tied targets`) behavior.
+3. Use environment-scoped value and enabled state.
+4. Respect `Shared secret names` behavior.
 5. Launch feature: creates `.command` file with env vars, opens terminal app (Warp/iTerm2/Terminal).
 6. Normal app usage must not rewrite dotfiles; only retroactive onboarding import removes selected plaintext entries from source files.
 7. Prefer early return and avoid nested conditionals/ternaries.
@@ -27,11 +27,11 @@ Brover is an Electron desktop app for local environment secret management.
 
 Deliver a stable local control plane to:
 
-- manage env secrets by spaces and targets;
+- manage env secrets by environments;
 - keep sensitive values in secure backend on macOS (Keychain);
 - guard reveal/copy/update/delete behind authentication;
 - persist only non-sensitive metadata in local JSON;
-- launch terminal with target envs pre-loaded.
+- launch terminal with environment vars pre-loaded.
 
 ---
 
@@ -50,14 +50,14 @@ Deliver a stable local control plane to:
 - update secret value;
 - delete secret.
 
-Auth session is shared across targets for the current in-memory TTL window. Re-auth is not required when switching targets until that TTL expires.
+Auth session is shared across environments for the current in-memory TTL window. Re-auth is not required when switching environments until that TTL expires.
 
 ### Non-auth actions
 
 - list/search metadata;
-- switch spaces/targets;
+- switch environments;
 - edit non-sensitive labels/colors;
-- toggle tied-target behavior.
+- toggle shared secret-name behavior.
 
 ---
 
@@ -67,20 +67,20 @@ Auth session is shared across targets for the current in-memory TTL window. Re-a
 Electron App
   ├── Main process (IPC, auth gate, persistence, terminalLauncher)
   ├── Preload bridge (typed window.brover API)
-  └── Renderer (React UI: spaces, targets, secrets, details)
+  └── Renderer (React UI: terminals, environments, secrets, details)
 
 Secure store (macOS)
   └── Keychain service
 
 Local config
-  └── JSON metadata (spaces, targets, env metadata, onboarding flag)
+  └── JSON metadata (environments, env metadata, onboarding flag)
 ```
 
-### Space model
+### Environment model
 
-All spaces are `kind: 'dotfile'`. Each space points to one dotfile (e.g., `~/.zshrc`). No more global/directory distinction.
+Environments are root-level entities such as `dev`, `prod`, or onboarding-created dotfile names like `.zshrc`.
 
-Dotfile paths identify source files for onboarding-derived spaces and file-picked spaces. After onboarding, normal launch flow uses Keychain-backed target values and does not modify those dotfiles.
+Onboarding-derived environments may come from source dotfiles. After onboarding, normal launch flow uses Keychain-backed environment values and does not modify those dotfiles.
 
 ### Launch feature
 
@@ -94,7 +94,7 @@ Dotfile paths identify source files for onboarding-derived spaces and file-picke
 Core modules:
 
 - `onboardingScanner` — scans top-level dotfiles in home directory, parses `NAME=value` and `export NAME=value`, and skips comments, blank lines, subshell expressions, non-assignment lines, binary files, oversized files, and unreadable files.
-- `onboardingImporter` — handles both modes: retroactive import (moves selected sensitive values to Keychain, rewrites source files, only creates spaces for files with selected secrets) and fresh-start space creation (creates one space per selected file, no value import, no env scaffolding).
+- `onboardingImporter` — handles both modes: retroactive import (moves selected sensitive values to Keychain, rewrites source files, and creates one environment per dotfile with selected secrets) and fresh-start environment creation (creates one environment per selected file, no value import, no env scaffolding).
 - `onboardingStateStore` — persists onboarding completion flag in local config; subsequent launches skip onboarding.
 
 IPC contracts under `onboarding.*` namespace:
@@ -102,14 +102,14 @@ IPC contracts under `onboarding.*` namespace:
 - `onboarding:get-status` — returns whether onboarding has been completed.
 - `onboarding:scan-dotfiles` — triggers scanner, returns grouped env vars per file plus scan warnings.
 - `onboarding:run-retroactive` — receives selected sensitive ids, imports to Keychain, rewrites files to remove matching entries, and returns summary counts.
-- `onboarding:run-fresh-start` — receives selected scan files and creates one metadata-only dotfile space per file.
+- `onboarding:run-fresh-start` — receives selected scan files and creates one metadata-only dotfile environment per file.
 
 Security: retroactive review can reveal scanned plaintext values without auth because values still come directly from user dotfiles at pre-Keychain stage. After terminal preferences, selected values move directly to Keychain. No plaintext secrets touch local JSON at any point.
 
 Flow:
 
 - retroactive: welcome -> review -> confirmation -> terminal preferences -> import -> complete flag;
-- fresh start: welcome -> file selection -> terminal preferences -> space creation -> complete flag.
+- fresh start: welcome -> file selection -> terminal preferences -> environment creation -> complete flag.
 
 ---
 
@@ -165,34 +165,35 @@ For broad/multi-file discovery, consult the auto-generated symbol map:
 
 ## Domain rules
 
-### Spaces and targets
+### Environments
 
-- A space may contain zero or more targets.
-- Targets are reorderable and deletable.
-- Space deletion removes all targets and all target-scoped secrets.
+- An environment may contain zero or more secrets.
+- Environments are reorderable and deletable.
+- Environment deletion removes its environment-scoped secrets.
 
-### Tied targets
+### Shared secret names
 
-- Each space has `tiedSecrets` (default `true`).
+- Global toggle label: `Shared secret names`.
+- Default: `false`.
 - When `true`:
-  - new env names sync across all targets in that space;
-  - deleting an env name removes it from all targets in that space;
-  - creating a target clones env names from peers with empty values.
+  - new env names sync across all environments;
+  - deleting an env name removes it from all environments;
+  - creating an environment clones env names from peers with empty values.
 - When `false`:
-  - env names are target-local;
-  - delete affects only selected target;
-  - new target starts empty.
+  - env names are environment-local;
+  - delete affects only selected environment;
+  - new environment starts empty.
 
 ### Values
 
-- Value storage remains target-scoped always.
-- Same env name can hold different values per target.
+- Value storage remains environment-scoped always.
+- Same env name can hold different values per environment.
 
 ---
 
 ## Storage conventions
 
-- Secret account key format: `targetId:ENV_NAME`.
+- Secret account key format: `environmentId:ENV_NAME`.
 - Metadata JSON path: app data directory `brover/config.json` (or `BROVER_DB_PATH` override in tests).
 
 ---
@@ -211,8 +212,8 @@ Reject spaces, shell metacharacters, empty names, and numeric-leading names.
 
 ## UI conventions
 
-- Three-column layout: spaces/targets, secrets list, secret details.
-- Left rail manages spaces; targets panel manages target operations.
+- Three-column layout: terminals, environments, secrets/details.
+- Left rail manages terminals; middle panel manages environments.
 - Prevent text selection for static UI labels.
 - Show destructive actions with confirmation.
 

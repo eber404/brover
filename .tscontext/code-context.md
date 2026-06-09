@@ -1,6 +1,6 @@
 # Code Context Summary
 
-Generated: 2026-06-09T15:58:49.991Z
+Generated: 2026-06-09T17:20:07.313Z
 Files: 45
 
 ## `playwright.config.ts`
@@ -64,7 +64,7 @@ Imports: `node:fs/promises`, `node:path`, `node:crypto`, `../shared/models`, `./
 Exports: `runFreshStartImport` (FunctionDeclaration), `runRetroactiveImport` (FunctionDeclaration)
 
 Functions:
-- `async createTargetForFile(store: BroverStore, filePath: string): Promise<string>`
+- `async createEnvironmentForFile(store: BroverStore, filePath: string): Promise<string>`
 - `async runFreshStartImport(store: BroverStore, scanResult: ScanResult): Promise<OnboardingSummary>`
 - `async runRetroactiveImport(store: BroverStore, scanResult: ScanResult, selection: RetroactiveSelection): Promise<OnboardingSummary>`
 
@@ -111,7 +111,7 @@ Imports: `node:fs/promises`, `node:path`, `node:crypto`, `../shared/models`, `..
 Exports: `BroverStore` (ClassDeclaration), `MacOSKeytarSecretStore` (ClassDeclaration), `MemorySecretStore` (ClassDeclaration), `SecretStore` (InterfaceDeclaration), `UnsupportedSecretStore` (ClassDeclaration)
 
 Functions:
-- `randomTargetColor(): string`
+- `randomEnvironmentColor(): string`
 
 Types:
 - `SecretStore` (interface)
@@ -120,7 +120,7 @@ Classes:
 - `UnsupportedSecretStore`: async save(): Promise<void>; async get(): Promise<string | null>; async delete(): Promise<void>; async exists(): Promise<boolean>
 - `MemorySecretStore`: async save(account: string, value: string): Promise<void>; async get(account: string): Promise<string | null>; async delete(account: string): Promise<void>; async exists(account: string): Promise<boolean>
 - `MacOSKeytarSecretStore`: async save(account: string, value: string): Promise<void>; async get(account: string): Promise<string | null>; async delete(account: string): Promise<void>; async exists(account: string): Promise<boolean>
-- `BroverStore`: async getOnboardingStatus(): Promise<OnboardingStatus>; async markOnboardingComplete(): Promise<void>; async listEnvs(): Promise<EnvMetadata[]>; async createEnv(payload: { name: string; profile: string; value: string; description?: string }): Promise<void>; async revealEnv(profile: string, name: string): Promise<string | null>; async secretExists(profile: string, name: string): Promise<boolean>; async updateEnv(payload: { id: string; profile: string; name: string; value: string; description?: string }): Promise<void>; async deleteEnv(payload: { id: string; profile: string; name: string }): Promise<void>; async toggleEnvEnabled(id: string): Promise<EnvMetadata[]>; async getTiedTargets(): Promise<boolean>; async setTiedTargets(tiedTargets: boolean): Promise<boolean>; async listTargets(spaceId: string): Promise<EnvTarget[]>; async createTarget(payload: { name: string; spaceId?: string }): Promise<EnvTarget[]>; async deleteTarget(payload: { targetId: string }): Promise<EnvTarget[]>; async reorderTargets(payload: { orderedTargetIds: string[]; spaceId?: string }): Promise<EnvTarget[]>; async renameTarget(payload: { targetId: string; name: string }): Promise<EnvTarget[]>; async setTargetColor(payload: { targetId: string; color: string }): Promise<EnvTarget[]>; async setActiveTarget(payload: { targetId: string; spaceId?: string }): Promise<EnvTarget[]>
+- `BroverStore`: async getOnboardingStatus(): Promise<OnboardingStatus>; async markOnboardingComplete(): Promise<void>; async listEnvs(): Promise<EnvMetadata[]>; async createEnv(payload: { name: string; profile: string; value: string; description?: string }): Promise<void>; async revealEnv(profile: string, name: string): Promise<string | null>; async secretExists(profile: string, name: string): Promise<boolean>; async updateEnv(payload: { id: string; profile: string; name: string; value: string; description?: string }): Promise<void>; async deleteEnv(payload: { id: string; profile: string; name: string }): Promise<void>; async toggleEnvEnabled(id: string): Promise<EnvMetadata[]>; async getSharedSecretNames(): Promise<boolean>; async setSharedSecretNames(sharedSecretNames: boolean): Promise<boolean>; async listEnvironments(): Promise<Environment[]>; async createEnvironment(payload: { name: string }): Promise<Environment[]>; async deleteEnvironment(payload: { environmentId: string }): Promise<Environment[]>; async reorderEnvironments(payload: { orderedEnvironmentIds: string[] }): Promise<Environment[]>; async renameEnvironment(payload: { environmentId: string; name: string }): Promise<Environment[]>; async setEnvironmentColor(payload: { environmentId: string; color: string }): Promise<Environment[]>; async setActiveEnvironment(payload: { environmentId: string }): Promise<Environment[]>; async getTiedTargets(): Promise<boolean>; async setTiedTargets(tiedTargets: boolean): Promise<boolean>; async listTargets(): Promise<Environment[]>; async createTarget(payload: { name: string }): Promise<Environment[]>; async deleteTarget(payload: { targetId: string }): Promise<Environment[]>; async reorderTargets(payload: { orderedTargetIds: string[] }): Promise<Environment[]>; async renameTarget(payload: { targetId: string; name: string }): Promise<Environment[]>; async setTargetColor(payload: { targetId: string; color: string }): Promise<Environment[]>; async setActiveTarget(payload: { targetId: string }): Promise<Environment[]>
 
 ## `src/main/terminalIconLoader.ts`
 
@@ -165,7 +165,7 @@ Classes:
 
 ## `src/renderer/src/App.tsx`
 
-Imports: `react`, `lucide-react`, `../../shared/models`, `./components/ui/confirmDialog`, `./components/ui/toaster`, `./i18n`, `./features/onboarding/OnboardingFlow`, `./features/secrets/SecretsPanel`, `./features/spaces/SpacesSidebar`, `./features/secrets/SecretsCenterPanel`, `./features/secrets/SecretsDetailsPanel`, `./features/terminals/TerminalSidebar`
+Imports: `react`, `lucide-react`, `../../shared/models`, `./components/ui/confirmDialog`, `./components/ui/toaster`, `./i18n`, `./features/onboarding/OnboardingFlow`, `./features/secrets/SecretsPanel`, `./features/environments/EnvironmentsSidebar`, `./features/secrets/SecretsCenterPanel`, `./features/secrets/SecretsDetailsPanel`, `./features/terminals/TerminalSidebar`
 
 Exports: `default` (FunctionDeclaration)
 
@@ -287,6 +287,14 @@ React Components:
 Hooks:
 - `useToast(): ToastContextValue`
 
+## `src/renderer/src/features/environments/EnvironmentsSidebar.tsx`
+
+Imports: `react`, `lucide-react`, `../../../../shared/models`, `../../components/ui/confirmDialog`, `../../components/ui/switch`, `../../i18n`
+
+Exports: `EnvironmentsSidebar` (VariableDeclaration)
+
+Exported Constants: `EnvironmentsSidebar`
+
 ## `src/renderer/src/features/launch/preferences.ts`
 
 Exports: `getLaunchPreferences` (FunctionDeclaration), `getPreferredTerminalId` (FunctionDeclaration), `LaunchPreferences` (InterfaceDeclaration), `promoteLaunchDefault` (FunctionDeclaration), `saveLaunchPreferences` (FunctionDeclaration)
@@ -396,7 +404,7 @@ Exports: `SecretsDetail` (FunctionDeclaration)
 Functions:
 - `SecretsDetail({
   env,
-  targetName,
+  environmentName,
   revealValue,
   hasValue,
   onReveal,
@@ -407,7 +415,7 @@ Functions:
 React Components:
 - `SecretsDetail` [function] props: {
   env,
-  targetName,
+  environmentName,
   revealValue,
   hasValue,
   onReveal,
@@ -434,14 +442,6 @@ Functions:
 
 Hooks:
 - `useSecretsPanel(props: SecretsPanelProps): { center: import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ...`
-
-## `src/renderer/src/features/spaces/SpacesSidebar.tsx`
-
-Imports: `react`, `lucide-react`, `../../../../shared/models`, `../../components/ui/confirmDialog`, `../../components/ui/switch`, `../../i18n`
-
-Exports: `SpacesSidebar` (VariableDeclaration)
-
-Exported Constants: `SpacesSidebar`
 
 ## `src/renderer/src/features/terminals/TerminalSidebar.tsx`
 
@@ -494,13 +494,13 @@ Types:
 
 ## `src/shared/models.ts`
 
-Exports: `EnvMetadata` (InterfaceDeclaration), `EnvTarget` (InterfaceDeclaration), `OnboardingStatus` (InterfaceDeclaration), `OnboardingSummary` (InterfaceDeclaration), `RetroactiveSelection` (InterfaceDeclaration), `ScanFile` (InterfaceDeclaration), `ScannedVariable` (InterfaceDeclaration), `ScanResult` (InterfaceDeclaration), `ScanWarning` (InterfaceDeclaration), `SecretActionResult` (InterfaceDeclaration), `TerminalApp` (InterfaceDeclaration), `UNSUPPORTED_SECRET_BACKEND` (VariableDeclaration)
+Exports: `Environment` (InterfaceDeclaration), `EnvMetadata` (InterfaceDeclaration), `EnvTarget` (TypeAliasDeclaration), `OnboardingStatus` (InterfaceDeclaration), `OnboardingSummary` (InterfaceDeclaration), `RetroactiveSelection` (InterfaceDeclaration), `ScanFile` (InterfaceDeclaration), `ScannedVariable` (InterfaceDeclaration), `ScanResult` (InterfaceDeclaration), `ScanWarning` (InterfaceDeclaration), `SecretActionResult` (InterfaceDeclaration), `TerminalApp` (InterfaceDeclaration), `UNSUPPORTED_SECRET_BACKEND` (VariableDeclaration)
 
 Types:
 - `EnvMetadata` (interface)
 - `SecretActionResult` (interface)
 - `TerminalApp` (interface)
-- `EnvTarget` (interface)
+- `Environment` (interface)
 - `OnboardingStatus` (interface)
 - `ScannedVariable` (interface)
 - `ScanFile` (interface)
@@ -508,6 +508,7 @@ Types:
 - `ScanResult` (interface)
 - `RetroactiveSelection` (interface)
 - `OnboardingSummary` (interface)
+- `EnvTarget` (typeAlias)
 
 Exported Constants: `UNSUPPORTED_SECRET_BACKEND`="UNSUPPORTED_SECRET_BACKEND"
 

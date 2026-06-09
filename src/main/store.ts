@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import type { EnvMetadata, EnvTarget, OnboardingStatus } from '../shared/models'
+import type { EnvMetadata, Environment, OnboardingStatus } from '../shared/models'
 import { isValidEnvName } from '../shared/validators'
 
 interface CompatSpace {
@@ -13,7 +13,7 @@ interface CompatSpace {
   updatedAt: string
 }
 
-interface StoredTarget extends EnvTarget {
+interface StoredEnvironment extends Environment {
   spaceId?: string
 }
 
@@ -21,15 +21,16 @@ interface PersistedDBShape {
   envs?: unknown
   spaces?: unknown
   targets?: unknown
+  environments?: unknown
   tiedTargets?: unknown
+  sharedSecretNames?: unknown
   onboardingCompletedAt?: unknown
 }
 
 interface DBShape {
   envs: EnvMetadata[]
-  spaces: CompatSpace[]
-  targets: StoredTarget[]
-  tiedTargets: boolean
+  environments: StoredEnvironment[]
+  sharedSecretNames: boolean
   onboardingCompletedAt?: string
 }
 
@@ -102,11 +103,11 @@ export class MacOSKeytarSecretStore implements SecretStore {
   }
 }
 
-const TARGET_COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
+const ENVIRONMENT_COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
 
-function randomTargetColor(): string {
-  const index = Math.floor(Math.random() * TARGET_COLORS.length)
-  return TARGET_COLORS[index] ?? '#f59e0b'
+function randomEnvironmentColor(): string {
+  const index = Math.floor(Math.random() * ENVIRONMENT_COLORS.length)
+  return ENVIRONMENT_COLORS[index] ?? '#f59e0b'
 }
 
 export class BroverStore {
@@ -149,8 +150,8 @@ export class BroverStore {
     })
   }
 
-  private makeUniqueTargetName(name: string, usedNames: Set<string>): string {
-    const trimmed = name.trim() || 'target'
+  private makeUniqueEnvironmentName(name: string, usedNames: Set<string>): string {
+    const trimmed = name.trim() || 'environment'
     const normalized = trimmed.toLowerCase()
     if (!usedNames.has(normalized)) {
       usedNames.add(normalized)
@@ -168,8 +169,16 @@ export class BroverStore {
     return candidate
   }
 
-  private normalizeTargets(parsed: PersistedDBShape, spaces: CompatSpace[]): StoredTarget[] {
-    if (!Array.isArray(parsed.targets)) {
+  private normalizeEnvironments(parsed: PersistedDBShape, spaces: CompatSpace[]): StoredEnvironment[] {
+    let persistedEnvironments: StoredEnvironment[] | null = null
+    if (Array.isArray(parsed.environments)) {
+      persistedEnvironments = parsed.environments as StoredEnvironment[]
+    }
+    if (!persistedEnvironments && Array.isArray(parsed.targets)) {
+      persistedEnvironments = parsed.targets as StoredEnvironment[]
+    }
+
+    if (!persistedEnvironments) {
       return []
     }
 
@@ -177,40 +186,23 @@ export class BroverStore {
     const spaceNames = new Map(spaces.map((space) => [space.id, space.name]))
     const usedNames = new Set<string>()
 
-    const normalizedTargets = (parsed.targets as StoredTarget[]).map((target) => {
-      const legacySpaceName = target.spaceId ? spaceNames.get(target.spaceId) : null
+    const normalizedEnvironments = persistedEnvironments.map((environment) => {
+      const legacySpaceName = environment.spaceId ? spaceNames.get(environment.spaceId) : null
       const migratedName =
-        target.spaceId && target.name.trim().toLowerCase() === 'default' && legacySpaceName
+        environment.spaceId && environment.name.trim().toLowerCase() === 'default' && legacySpaceName
           ? legacySpaceName
-          : target.name
+          : environment.name
 
       return {
-        ...target,
+        ...environment,
         spaceId: undefined,
-        name: this.makeUniqueTargetName(migratedName, usedNames),
-        isActive: Boolean(target.isActive),
-        updatedAt: target.updatedAt ?? now,
+        name: this.makeUniqueEnvironmentName(migratedName, usedNames),
+        isActive: Boolean(environment.isActive),
+        updatedAt: environment.updatedAt ?? now,
       }
     })
 
-    const rootTargets = normalizedTargets.filter((target) => !target.spaceId)
-    const allRootTargetsLookLikeDotfiles =
-      rootTargets.length > 1 && rootTargets.every((target) => target.name.startsWith('.'))
-    const envs = Array.isArray(parsed.envs) ? (parsed.envs as EnvMetadata[]) : []
-    const hasRootEnvMetadata = rootTargets.some((target) => envs.some((env) => env.profile === target.id))
-
-    if (!allRootTargetsLookLikeDotfiles || hasRootEnvMetadata) return normalizedTargets
-
-    const [firstTarget] = rootTargets
-    if (!firstTarget) return normalizedTargets
-
-    return [
-      {
-        ...firstTarget,
-        name: 'default',
-        isActive: true,
-      },
-    ]
+    return normalizedEnvironments
   }
 
   private async readDB(): Promise<DBShape> {
@@ -218,31 +210,39 @@ export class BroverStore {
       const raw = await readFile(this.dbPath, 'utf8')
       const parsed = JSON.parse(raw) as PersistedDBShape
       const spaces = this.normalizeSpaces(parsed)
-      const targets = this.normalizeTargets(parsed, spaces)
-      const activeRootTargetId = targets.find((target) => target.isActive)?.id ?? targets[0]?.id
-      const normalizedTargets = targets.map((target) => ({
-        ...target,
-        isActive: activeRootTargetId ? target.id === activeRootTargetId : target.isActive,
+      const environments = this.normalizeEnvironments(parsed, spaces)
+      const activeEnvironmentId = environments.find((environment) => environment.isActive)?.id ?? environments[0]?.id
+      const normalizedEnvironments = environments.map((environment) => ({
+        ...environment,
+        isActive: activeEnvironmentId ? environment.id === activeEnvironmentId : environment.isActive,
       }))
 
       return {
         envs: Array.isArray(parsed.envs) ? (parsed.envs as EnvMetadata[]) : [],
-        spaces,
-        targets: normalizedTargets,
-        tiedTargets: typeof parsed.tiedTargets === 'boolean'
-          ? parsed.tiedTargets
-          : spaces.every((space) => space.tiedSecrets !== false),
+        environments: normalizedEnvironments,
+        sharedSecretNames: this.normalizeSharedSecretNames(parsed, spaces),
         onboardingCompletedAt: typeof parsed.onboardingCompletedAt === 'string' ? parsed.onboardingCompletedAt : undefined,
       }
     } catch {
       return {
         envs: [],
-        spaces: [],
-        targets: [],
-        tiedTargets: true,
+        environments: [],
+        sharedSecretNames: false,
         onboardingCompletedAt: undefined,
       }
     }
+  }
+
+  private normalizeSharedSecretNames(parsed: PersistedDBShape, spaces: CompatSpace[]): boolean {
+    if (typeof parsed.sharedSecretNames === 'boolean') {
+      return parsed.sharedSecretNames
+    }
+
+    if (typeof parsed.tiedTargets === 'boolean') {
+      return parsed.tiedTargets
+    }
+
+    return spaces.every((space) => space.tiedSecrets !== false)
   }
 
   private async writeDB(data: DBShape): Promise<void> {
@@ -250,46 +250,23 @@ export class BroverStore {
     await writeFile(this.dbPath, JSON.stringify(data, null, 2), 'utf8')
   }
 
-  private toPublicTarget(target: StoredTarget): EnvTarget {
+  private toPublicEnvironment(environment: StoredEnvironment): Environment {
     return {
-      id: target.id,
-      name: target.name,
-      color: target.color,
-      isActive: target.isActive,
-      updatedAt: target.updatedAt,
+      id: environment.id,
+      name: environment.name,
+      color: environment.color,
+      isActive: environment.isActive,
+      updatedAt: environment.updatedAt,
     }
   }
 
-  private listScopedTargets(db: DBShape, spaceId?: string): StoredTarget[] {
-    if (spaceId) {
-      return db.targets.filter((target) => target.spaceId === spaceId)
-    }
-
-    return db.targets
-  }
-
-  private getTargetScope(db: DBShape, profile: string): { targetIds: string[]; tied: boolean } {
-    const currentTarget = db.targets.find((target) => target.id === profile)
-    if (!currentTarget) throw new Error('Target not found')
-
-    if (!currentTarget.spaceId) {
-      return {
-        targetIds: db.targets.filter((target) => !target.spaceId).map((target) => target.id),
-        tied: db.tiedTargets,
-      }
-    }
-
-    const space = db.spaces.find((item) => item.id === currentTarget.spaceId)
-    if (!space) {
-      return {
-        targetIds: [currentTarget.id],
-        tied: false,
-      }
-    }
+  private getEnvironmentScope(db: DBShape, profile: string): { environmentIds: string[]; shared: boolean } {
+    const currentEnvironment = db.environments.find((environment) => environment.id === profile)
+    if (!currentEnvironment) throw new Error('Environment not found')
 
     return {
-      targetIds: db.targets.filter((target) => target.spaceId === space.id).map((target) => target.id),
-      tied: space.tiedSecrets,
+      environmentIds: db.environments.map((environment) => environment.id),
+      shared: db.sharedSecretNames,
     }
   }
 
@@ -314,20 +291,20 @@ export class BroverStore {
     if (!payload.value) throw new Error('Secret value required')
 
     const db = await this.readDB()
-    const scope = this.getTargetScope(db, payload.profile)
-    const alreadyExists = scope.tied
-      ? db.envs.some((env) => env.name === envName && scope.targetIds.includes(env.profile))
+    const scope = this.getEnvironmentScope(db, payload.profile)
+    const alreadyExists = scope.shared
+      ? db.envs.some((env) => env.name === envName && scope.environmentIds.includes(env.profile))
       : db.envs.some((env) => env.name === envName && env.profile === payload.profile)
-    if (alreadyExists) throw new Error('Secret already exists in this target')
+    if (alreadyExists) throw new Error('Secret already exists in this environment')
 
     const now = new Date().toISOString()
-    if (scope.tied) {
-      for (const targetId of scope.targetIds) {
+    if (scope.shared) {
+      for (const environmentId of scope.environmentIds) {
         db.envs.push({
           id: randomUUID(),
           name: envName,
-          profile: targetId,
-          enabled: targetId === payload.profile,
+          profile: environmentId,
+          enabled: environmentId === payload.profile,
           description: payload.description?.trim() || undefined,
           updatedAt: now,
         })
@@ -376,12 +353,12 @@ export class BroverStore {
 
   async deleteEnv(payload: { id: string; profile: string; name: string }): Promise<void> {
     const db = await this.readDB()
-    const scope = this.getTargetScope(db, payload.profile)
+    const scope = this.getEnvironmentScope(db, payload.profile)
 
-    if (scope.tied) {
-      db.envs = db.envs.filter((env) => !(env.name === payload.name && scope.targetIds.includes(env.profile)))
-      for (const targetId of scope.targetIds) {
-        await this.secrets.delete(`${targetId}:${payload.name}`)
+    if (scope.shared) {
+      db.envs = db.envs.filter((env) => !(env.name === payload.name && scope.environmentIds.includes(env.profile)))
+      for (const environmentId of scope.environmentIds) {
+        await this.secrets.delete(`${environmentId}:${payload.name}`)
       }
     } else {
       db.envs = db.envs.filter((env) => !(env.name === payload.name && env.profile === payload.profile))
@@ -403,61 +380,50 @@ export class BroverStore {
     return db.envs
   }
 
-  async getTiedTargets(): Promise<boolean> {
-    return (await this.readDB()).tiedTargets
+  async getSharedSecretNames(): Promise<boolean> {
+    return (await this.readDB()).sharedSecretNames
   }
 
-  async setTiedTargets(tiedTargets: boolean): Promise<boolean> {
+  async setSharedSecretNames(sharedSecretNames: boolean): Promise<boolean> {
     const db = await this.readDB()
-    db.tiedTargets = tiedTargets
+    db.sharedSecretNames = sharedSecretNames
     await this.writeDB(db)
-    return db.tiedTargets
+    return db.sharedSecretNames
   }
 
-  async listTargets(spaceId?: string): Promise<EnvTarget[]> {
+  async listEnvironments(): Promise<Environment[]> {
     const db = await this.readDB()
-    return this.listScopedTargets(db, spaceId).map((target) => this.toPublicTarget(target))
+    return db.environments.map((environment) => this.toPublicEnvironment(environment))
   }
 
-  async createTarget(payload: { name: string; spaceId?: string }): Promise<EnvTarget[]> {
+  async createEnvironment(payload: { name: string }): Promise<Environment[]> {
     const db = await this.readDB()
     const name = payload.name.trim()
-    if (!name) throw new Error('Target name required')
+    if (!name) throw new Error('Environment name required')
 
-    if (payload.spaceId && !db.spaces.some((space) => space.id === payload.spaceId)) {
-      throw new Error('Space not found')
-    }
-
-    const scopedTargets = this.listScopedTargets(db, payload.spaceId)
-    const duplicate = scopedTargets.some((target) => target.name.toLowerCase() === name.toLowerCase())
-    if (duplicate) {
-      throw new Error(payload.spaceId ? 'Target name already exists in this space' : 'Target name already exists')
-    }
+    const duplicate = db.environments.some((environment) => environment.name.toLowerCase() === name.toLowerCase())
+    if (duplicate) throw new Error('Environment name already exists')
 
     const now = new Date().toISOString()
-    const createdTarget: StoredTarget = {
+    const createdEnvironment: StoredEnvironment = {
       id: randomUUID(),
-      spaceId: payload.spaceId,
       name,
-      color: randomTargetColor(),
-      isActive: scopedTargets.length === 0,
+      color: randomEnvironmentColor(),
+      isActive: db.environments.length === 0,
       updatedAt: now,
     }
-    db.targets.push(createdTarget)
+    db.environments.push(createdEnvironment)
 
-    const scopeTargetIds = this.listScopedTargets(db, payload.spaceId).map((target) => target.id)
-    const tied = payload.spaceId
-      ? db.spaces.find((space) => space.id === payload.spaceId)?.tiedSecrets ?? false
-      : db.tiedTargets
-    const templateTarget = this.listScopedTargets(db, payload.spaceId).find((target) => target.id !== createdTarget.id)
+    const environmentIds = db.environments.map((environment) => environment.id)
+    const templateEnvironment = db.environments.find((environment) => environment.id !== createdEnvironment.id)
 
-    if (tied && templateTarget) {
-      const templateEnvs = db.envs.filter((env) => env.profile === templateTarget.id && scopeTargetIds.includes(env.profile))
+    if (db.sharedSecretNames && templateEnvironment) {
+      const templateEnvs = db.envs.filter((env) => env.profile === templateEnvironment.id && environmentIds.includes(env.profile))
       for (const env of templateEnvs) {
         db.envs.push({
           ...env,
           id: randomUUID(),
-          profile: createdTarget.id,
+          profile: createdEnvironment.id,
           enabled: false,
           updatedAt: now,
         })
@@ -465,31 +431,27 @@ export class BroverStore {
     }
 
     await this.writeDB(db)
-    return this.listScopedTargets(db, payload.spaceId).map((target) => this.toPublicTarget(target))
+    return db.environments.map((environment) => this.toPublicEnvironment(environment))
   }
 
-  async deleteTarget(payload: { targetId: string }): Promise<EnvTarget[]> {
+  async deleteEnvironment(payload: { environmentId: string }): Promise<Environment[]> {
     const db = await this.readDB()
-    const target = db.targets.find((item) => item.id === payload.targetId)
-    if (!target) throw new Error('Target not found')
+    const environment = db.environments.find((item) => item.id === payload.environmentId)
+    if (!environment) throw new Error('Environment not found')
 
-    const targetEnvs = db.envs.filter((env) => env.profile === payload.targetId)
-    for (const env of targetEnvs) {
-      await this.secrets.delete(`${payload.targetId}:${env.name}`)
+    const environmentEnvs = db.envs.filter((env) => env.profile === payload.environmentId)
+    for (const env of environmentEnvs) {
+      await this.secrets.delete(`${payload.environmentId}:${env.name}`)
     }
 
-    db.targets = db.targets.filter((item) => item.id !== payload.targetId)
-    db.envs = db.envs.filter((item) => item.profile !== payload.targetId)
+    db.environments = db.environments.filter((item) => item.id !== payload.environmentId)
+    db.envs = db.envs.filter((item) => item.profile !== payload.environmentId)
 
-    const remaining = this.listScopedTargets(db, target.spaceId)
+    const remaining = db.environments
     const hasActive = remaining.some((item) => item.isActive)
     if (!hasActive && remaining[0]) {
       const replacementId = remaining[0].id
-      db.targets = db.targets.map((item) => {
-        if (item.spaceId !== target.spaceId) {
-          return item
-        }
-
+      db.environments = db.environments.map((item) => {
         return {
           ...item,
           isActive: item.id === replacementId,
@@ -499,82 +461,82 @@ export class BroverStore {
     }
 
     await this.writeDB(db)
-    return this.listScopedTargets(db, target.spaceId).map((item) => this.toPublicTarget(item))
+    return db.environments.map((item) => this.toPublicEnvironment(item))
   }
 
-  async reorderTargets(payload: { orderedTargetIds: string[]; spaceId?: string }): Promise<EnvTarget[]> {
+  async reorderEnvironments(payload: { orderedEnvironmentIds: string[] }): Promise<Environment[]> {
     const db = await this.readDB()
-    const scopedTargets = this.listScopedTargets(db, payload.spaceId)
-    const idSet = new Set(scopedTargets.map((item) => item.id))
-    const nextOrder = payload.orderedTargetIds.filter((id) => idSet.has(id))
-    const missing = scopedTargets.map((item) => item.id).filter((id) => !nextOrder.includes(id))
+    const idSet = new Set(db.environments.map((item) => item.id))
+    const nextOrder = payload.orderedEnvironmentIds.filter((id) => idSet.has(id))
+    const missing = db.environments.map((item) => item.id).filter((id) => !nextOrder.includes(id))
     const finalOrder = [...nextOrder, ...missing]
     const rank = new Map(finalOrder.map((id, index) => [id, index]))
 
-    db.targets = [
-      ...db.targets.filter((item) => item.spaceId !== payload.spaceId),
-      ...scopedTargets.sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0)),
-    ]
+    db.environments = [...db.environments].sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0))
 
     await this.writeDB(db)
-    return this.listScopedTargets(db, payload.spaceId).map((item) => this.toPublicTarget(item))
+    return db.environments.map((item) => this.toPublicEnvironment(item))
   }
 
-  async renameTarget(payload: { targetId: string; name: string }): Promise<EnvTarget[]> {
+  async renameEnvironment(payload: { environmentId: string; name: string }): Promise<Environment[]> {
     const db = await this.readDB()
-    const target = db.targets.find((item) => item.id === payload.targetId)
-    if (!target) throw new Error('Target not found')
+    const environment = db.environments.find((item) => item.id === payload.environmentId)
+    if (!environment) throw new Error('Environment not found')
 
     const name = payload.name.trim()
-    if (!name) throw new Error('Target name required')
+    if (!name) throw new Error('Environment name required')
 
-    const duplicate = this.listScopedTargets(db, target.spaceId).some(
-      (item) => item.id !== payload.targetId && item.name.toLowerCase() === name.toLowerCase()
+    const duplicate = db.environments.some(
+      (item) => item.id !== payload.environmentId && item.name.toLowerCase() === name.toLowerCase()
     )
-    if (duplicate) {
-      throw new Error(target.spaceId ? 'Target name already exists in this space' : 'Target name already exists')
-    }
+    if (duplicate) throw new Error('Environment name already exists')
 
-    db.targets = db.targets.map((item) =>
-      item.id === payload.targetId
+    db.environments = db.environments.map((item) =>
+      item.id === payload.environmentId
         ? { ...item, name, updatedAt: new Date().toISOString() }
         : item
     )
     await this.writeDB(db)
-    return this.listScopedTargets(db, target.spaceId).map((item) => this.toPublicTarget(item))
+    return db.environments.map((item) => this.toPublicEnvironment(item))
   }
 
-  async setTargetColor(payload: { targetId: string; color: string }): Promise<EnvTarget[]> {
+  async setEnvironmentColor(payload: { environmentId: string; color: string }): Promise<Environment[]> {
     const db = await this.readDB()
-    const target = db.targets.find((item) => item.id === payload.targetId)
-    if (!target) throw new Error('Target not found')
+    const environment = db.environments.find((item) => item.id === payload.environmentId)
+    if (!environment) throw new Error('Environment not found')
 
-    db.targets = db.targets.map((item) =>
-      item.id === payload.targetId
+    db.environments = db.environments.map((item) =>
+      item.id === payload.environmentId
         ? { ...item, color: payload.color, updatedAt: new Date().toISOString() }
         : item
     )
     await this.writeDB(db)
-    return this.listScopedTargets(db, target.spaceId).map((item) => this.toPublicTarget(item))
+    return db.environments.map((item) => this.toPublicEnvironment(item))
   }
 
-  async setActiveTarget(payload: { targetId: string; spaceId?: string }): Promise<EnvTarget[]> {
+  async setActiveEnvironment(payload: { environmentId: string }): Promise<Environment[]> {
     const db = await this.readDB()
-    const scopeId = payload.spaceId ?? db.targets.find((target) => target.id === payload.targetId)?.spaceId
-    db.targets = db.targets.map((target) => {
-      if (target.spaceId !== scopeId) {
-        return target
-      }
-
+    db.environments = db.environments.map((environment) => {
       return {
-        ...target,
-        isActive: target.id === payload.targetId,
+        ...environment,
+        isActive: environment.id === payload.environmentId,
         updatedAt: new Date().toISOString(),
       }
     })
     await this.writeDB(db)
-    return this.listScopedTargets(db, scopeId).map((target) => this.toPublicTarget(target))
+    return db.environments.map((environment) => this.toPublicEnvironment(environment))
   }
+
+  // Temporary wrappers while renderer/main migrate.
+  async getTiedTargets(): Promise<boolean> { return this.getSharedSecretNames() }
+  async setTiedTargets(tiedTargets: boolean): Promise<boolean> { return this.setSharedSecretNames(tiedTargets) }
+  async listTargets(): Promise<Environment[]> { return this.listEnvironments() }
+  async createTarget(payload: { name: string }): Promise<Environment[]> { return this.createEnvironment(payload) }
+  async deleteTarget(payload: { targetId: string }): Promise<Environment[]> { return this.deleteEnvironment({ environmentId: payload.targetId }) }
+  async reorderTargets(payload: { orderedTargetIds: string[] }): Promise<Environment[]> { return this.reorderEnvironments({ orderedEnvironmentIds: payload.orderedTargetIds }) }
+  async renameTarget(payload: { targetId: string; name: string }): Promise<Environment[]> { return this.renameEnvironment({ environmentId: payload.targetId, name: payload.name }) }
+  async setTargetColor(payload: { targetId: string; color: string }): Promise<Environment[]> { return this.setEnvironmentColor({ environmentId: payload.targetId, color: payload.color }) }
+  async setActiveTarget(payload: { targetId: string }): Promise<Environment[]> { return this.setActiveEnvironment({ environmentId: payload.targetId }) }
 
   private async readTextFile(path: string): Promise<string> {
     try {
