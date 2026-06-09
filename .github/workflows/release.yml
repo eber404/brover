@@ -135,6 +135,7 @@ jobs:
           x64_sha=$(shasum -a 256 "$x64_asset" | awk '{print $1}')
 
           gh repo clone "$HOMEBREW_TAP_REPO" tap
+          git -C tap remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${HOMEBREW_TAP_REPO}.git"
           cat > tap/Casks/brover.rb <<EOF
           cask "brover" do
             arch arm: "arm64", intel: "x64"
