@@ -5,10 +5,6 @@
 
 Brover is desktop app for organizing local secrets securely across multiple contexts, reducing setup friction and making everyday environment management simpler.
 
-Stack: **Electron + React + TypeScript + TailwindCSS**.
-
----
-
 ## Features
 
 - spaces + targets workflow (dev/qa/prod/custom);
@@ -17,8 +13,6 @@ Stack: **Electron + React + TypeScript + TailwindCSS**.
 - local JSON persistence for non-sensitive metadata only;
 - dotfile-backed spaces created from onboarding scan or picker;
 - launch terminal sessions ephemerally from Keychain-backed target envs without editing dotfiles.
-
----
 
 ## First-Run Onboarding
 
@@ -39,8 +33,6 @@ Outside retroactive onboarding import, brover does not rewrite dotfiles during n
 Onboarding runs once per user. Completion timestamp persists in local config metadata.
 
 Duplicate env names across different source files remain separate because onboarding creates one space per file.
-
----
 
 ## Spaces and targets
 
@@ -63,8 +55,6 @@ Each space has a `Tied targets` toggle (`tiedSecrets`):
 
 Values remain target-scoped in both modes.
 
----
-
 ## Security model
 
 - Secret values are never stored in plaintext JSON.
@@ -78,8 +68,6 @@ Env name validation:
 ```regex
 ^[A-Za-z_][A-Za-z0-9_]*$
 ```
-
----
 
 ## Project structure
 
@@ -97,8 +85,6 @@ brover/
   AGENTS.md
   README.md
 ```
-
----
 
 ## Run
 
@@ -127,8 +113,6 @@ npm run dist:mac:x64
 npm run dist:mac:arm64
 ```
 
----
-
 ## Test
 
 Typecheck:
@@ -151,8 +135,6 @@ npm run test:e2e
 
 E2E uses isolated temp DB paths (`BROVER_DB_PATH`) and cleans artifacts after each test.
 
----
-
 ## Release
 
 - push tag in format `v*` such as `v0.1.0`;
@@ -162,8 +144,6 @@ E2E uses isolated temp DB paths (`BROVER_DB_PATH`) and cleans artifacts after ea
 - workflow updates cask in `https://github.com/eber404/homebrew-brover`;
 - repo secrets required in private app repo: `BROVER_RELEASES_TOKEN`, `HOMEBREW_TAP_TOKEN`;
 - current releases are unsigned and not notarized, so macOS may warn on first open until Apple signing is added.
-
----
 
 ## Unsigned Test Builds
 
@@ -180,8 +160,6 @@ Why this is needed:
 - macOS adds a quarantine flag to apps downloaded from the internet;
 - because Brover is not signed and notarized yet, Gatekeeper may block it and show a damaged-app warning;
 - removing that quarantine flag lets you open the test build manually on a machine where you trust the app source.
-
----
 
 ## Maintenance rule
 
