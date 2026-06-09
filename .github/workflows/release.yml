@@ -129,10 +129,8 @@ jobs:
           GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           set -euo pipefail
-          arm64_asset=$(echo artifacts/Brover-arm64/*.dmg)
-          x64_asset=$(echo artifacts/Brover-x64/*.dmg)
-          arm64_sha=$(shasum -a 256 "$arm64_asset" | awk '{print $1}')
-          x64_sha=$(shasum -a 256 "$x64_asset" | awk '{print $1}')
+          arm64_sha=$(gh release view "$GITHUB_REF_NAME" -R "$PUBLIC_RELEASE_REPO" --json assets --jq '.assets[] | select(.name == "Brover-'"${GITHUB_REF_NAME#v}"'-arm64.dmg") | .digest' | sed 's/^sha256://')
+          x64_sha=$(gh release view "$GITHUB_REF_NAME" -R "$PUBLIC_RELEASE_REPO" --json assets --jq '.assets[] | select(.name == "Brover-'"${GITHUB_REF_NAME#v}"'-x64.dmg") | .digest' | sed 's/^sha256://')
 
           gh repo clone "$HOMEBREW_TAP_REPO" tap
           git -C tap remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${HOMEBREW_TAP_REPO}.git"

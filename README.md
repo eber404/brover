@@ -165,6 +165,24 @@ E2E uses isolated temp DB paths (`BROVER_DB_PATH`) and cleans artifacts after ea
 
 ---
 
+## Unsigned Test Builds
+
+Current DMG releases are for local testing and are not signed or notarized yet.
+
+After dragging `Brover.app` into `/Applications`, run:
+
+```sh
+xattr -dr com.apple.quarantine "/Applications/Brover.app"
+```
+
+Why this is needed:
+
+- macOS adds a quarantine flag to apps downloaded from the internet;
+- because Brover is not signed and notarized yet, Gatekeeper may block it and show a damaged-app warning;
+- removing that quarantine flag lets you open the test build manually on a machine where you trust the app source.
+
+---
+
 ## Maintenance rule
 
 When architecture/scope changes, update both `AGENTS.md` and `README.md` in the same change set.
