@@ -1,4 +1,4 @@
-generatedAt: "2026-06-09T19:53:18.722Z"
+generatedAt: "2026-06-09T19:56:30.403Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 45
@@ -261,9 +261,9 @@ files[45]:
         async: true
         params[2]{name,type}:
           store,BroverStore
-          scanResult,ScanResult
+          _scanResult,ScanResult
         returnType: Promise<OnboardingSummary>
-        signature: "async runFreshStartImport(store: BroverStore, scanResult: ScanResult): Promise<OnboardingSummary>"
+        signature: "async runFreshStartImport(store: BroverStore, _scanResult: ScanResult): Promise<OnboardingSummary>"
       - name: runRetroactiveImport
         exported: true
         defaultExport: false

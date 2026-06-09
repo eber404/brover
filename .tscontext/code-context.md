@@ -1,6 +1,6 @@
 # Code Context Summary
 
-Generated: 2026-06-09T19:53:18.722Z
+Generated: 2026-06-09T19:56:30.403Z
 Files: 45
 
 ## `playwright.config.ts`
@@ -65,7 +65,7 @@ Exports: `runFreshStartImport` (FunctionDeclaration), `runRetroactiveImport` (Fu
 
 Functions:
 - `async createEnvironmentForFile(store: BroverStore, filePath: string): Promise<string>`
-- `async runFreshStartImport(store: BroverStore, scanResult: ScanResult): Promise<OnboardingSummary>`
+- `async runFreshStartImport(store: BroverStore, _scanResult: ScanResult): Promise<OnboardingSummary>`
 - `async runRetroactiveImport(store: BroverStore, scanResult: ScanResult, selection: RetroactiveSelection): Promise<OnboardingSummary>`
 
 ## `src/main/onboardingScanner.ts`

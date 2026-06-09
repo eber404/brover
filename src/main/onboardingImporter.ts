@@ -28,19 +28,18 @@ async function createEnvironmentForFile(store: BroverStore, filePath: string): P
 
 export async function runFreshStartImport(
   store: BroverStore,
-  scanResult: ScanResult,
+  _scanResult: ScanResult,
 ): Promise<OnboardingSummary> {
   const status = await store.getOnboardingStatus()
   if (status.completedAt) {
     throw new Error('Onboarding already completed')
   }
 
-  const createdEnvironmentIds: string[] = []
-
   try {
-    for (const file of scanResult.files) {
-      if (file.variables.length === 0) continue
-      createdEnvironmentIds.push(await createEnvironmentForFile(store, file.filePath))
+    const environments = await store.listEnvironments()
+    const hasDefault = environments.some((env) => env.name === 'default')
+    if (!hasDefault) {
+      await store.createEnvironment({ name: 'default' })
     }
 
     return {
@@ -50,13 +49,6 @@ export async function runFreshStartImport(
       ignoredWithReason: [],
     }
   } catch (err) {
-    for (const environmentId of createdEnvironmentIds) {
-      try {
-        await store.deleteEnvironment({ environmentId })
-      } catch {
-        // Best-effort cleanup
-      }
-    }
     throw err
   }
 }

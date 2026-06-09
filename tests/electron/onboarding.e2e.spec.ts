@@ -100,7 +100,7 @@ test.describe('Onboarding First-Run Flow', () => {
     expect(importedEnv?.name).toBe('API_KEY')
   })
 
-  test('fresh start creates one environment per dotfile without env import', async () => {
+  test('fresh start creates a single default environment', async () => {
     const window = await launchApp()
 
     await window.getByText('Start fresh →').click()
@@ -114,8 +114,8 @@ test.describe('Onboarding First-Run Flow', () => {
     await expect(searchInput).toBeVisible({ timeout: 10000 })
 
     const environments = await window.evaluate(() => window.brover.listEnvironments())
-    expect(environments).toHaveLength(2)
-    expect(environments.map((environment) => environment.name).sort()).toEqual(['.bashrc', '.zshrc'])
+    expect(environments).toHaveLength(1)
+    expect(environments[0]?.name).toBe('default')
   })
 
   test('second launch skips onboarding after completion', async () => {
