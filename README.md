@@ -46,7 +46,14 @@ Brover is macOS desktop app for managing local environment secrets across enviro
 Install via Homebrew:
 
 ```sh
-brew install --cask eber404/brover/brover
+brew tap eber404/brover
+brew install brover
+```
+
+Or in one step:
+
+```sh
+brew install eber404/brover/brover
 ```
 
 Current releases are unsigned and not notarized. For test installs, after dragging `Brover.app` into `/Applications`, run:
