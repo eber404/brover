@@ -129,12 +129,12 @@ export const EnvironmentsSidebar = memo(function EnvironmentsSidebar(props: Envi
 
       <div className="mt-2 flex items-center justify-between rounded border border-edge/60 bg-surface-base px-2 py-1.5">
         <div className="group/tt relative">
-          <span className="text-[11px] text-text-base">Shared secret names</span>
+          <span className="text-[11px] text-text-base">Matching secret names</span>
           <div className="pointer-events-none absolute left-0 top-[calc(100%+6px)] z-30 hidden w-56 rounded-md border border-edge bg-surface-overlay px-2 py-1.5 text-[11px] text-text-base shadow-lg group-hover/tt:block">
-            {t('environments.sharedSecretNamesTooltip')}
+            {t('environments.matchingSecretNamesTooltip')}
           </div>
         </div>
-        <Switch checked={sharedSecretNames} onCheckedChange={onToggleSharedSecretNames} label="Shared secret names" />
+        <Switch checked={sharedSecretNames} onCheckedChange={onToggleSharedSecretNames} label="Matching secret names" />
       </div>
 
       <div data-testid="environments-list" className="mt-3 flex-1 overflow-y-auto overflow-x-hidden">

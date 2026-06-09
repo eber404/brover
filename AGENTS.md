@@ -13,7 +13,7 @@ Brover is an Electron desktop app for local environment secret management.
 1. Never persist secret values in JSON or logs.
 2. Keep auth gates for reveal/copy(hidden)/update/delete.
 3. Use environment-scoped value and enabled state.
-4. Respect `Shared secret names` behavior.
+4. Respect `Matching secret names` behavior.
 5. Launch feature: creates `.command` file with env vars, opens terminal app (Warp/iTerm2/Terminal).
 6. Normal app usage must not rewrite dotfiles; only retroactive onboarding import removes selected plaintext entries from source files.
 7. Prefer early return and avoid nested conditionals/ternaries.
@@ -169,9 +169,9 @@ For broad/multi-file discovery, consult the auto-generated symbol map:
 - Environments are reorderable and deletable.
 - Environment deletion removes its environment-scoped secrets.
 
-### Shared secret names
+### Matching secret names
 
-- Global toggle label: `Shared secret names`.
+- Global toggle label: `Matching secret names`.
 - Default: `false`.
 - When `true`:
   - new env names sync across all environments;

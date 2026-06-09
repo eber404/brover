@@ -42,11 +42,11 @@ const defaultProps = {
 describe('EnvironmentsSidebar', () => {
   afterEach(cleanup)
 
-  it('renders environments column with shared secret names control', () => {
+  it('renders environments column with matching secret names control', () => {
     render(<EnvironmentsSidebar {...defaultProps} />)
 
     expect(screen.getByText('ENVIRONMENTS')).toBeTruthy()
-    expect(screen.getByText('Shared secret names')).toBeTruthy()
+    expect(screen.getByText('Matching secret names')).toBeTruthy()
     expect(screen.getByTestId('environment-row-environment-1')).toBeTruthy()
     expect(screen.getByText('Brover · Local secrets manager')).toBeTruthy()
     expect(screen.getByTestId('environments-list').className).toContain('flex-1')

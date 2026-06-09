@@ -94,7 +94,7 @@
     }
   },
   "environments": {
-    "sharedSecretNamesTooltip": "Manter nomes de segredos sincronizados em todos os environments. Valores permanecem especificos de cada environment."
+    "matchingSecretNamesTooltip": "Manter nomes de segredos sincronizados em todos os environments. Valores permanecem especificos de cada environment."
   },
   "launch": {
     "launch": "Launch",
