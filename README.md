@@ -15,10 +15,6 @@ Brover is macOS desktop app for managing local environment secrets across enviro
 
 ![Brover main UI](docs/screenshots/main-ui.png)
 
-### First-run onboarding
-
-![Brover onboarding](docs/screenshots/onboarding.png)
-
 ## Features
 
 - environments workflow for local setups;
