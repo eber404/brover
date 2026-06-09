@@ -128,10 +128,10 @@ npm run test:e2e
 ## Distribution
 
 - Source repo: private `eber404/brover`.
-- Public binary repo + Homebrew cask: `eber404/brover-releases`.
+- Public binary repo + Homebrew tap: `eber404/homebrew-brover`.
 - Tagging `v*` in private repo builds macOS `arm64` and `x64` DMGs.
-- Workflow publishes internal release in private repo, pushes DMGs to `brover-releases`, then updates `brover-releases/Casks/brover.rb` with new SHA256s.
-- `brew install eber404/brover-releases/brover` installs from the same repo.
+- Workflow publishes internal release in private repo, pushes DMGs to `homebrew-brover`, then updates `Casks/brover.rb` with new SHA256s.
+- `brew tap eber404/brover && brew install brover` installs from the same repo.
 - Required private repo secret:
   - `BROVER_RELEASES_TOKEN`
 

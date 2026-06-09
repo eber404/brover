@@ -9,7 +9,7 @@ on:
       - 'v*'
 
 env:
-  PUBLIC_RELEASE_REPO: eber404/brover-releases
+  PUBLIC_RELEASE_REPO: eber404/homebrew-brover
 
 jobs:
   build-macos:
@@ -130,10 +130,10 @@ jobs:
             sha256 arm: "$arm64_sha",
                    intel: "$x64_sha"
 
-            url "https://github.com/eber404/brover-releases/releases/download/v#{version}/Brover-#{version}-#{arch}.dmg"
+            url "https://github.com/eber404/homebrew-brover/releases/download/v#{version}/Brover-#{version}-#{arch}.dmg"
             name "Brover"
             desc "Local environment secret manager for macOS"
-            homepage "https://github.com/eber404/brover-releases"
+            homepage "https://github.com/eber404/homebrew-brover"
 
             app "Brover.app"
 
