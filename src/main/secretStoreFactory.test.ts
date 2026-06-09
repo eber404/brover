@@ -9,6 +9,12 @@ describe('createSecretStore', () => {
     expect(store).toBeInstanceOf(MemorySecretStore)
   })
 
+  it('uses in-memory secrets for e2e on darwin', () => {
+    const store = createSecretStore({ platform: 'darwin', isE2E: true })
+
+    expect(store).toBeInstanceOf(MemorySecretStore)
+  })
+
   it('uses unsupported store on non-darwin platforms outside e2e', () => {
     const store = createSecretStore({ platform: 'linux', isE2E: false })
 

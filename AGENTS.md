@@ -125,6 +125,33 @@ npm run test:e2e
 
 ---
 
+## Distribution
+
+- Source repo: private `eber404/brover`.
+- Public binary repo: `eber404/brover-releases`.
+- Homebrew tap: `eber404/homebrew-brover`.
+- Tagging `v*` in private repo builds macOS `arm64` and `x64` DMGs.
+- Workflow publishes internal release in private repo and public binary release in `brover-releases`.
+- Workflow updates Homebrew cask in `homebrew-brover`.
+- Required private repo secrets:
+  - `BROVER_RELEASES_TOKEN`
+  - `HOMEBREW_TAP_TOKEN`
+
+Current release state:
+
+- DMGs are unsigned and not notarized.
+- For test installs, after copying `Brover.app` into `/Applications`, run:
+
+```sh
+xattr -dr com.apple.quarantine "/Applications/Brover.app"
+```
+
+Reason:
+
+- macOS quarantine + Gatekeeper can block unsigned internet-downloaded apps and show a damaged-app warning.
+
+---
+
 ## Code context
 
 For broad/multi-file discovery, consult the auto-generated symbol map:
