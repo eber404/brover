@@ -3,6 +3,7 @@ import { Search } from 'lucide-react'
 import type { EnvMetadata, Environment } from '../../shared/models'
 import { ConfirmDialog } from './components/ui/confirmDialog'
 import { ToastProvider } from './components/ui/toaster'
+import HideSplash from './components/HideSplash'
 import { I18nProvider, useI18n } from './i18n'
 import OnboardingFlow from './features/onboarding/OnboardingFlow'
 import { useSecretsPanel } from './features/secrets/SecretsPanel'
@@ -247,7 +248,9 @@ export default function App() {
     return (
       <I18nProvider>
         <ToastProvider>
-          <OnboardingFlow onComplete={() => setOnboardingStatus('done')} />
+          <HideSplash>
+            <OnboardingFlow onComplete={() => setOnboardingStatus('done')} />
+          </HideSplash>
         </ToastProvider>
       </I18nProvider>
     )
@@ -256,7 +259,9 @@ export default function App() {
   return (
     <I18nProvider>
       <ToastProvider>
-        <AppShell />
+        <HideSplash>
+          <AppShell />
+        </HideSplash>
       </ToastProvider>
     </I18nProvider>
   )

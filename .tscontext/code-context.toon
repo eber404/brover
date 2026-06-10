@@ -1,8 +1,8 @@
-generatedAt: "2026-06-09T20:05:49.605Z"
+generatedAt: "2026-06-10T00:30:28.135Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
-fileCount: 45
-files[45]:
+fileCount: 46
+files[46]:
   - path: playwright.config.ts
     imports[1]:
       - moduleSpecifier: @playwright/test
@@ -828,7 +828,7 @@ files[45]:
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/renderer/src/App.tsx
-    imports[12]:
+    imports[13]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
@@ -849,6 +849,10 @@ files[45]:
         defaultImport: null
         namespaceImport: null
         namedImports[1]: ToastProvider
+      - moduleSpecifier: ./components/HideSplash
+        defaultImport: HideSplash
+        namespaceImport: null
+        namedImports[0]:
       - moduleSpecifier: ./i18n
         defaultImport: null
         namespaceImport: null
@@ -897,6 +901,29 @@ files[45]:
     reactComponents[2]{name,exported,defaultExport,kind,propsName,propsType}:
       App,true,true,function,null,null
       AppShell,false,false,function,null,null
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/renderer/src/components/HideSplash.tsx
+    imports[1]:
+      - moduleSpecifier: react
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useEffect
+    exports[1]{name,kind}:
+      default,FunctionDeclaration
+    functions[1]:
+      - name: HideSplash
+        exported: true
+        defaultExport: true
+        async: false
+        params[1]{name,type}:
+          "{ children }","{ children: React.ReactNode }"
+        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "HideSplash({ children }: { children: React.ReactNode }): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+    reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
+      HideSplash,true,true,function,"{ children }","{ children: React.ReactNode }"
     types[0]:
     classes[0]:
     exportedConstants[0]:

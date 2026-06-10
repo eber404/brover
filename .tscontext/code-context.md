@@ -1,7 +1,7 @@
 # Code Context Summary
 
-Generated: 2026-06-09T20:05:49.605Z
-Files: 45
+Generated: 2026-06-10T00:30:28.135Z
+Files: 46
 
 ## `playwright.config.ts`
 
@@ -166,7 +166,7 @@ Classes:
 
 ## `src/renderer/src/App.tsx`
 
-Imports: `react`, `lucide-react`, `../../shared/models`, `./components/ui/confirmDialog`, `./components/ui/toaster`, `./i18n`, `./features/onboarding/OnboardingFlow`, `./features/secrets/SecretsPanel`, `./features/environments/EnvironmentsSidebar`, `./features/secrets/SecretsCenterPanel`, `./features/secrets/SecretsDetailsPanel`, `./features/terminals/TerminalSidebar`
+Imports: `react`, `lucide-react`, `../../shared/models`, `./components/ui/confirmDialog`, `./components/ui/toaster`, `./components/HideSplash`, `./i18n`, `./features/onboarding/OnboardingFlow`, `./features/secrets/SecretsPanel`, `./features/environments/EnvironmentsSidebar`, `./features/secrets/SecretsCenterPanel`, `./features/secrets/SecretsDetailsPanel`, `./features/terminals/TerminalSidebar`
 
 Exports: `default` (FunctionDeclaration)
 
@@ -177,6 +177,18 @@ Functions:
 React Components:
 - `App` [function] props: none
 - `AppShell` [function] props: none
+
+## `src/renderer/src/components/HideSplash.tsx`
+
+Imports: `react`
+
+Exports: `default` (FunctionDeclaration)
+
+Functions:
+- `HideSplash({ children }: { children: React.ReactNode }): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+
+React Components:
+- `HideSplash` [function] props: { children }: { children: React.ReactNode }
 
 ## `src/renderer/src/components/ui/button.tsx`
 
