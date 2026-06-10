@@ -143,7 +143,7 @@ export const TerminalSidebar = memo(function TerminalSidebar(
     if (sourceIndex === -1 || targetIndex === -1) return
 
     ids.splice(sourceIndex, 1)
-    ids.splice(ids.indexOf(targetId), 0, sourceId)
+    ids.splice(ids.indexOf(targetId) + (sourceIndex < targetIndex ? 1 : 0), 0, sourceId)
 
     const nextPreferences = { ...launchPreferences, favoriteTerminalIds: ids }
     setLaunchPreferences(nextPreferences)
