@@ -207,13 +207,10 @@ export const TerminalSidebar = memo(function TerminalSidebar(
             onDrop={(event) => handleDrop(terminal.id, event)}
             onContextMenu={(event) => {
               event.preventDefault()
-              const aside = asideRef.current
-              if (!aside) return
-              const asideRect = aside.getBoundingClientRect()
               setContextMenu({
                 terminalId: terminal.id,
-                x: Math.max(8, event.clientX - asideRect.left),
-                y: Math.max(8, event.clientY - asideRect.top),
+                x: Math.max(8, event.clientX),
+                y: Math.max(8, event.clientY),
               })
             }}
             title={terminal.name}
@@ -247,14 +244,14 @@ export const TerminalSidebar = memo(function TerminalSidebar(
       </div>
 
       {contextMenu && (
-        <div className="absolute inset-0 z-30">
+        <div className="fixed inset-0 z-30">
           <button
             type="button"
             className="absolute inset-0 cursor-pointer"
             onClick={() => setContextMenu(null)}
           />
           <div
-            className="absolute z-40 flex min-w-24 flex-col rounded-lg border border-edge bg-surface-overlay p-1 shadow-xl"
+            className="fixed z-40 flex min-w-24 flex-col rounded-lg border border-edge bg-surface-overlay p-1 shadow-xl"
             style={{ left: contextMenu.x, top: contextMenu.y }}
           >
             <button
