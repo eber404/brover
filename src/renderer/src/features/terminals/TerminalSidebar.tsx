@@ -32,6 +32,7 @@ export const TerminalSidebar = memo(function TerminalSidebar(
     x: number
     y: number
   } | null>(null)
+  const [draggingTerminalId, setDraggingTerminalId] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -129,6 +130,26 @@ export const TerminalSidebar = memo(function TerminalSidebar(
     setContextMenu(null)
   }
 
+  function handleDrop(targetId: string, event: React.DragEvent) {
+    event.preventDefault()
+    const sourceId =
+      event.dataTransfer.getData('text/plain') || draggingTerminalId
+    setDraggingTerminalId(null)
+    if (!sourceId || sourceId === targetId) return
+
+    const ids = [...launchPreferences.favoriteTerminalIds]
+    const sourceIndex = ids.indexOf(sourceId)
+    const targetIndex = ids.indexOf(targetId)
+    if (sourceIndex === -1 || targetIndex === -1) return
+
+    ids.splice(sourceIndex, 1)
+    ids.splice(ids.indexOf(targetId), 0, sourceId)
+
+    const nextPreferences = { ...launchPreferences, favoriteTerminalIds: ids }
+    setLaunchPreferences(nextPreferences)
+    saveLaunchPreferences(nextPreferences)
+  }
+
   async function pickAndAddTerminal() {
     const result = await window.brover.launch.pickTerminalApp()
     if (result.canceled) return
@@ -167,9 +188,23 @@ export const TerminalSidebar = memo(function TerminalSidebar(
             key={terminal.id}
             type="button"
             data-testid={`terminal-launch-${terminal.id}`}
-            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-edge bg-[rgba(15,23,42,0.65)] transition hover:border-slate-400 hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={!selectedEnvironmentId}
-            onClick={() => void launchTerminal(terminal.id)}
+            draggable={true}
+            className={`flex h-11 w-11 items-center justify-center rounded-xl border transition ${!selectedEnvironmentId ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} border-edge bg-[rgba(15,23,42,0.65)] hover:border-slate-400 hover:bg-surface-hover ${draggingTerminalId === terminal.id ? 'opacity-40' : ''}`}
+            onClick={() => {
+              if (!selectedEnvironmentId) return
+              void launchTerminal(terminal.id)
+            }}
+            onDragStart={(event) => {
+              setDraggingTerminalId(terminal.id)
+              event.dataTransfer.effectAllowed = 'move'
+              event.dataTransfer.setData('text/plain', terminal.id)
+            }}
+            onDragEnd={() => setDraggingTerminalId(null)}
+            onDragOver={(event) => {
+              event.preventDefault()
+              event.dataTransfer.dropEffect = 'move'
+            }}
+            onDrop={(event) => handleDrop(terminal.id, event)}
             onContextMenu={(event) => {
               event.preventDefault()
               const aside = asideRef.current

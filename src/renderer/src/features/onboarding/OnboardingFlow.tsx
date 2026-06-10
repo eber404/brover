@@ -164,8 +164,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   return (
     <>
-      <div className="absolute inset-x-0 top-0 z-50 h-11 w-20" style={dragStyle} />
       <div className="absolute inset-x-0 top-0 z-50 h-4" style={dragStyle} />
+      <div className="absolute left-20 right-0 top-0 z-50 h-7" style={dragStyle} />
       {content}
     </>
   )
