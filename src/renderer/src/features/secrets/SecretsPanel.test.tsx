@@ -23,6 +23,7 @@ function SecretsTestWrapper(props: Partial<Parameters<typeof useSecretsPanel>[0]
     envs: props.envs ?? [],
     filteredEnvs: props.filteredEnvs ?? [],
     selectedEnvId: props.selectedEnvId ?? '',
+    searchQuery: props.searchQuery,
     setSelectedEnvId: props.setSelectedEnvId ?? (() => {}),
     setEnvs: props.setEnvs ?? (() => {}),
     setRevealValue: props.setRevealValue ?? (() => {}),
@@ -44,6 +45,9 @@ function SecretsTestWrapper(props: Partial<Parameters<typeof useSecretsPanel>[0]
 
 describe('SecretsPanel', () => {
   afterEach(cleanup)
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
   function installStorage() {
     const storage = new Map<string, string>()
@@ -227,6 +231,40 @@ describe('SecretsPanel', () => {
     })
   })
 
+  it('clears revealed value after auth expiration', async () => {
+    vi.useFakeTimers()
+    const revealEnv = vi.fn().mockResolvedValue({
+      ok: true,
+      value: 'secret123',
+      expiresAt: Date.now() + 5000,
+    })
+    const setRevealValue = vi.fn()
+    // @ts-expect-error mock
+    window.brover = { revealEnv, secretExists: vi.fn().mockResolvedValue(true) }
+
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper
+            envs={[mockEnv]}
+            filteredEnvs={[mockEnv]}
+            selectedEnvId={mockEnv.id}
+            setRevealValue={setRevealValue}
+          />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('reveal-btn'))
+
+    await Promise.resolve()
+    expect(setRevealValue).toHaveBeenCalledWith('secret123')
+
+    await vi.advanceTimersByTimeAsync(5000)
+
+    expect(setRevealValue).toHaveBeenLastCalledWith('')
+  })
+
   it('shows toast when copyEnv fails', async () => {
     const copyEnv = vi.fn().mockResolvedValue({ ok: false, error: 'Failed to copy' })
     // @ts-expect-error mock
@@ -248,6 +286,35 @@ describe('SecretsPanel', () => {
 
     await waitFor(() => {
       expect(copyEnv).toHaveBeenCalled()
+    })
+  })
+
+  it('copies revealed secret value to clipboard on success', async () => {
+    const copyEnv = vi.fn().mockResolvedValue({ ok: true, value: 'secret-copy' })
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    })
+    // @ts-expect-error mock
+    window.brover = { copyEnv, secretExists: vi.fn().mockResolvedValue(true) }
+
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper
+            envs={[mockEnv]}
+            filteredEnvs={[mockEnv]}
+            selectedEnvId={mockEnv.id}
+          />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('copy-btn'))
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith('secret-copy')
     })
   })
 
@@ -337,6 +404,39 @@ describe('SecretsPanel', () => {
     })
 
     expect(screen.queryByText('Update "API_KEY"?')).toBeNull()
+  })
+
+  it('normalizes new secret name input', async () => {
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Add Secret/i }))
+    fireEvent.change(screen.getByTestId('add-secret-name'), {
+      target: { value: 'open ai-key name' },
+    })
+
+    expect((screen.getByTestId('add-secret-name') as HTMLInputElement).value).toBe('OPEN_AI_KEY_NAME')
+  })
+
+  it('shows no results empty state when search query has no matches', () => {
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper
+            envs={[mockEnv]}
+            filteredEnvs={[]}
+            searchQuery="api"
+          />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    expect(screen.getByText('No secrets match your search')).toBeTruthy()
   })
 
   it('shows toast when deleteEnv fails', async () => {

@@ -104,4 +104,47 @@ describe('terminalIconLoader', () => {
 
     expect(result).toBeUndefined()
   })
+
+  it('falls back to file icon when bundle icon path is missing', async () => {
+    const getFileIcon = vi.fn().mockResolvedValue(makeImage('data:image/png;base64,file-icon'))
+
+    const result = await loadTerminalIconDataUrl('/Applications/Warp.app', {
+      getFileIcon,
+      readBundleIconFileName: vi.fn().mockResolvedValue('AppIcon'),
+      fileExists: vi.fn().mockReturnValue(false),
+      createImageFromPath: vi.fn(),
+      convertIcnsToPng: vi.fn(),
+    })
+
+    expect(result).toBe('data:image/png;base64,file-icon')
+    expect(getFileIcon).toHaveBeenCalledWith('/Applications/Warp.app')
+  })
+
+  it('falls back to file icon when bundle image load throws', async () => {
+    const getFileIcon = vi.fn().mockResolvedValue(makeImage('data:image/png;base64,file-icon'))
+
+    const result = await loadTerminalIconDataUrl('/Applications/Warp.app', {
+      getFileIcon,
+      readBundleIconFileName: vi.fn().mockResolvedValue('AppIcon'),
+      fileExists: vi.fn().mockReturnValue(true),
+      createImageFromPath: vi.fn(() => {
+        throw new Error('bad icns')
+      }),
+      convertIcnsToPng: vi.fn().mockResolvedValue('/tmp/Warp.png'),
+    })
+
+    expect(result).toBe('data:image/png;base64,file-icon')
+  })
+
+  it('returns undefined when file icon lookup throws', async () => {
+    const result = await loadTerminalIconDataUrl('/Applications/Warp.app', {
+      getFileIcon: vi.fn().mockRejectedValue(new Error('icon fail')),
+      readBundleIconFileName: vi.fn().mockResolvedValue(null),
+      fileExists: vi.fn().mockReturnValue(false),
+      createImageFromPath: vi.fn(),
+      convertIcnsToPng: vi.fn(),
+    })
+
+    expect(result).toBeUndefined()
+  })
 })

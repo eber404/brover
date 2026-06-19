@@ -212,4 +212,97 @@ describe('TerminalSidebar', () => {
       expect(toast).toHaveBeenCalledWith('Notes is not a supported terminal.', 'error')
     })
   })
+
+  it('does not launch when no environment is selected', async () => {
+    render(
+      <TerminalSidebar
+        locale="en"
+        onLocaleChange={vi.fn()}
+        selectedEnvironmentId={null}
+      />
+    )
+
+    const launchTerminal = window.brover.launch.terminal as ReturnType<typeof vi.fn>
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-launch-iterm2')).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByTestId('terminal-launch-iterm2'))
+
+    expect(launchTerminal).not.toHaveBeenCalled()
+    expect(screen.getByTestId('terminal-launch-iterm2').className).toContain('cursor-not-allowed')
+  })
+
+  it('ignores canceled picker result', async () => {
+    ;(window.brover.launch.pickTerminalApp as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      canceled: true,
+    })
+
+    render(
+      <TerminalSidebar
+        locale="en"
+        onLocaleChange={vi.fn()}
+        selectedEnvironmentId="environment-1"
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-add-button')).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByTestId('terminal-add-button'))
+
+    await waitFor(() => {
+      expect(window.brover.launch.pickTerminalApp).toHaveBeenCalled()
+    })
+
+    expect(screen.queryByTestId('terminal-launch-terminal')).toBeNull()
+  })
+
+  it('calls locale change handler', async () => {
+    const onLocaleChange = vi.fn()
+    render(
+      <TerminalSidebar
+        locale="en"
+        onLocaleChange={onLocaleChange}
+        selectedEnvironmentId="environment-1"
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-locale-select')).toBeTruthy()
+    })
+
+    fireEvent.change(screen.getByTestId('terminal-locale-select'), {
+      target: { value: 'pt' },
+    })
+
+    expect(onLocaleChange).toHaveBeenCalledWith('pt')
+  })
+
+  it('removing default favorite promotes next favorite in storage', async () => {
+    render(
+      <TerminalSidebar
+        locale="en"
+        onLocaleChange={vi.fn()}
+        selectedEnvironmentId="environment-1"
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-launch-iterm2')).toBeTruthy()
+    })
+
+    fireEvent.contextMenu(screen.getByTestId('terminal-launch-iterm2'), {
+      clientX: 24,
+      clientY: 80,
+    })
+    fireEvent.click(await screen.findByTestId('terminal-remove-iterm2'))
+
+    expect(JSON.parse(window.localStorage.getItem('brover.launch-preferences') ?? '{}')).toEqual({
+      favoriteTerminalIds: ['warp'],
+      defaultTerminalId: 'warp',
+    })
+  })
 })

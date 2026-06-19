@@ -51,6 +51,7 @@ describe('OnboardingFlow', () => {
 
   beforeEach(() => {
     installStorage()
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     window.brover = {
       launch: {
         listTerminals: vi.fn().mockResolvedValue({
@@ -69,6 +70,10 @@ describe('OnboardingFlow', () => {
         getStatus: vi.fn().mockResolvedValue({}),
       },
     } as any
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('shows welcome heading', () => {
@@ -143,5 +148,73 @@ describe('OnboardingFlow', () => {
       expect(window.brover.onboarding.complete).toHaveBeenCalled()
       expect(onComplete).toHaveBeenCalled()
     })
+  })
+
+  it('shows fresh start error, retries scan, and can go back', async () => {
+    const scanDotfiles = vi.fn()
+      .mockRejectedValueOnce(new Error('Scan failed'))
+      .mockResolvedValueOnce(mockScanResult)
+
+    window.brover.onboarding.scanDotfiles = scanDotfiles as any
+
+    render(<OnboardingFlow onComplete={() => {}} />)
+    fireEvent.click(screen.getByText(/onboarding\.mode\.freshStart\.action/i))
+
+    expect(await screen.findByText('Scan failed')).toBeTruthy()
+
+    fireEvent.click(screen.getByText('Retry'))
+    await waitFor(() => {
+      expect(screen.getByText(/onboarding\.terminalPreferences\.title/i)).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'back' }))
+    await waitFor(() => {
+      expect(screen.getByText(/onboarding\.mode\.freshStart\.action/i)).toBeTruthy()
+    })
+  })
+
+  it('returns from retroactive terminal preferences to confirmation', async () => {
+    render(<OnboardingFlow onComplete={() => {}} />)
+    fireEvent.click(screen.getByText(/onboarding\.mode\.retroactive\.action/i))
+    await waitFor(() => {
+      expect(screen.getByText(/onboarding\.review\.title/i)).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByText('API_KEY'))
+    fireEvent.click(screen.getByText(/onboarding\.review\.continue/i))
+    await waitFor(() => {
+      expect(screen.getByText(/onboarding\.confirmation\.title/i)).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByText(/onboarding\.confirmation\.action/i))
+    await waitFor(() => {
+      expect(screen.getByText(/onboarding\.terminalPreferences\.title/i)).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'back' }))
+    await waitFor(() => {
+      expect(screen.getByText(/onboarding\.confirmation\.title/i)).toBeTruthy()
+    })
+  })
+
+  it('does not complete onboarding when fresh start import fails', async () => {
+    const onComplete = vi.fn()
+    window.brover.onboarding.runFreshStart = vi.fn().mockRejectedValue(new Error('Import failed'))
+
+    render(<OnboardingFlow onComplete={onComplete} />)
+    fireEvent.click(screen.getByText(/onboarding\.mode\.freshStart\.action/i))
+    await waitFor(() => {
+      expect(screen.getByText(/onboarding\.terminalPreferences\.title/i)).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /Warp/i }))
+    fireEvent.click(screen.getByText(/onboarding\.terminalPreferences\.continue/i))
+
+    await waitFor(() => {
+      expect(window.brover.onboarding.runFreshStart).toHaveBeenCalled()
+    })
+
+    expect(window.brover.onboarding.complete).not.toHaveBeenCalled()
+    expect(onComplete).not.toHaveBeenCalled()
   })
 })

@@ -1,6 +1,6 @@
 # Code Context Summary
 
-Generated: 2026-06-10T00:55:42.305Z
+Generated: 2026-06-19T01:13:08.284Z
 Files: 46
 
 ## `playwright.config.ts`
@@ -47,6 +47,8 @@ Functions:
 ## `src/main/index.ts`
 
 Imports: `electron`, `node:path`, `node:fs`, `./store`, `../shared/models`, `./onboardingScanner`, `./onboardingImporter`, `./secretAuthGate`, `./authSessionCache`, `./authPrompt`, `./terminalLauncher`, `./envMutationFlow`, `./terminalIconLoader`, `./devSession`, `./secretStoreFactory`
+
+Exports: `bootstrap` (FunctionDeclaration)
 
 Functions:
 - `async bootstrap(): Promise<void>`

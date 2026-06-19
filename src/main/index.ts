@@ -41,7 +41,7 @@ function failure(error: unknown): SecretActionResult {
   return { ok: false, error: message }
 }
 
-async function bootstrap() {
+export async function bootstrap() {
   const dbDir = process.env.NODE_ENV === 'development' ? 'brover-dev' : 'brover'
   const dbPath =
     process.env.BROVER_DB_PATH ??
