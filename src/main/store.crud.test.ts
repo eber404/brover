@@ -136,6 +136,15 @@ describe('BroverStore', () => {
       expect(finalTargets.find((target) => target.isActive)?.id).toBe(stagingTarget.id)
     })
 
+    it('setActiveEnvironment throws when environment id does not exist', async () => {
+      await store.createEnvironment({ name: 'default' })
+
+      await expect(store.setActiveEnvironment({ environmentId: 'missing-env' })).rejects.toThrow('Environment not found')
+
+      const finalTargets = await store.listEnvironments()
+      expect(finalTargets.filter((target) => target.isActive)).toHaveLength(1)
+    })
+
     it('reorderEnvironments reorders root-level environments', async () => {
       const defaultTargets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = defaultTargets.find((target) => target.name === 'default')!
@@ -309,6 +318,23 @@ describe('BroverStore', () => {
       const targets = await freshStore.listEnvironments()
 
       expect(targets).toHaveLength(0)
+    })
+
+    it('readDB normalizes multiple active environments down to one active environment', async () => {
+      await writeFile(dbPath, JSON.stringify({
+        envs: [],
+        environments: [
+          { id: 'env-1', name: 'dev', color: '#111111', isActive: true, updatedAt: '2026-01-01T00:00:00.000Z' },
+          { id: 'env-2', name: 'prod', color: '#222222', isActive: true, updatedAt: '2026-01-01T00:00:00.000Z' },
+        ],
+        sharedSecretNames: false,
+      }))
+
+      const freshStore = new BroverStore(dbPath, new MemorySecretStore())
+      const targets = await freshStore.listEnvironments()
+
+      expect(targets.filter((target) => target.isActive)).toHaveLength(1)
+      expect(targets.find((target) => target.isActive)?.id).toBe('env-1')
     })
   })
 })

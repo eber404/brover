@@ -516,6 +516,9 @@ export class BroverStore {
 
   async setActiveEnvironment(payload: { environmentId: string }): Promise<Environment[]> {
     const db = await this.readDB()
+    const environment = db.environments.find((item) => item.id === payload.environmentId)
+    if (!environment) throw new Error('Environment not found')
+
     db.environments = db.environments.map((environment) => {
       return {
         ...environment,
