@@ -233,7 +233,7 @@ describe('runRetroactiveImport', () => {
 })
 
 describe('runFreshStartImport', () => {
-  it('creates a single default environment', async () => {
+  it('creates a single global environment', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -267,7 +267,7 @@ describe('runFreshStartImport', () => {
 
     const environments = await store.listEnvironments()
     expect(environments).toHaveLength(1)
-    expect(environments[0]?.name).toBe('default')
+    expect(environments[0]?.name).toBe('global')
   })
 
   it('does not import any variable values', async () => {
@@ -292,7 +292,7 @@ describe('runFreshStartImport', () => {
     await runFreshStartImport(store, scanResult)
 
     const environments = await store.listEnvironments()
-    const environment = environments.find((item) => item.name === 'default')!
+    const environment = environments.find((item) => item.name === 'global')!
 
     const apiKey = await store.revealEnv(environment.id, 'API_KEY')
     expect(apiKey).toBeNull()
@@ -360,10 +360,10 @@ describe('runFreshStartImport', () => {
 
     const environments = await store.listEnvironments()
     expect(environments).toHaveLength(1)
-    expect(environments[0]?.name).toBe('default')
+    expect(environments[0]?.name).toBe('global')
   })
 
-  it('creates default env even if no dotfiles have variables', async () => {
+  it('creates global env even if no dotfiles have variables', async () => {
     const root = await tempDir()
     const dbPath = join(root, 'config.json')
     const store = new BroverStore(dbPath, new MemorySecretStore())
@@ -383,7 +383,33 @@ describe('runFreshStartImport', () => {
 
     const environments = await store.listEnvironments()
     expect(environments).toHaveLength(1)
-    expect(environments[0]?.name).toBe('default')
+    expect(environments[0]?.name).toBe('global')
+  })
+
+  it('does not create an environment when one already exists', async () => {
+    const root = await tempDir()
+    const dbPath = join(root, 'config.json')
+    const store = new BroverStore(dbPath, new MemorySecretStore())
+
+    await store.createEnvironment({ name: 'dev' })
+
+    const filePath = join(root, '.env')
+    await writeFile(filePath, 'SECRET=supersecret\n', 'utf8')
+
+    const scanResult: ScanResult = {
+      files: [{
+        filePath,
+        variables: [{ id: 'v1', name: 'SECRET', value: 'supersecret', sourceFile: filePath }],
+      }],
+      warnings: [],
+    }
+
+    const summary = await runFreshStartImport(store, scanResult)
+    expect(summary.importedSensitive).toBe(0)
+
+    const environments = await store.listEnvironments()
+    expect(environments).toHaveLength(1)
+    expect(environments[0]?.name).toBe('dev')
   })
 
   it('throws if onboarding already completed', async () => {
