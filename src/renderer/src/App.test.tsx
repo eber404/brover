@@ -7,6 +7,16 @@ const terminalSidebarProps: Array<any> = []
 const environmentsSidebarProps: Array<any> = []
 const secretsPanelArgs: Array<any> = []
 let secretsPanelState: any = null
+let runConfirmedUpdate: () => Promise<void>
+let runConfirmedDelete: () => Promise<void>
+
+function createDeferred() {
+  let resolve!: () => void
+  const promise = new Promise<void>((complete) => {
+    resolve = complete
+  })
+  return { promise, resolve }
+}
 
 vi.mock('./i18n', () => ({
   I18nProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -21,40 +31,49 @@ vi.mock('./components/HideSplash', () => ({
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
-vi.mock('./components/ui/confirmDialog', () => ({
-  ConfirmDialog: (props: any) => (
-    <div>
-      <div>ConfirmOpen:{String(props.open)}</div>
-      <button onClick={() => props.onConfirm()}>Confirm delete</button>
-      <button onClick={() => props.onOpenChange(false)}>Close confirm</button>
-    </div>
-  ),
-}))
-
 vi.mock('./features/onboarding/OnboardingFlow', () => ({
   default: ({ onComplete }: { onComplete: () => void }) => (
     <button onClick={onComplete}>OnboardingFlow</button>
   ),
 }))
 
-vi.mock('./features/secrets/SecretsPanel', () => ({
-  useSecretsPanel: (args: unknown) => {
+vi.mock('./features/secrets/SecretsPanel', async () => {
+  const { useState } = await vi.importActual<typeof import('react')>('react')
+
+  return {
+    useSecretsPanel: (args: any) => {
     secretsPanelArgs.push(args)
-    const state = secretsPanelState ?? {
-      center: <div>SecretsCenter</div>,
-      deleteConfirmOpen: false,
-      setDeleteConfirmOpen: vi.fn(),
-      selectedEnv: null,
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+    const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false)
+    const state = {
+      center: (
+        <button onClick={() => args.setSelectedEnvId('secret-1')}>Mock secret card</button>
+      ),
+      deleteConfirmOpen,
+      setDeleteConfirmOpen,
+      updateConfirmOpen,
+      setUpdateConfirmOpen,
+      closeUpdateConfirmation: setUpdateConfirmOpen,
+      selectedEnv: args.selectedEnvId ? { id: args.selectedEnvId, name: 'API_KEY' } : null,
       hasValue: false,
-      revealEnv: vi.fn(),
+      revealEnv: async () => {
+        args.setRevealValue('secret-value')
+        return true
+      },
       copyEnv: vi.fn(),
-      updateEnvValue: vi.fn(),
-      deleteEnv: vi.fn(),
-      deleteEnvConfirmed: vi.fn(),
+      updateEnvValue: () => setUpdateConfirmOpen(true),
+      deleteEnv: () => setDeleteConfirmOpen(true),
+       deleteEnvConfirmed: async () => {
+         await runConfirmedDelete()
+         args.setSelectedEnvId('')
+         args.setRevealValue('')
+       },
+       updateEnvConfirmed: () => runConfirmedUpdate(),
     }
-    return state
-  },
-}))
+    return { ...state, ...secretsPanelState }
+    },
+  }
+})
 
 vi.mock('./features/secrets/SecretsCenterPanel', () => ({
   SecretsCenterPanel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -66,7 +85,7 @@ vi.mock('./features/secrets/SecretsDetailsPanel', () => ({
       <div>SecretsDetails</div>
       <div>EnvLabel:{props.environmentName}</div>
       <div>CanDelete:{String(props.canDelete)}</div>
-      <button onClick={() => props.onReveal()}>Detail reveal</button>
+      <div>RevealValue:{props.revealValue}</div>
       <button onClick={() => props.onCopy(true)}>Detail copy</button>
       <button onClick={() => props.onUpdateValue('changed')}>Detail update</button>
       <button onClick={() => props.onDelete()}>Detail delete</button>
@@ -109,6 +128,8 @@ describe('App', () => {
     environmentsSidebarProps.length = 0
     secretsPanelArgs.length = 0
     secretsPanelState = null
+    runConfirmedUpdate = async () => {}
+    runConfirmedDelete = async () => {}
 
     window.brover = {
       onboarding: {
@@ -203,8 +224,10 @@ describe('App', () => {
     render(<App />)
     await screen.findByText('Selected:env-1')
 
+    fireEvent.click(screen.getByText('Mock secret card'))
+    await screen.findByRole('dialog')
+
     const initialArgs = secretsPanelArgs.at(-1)
-    initialArgs.setSelectedEnvId('secret-1')
     initialArgs.setRevealValue('top-secret')
 
     fireEvent.click(screen.getByText('Select env-2'))
@@ -213,6 +236,7 @@ describe('App', () => {
       const latestArgs = secretsPanelArgs.at(-1)
       expect(latestArgs.selectedEnvironmentId).toBe('env-2')
       expect(latestArgs.selectedEnvId).toBe('')
+      expect(screen.queryByRole('dialog')).toBeNull()
     })
   })
 
@@ -258,16 +282,197 @@ describe('App', () => {
     })
 
     expect(secretsPanelArgs.at(-1)?.searchQuery).toBe('api')
+    expect(screen.getByPlaceholderText('search.secretsPlaceholder').className).toContain('focus-visible:ring-2')
+  })
+
+  it('does not render secret details until a secret is selected', async () => {
+    render(<App />)
+
+    await screen.findByText('Selected:env-1')
+
+    expect(screen.queryByText('SecretsDetails')).toBeNull()
+  })
+
+  it('keeps details closed while authentication is pending', async () => {
+    secretsPanelState = {
+      revealEnv: () => new Promise(() => {}),
+    }
+
+    render(<App />)
+    await screen.findByText('Selected:env-1')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.queryByText('SecretsDetails')).toBeNull()
+  })
+
+  it('keeps details closed when authentication fails', async () => {
+    const revealEnv = vi.fn().mockResolvedValue(false)
+    secretsPanelState = { revealEnv }
+
+    render(<App />)
+    await screen.findByText('Selected:env-1')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+
+    await waitFor(() => {
+      expect(revealEnv).toHaveBeenCalled()
+    })
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('opens details only after authentication succeeds', async () => {
+    render(<App />)
+    await screen.findByText('Selected:env-1')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+
+    expect(await screen.findByRole('dialog')).toBeTruthy()
+    expect(screen.getByText('SecretsDetails')).toBeTruthy()
+  })
+
+  it('shows the revealed value inside the modal once authentication is granted', async () => {
+    render(<App />)
+    await screen.findByText('Selected:env-1')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+
+    await screen.findByRole('dialog')
+
+    expect(screen.getByText('RevealValue:secret-value')).toBeTruthy()
+  })
+
+  it('opens selected secret details in a dialog and close clears the selection', async () => {
+    render(<App />)
+    await screen.findByText('Selected:env-1')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+
+    expect(await screen.findByRole('dialog')).toBeTruthy()
+    expect(screen.getByText('SecretsDetails')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close details' }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull()
+      expect(secretsPanelArgs.at(-1)?.selectedEnvId).toBe('')
+    })
+  })
+
+  it('Escape closes selected secret details and clears the selection', async () => {
+    render(<App />)
+    await screen.findByText('Selected:env-1')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+    await screen.findByRole('dialog')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull()
+      expect(secretsPanelArgs.at(-1)?.selectedEnvId).toBe('')
+    })
+  })
+
+  it('hides details behind one delete confirmation and restores them after cancel', async () => {
+    render(<App />)
+    await screen.findByText('Selected:env-1')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+    await screen.findByRole('dialog')
+    fireEvent.click(screen.getByText('Detail delete'))
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('dialog')).toHaveLength(1)
+      expect(screen.getByText('Delete "API_KEY"?')).toBeTruthy()
+      expect(screen.queryByText('SecretsDetails')).toBeNull()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('dialog')).toHaveLength(1)
+      expect(screen.getByText('SecretsDetails')).toBeTruthy()
+    })
+  })
+
+  it('hides details behind one update confirmation and restores them after Escape', async () => {
+    render(<App />)
+    await screen.findByText('Selected:env-1')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+    await screen.findByRole('dialog')
+    fireEvent.click(screen.getByText('Detail update'))
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('dialog')).toHaveLength(1)
+      expect(screen.getByText('Update "API_KEY"?')).toBeTruthy()
+      expect(screen.queryByText('SecretsDetails')).toBeNull()
+    })
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('dialog')).toHaveLength(1)
+      expect(screen.getByText('SecretsDetails')).toBeTruthy()
+    })
+  })
+
+  it('keeps update confirmation open until its mutation succeeds', async () => {
+    const deferred = createDeferred()
+    runConfirmedUpdate = vi.fn(() => deferred.promise)
+    render(<App />)
+    await screen.findByText('Selected:env-1')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+    await screen.findByRole('dialog')
+    fireEvent.click(screen.getByText('Detail update'))
+    await screen.findByText('Update "API_KEY"?')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Update' }))
+
+    expect(runConfirmedUpdate).toHaveBeenCalledTimes(1)
+    expect(screen.getByText('Update "API_KEY"?')).toBeTruthy()
+
+    deferred.resolve()
+
+    await waitFor(() => {
+      expect(screen.getByText('SecretsDetails')).toBeTruthy()
+    })
+  })
+
+  it('keeps delete confirmation open until its mutation clears selected secret state', async () => {
+    const deferred = createDeferred()
+    runConfirmedDelete = vi.fn(() => deferred.promise)
+    render(<App />)
+    await screen.findByText('Selected:env-1')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+    await screen.findByRole('dialog')
+    fireEvent.click(screen.getByText('Detail delete'))
+    await screen.findByText('Delete "API_KEY"?')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+
+    expect(runConfirmedDelete).toHaveBeenCalledTimes(1)
+    expect(screen.getByText('Delete "API_KEY"?')).toBeTruthy()
+
+    deferred.resolve()
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull()
+      expect(screen.queryByText('SecretsDetails')).toBeNull()
+      expect(secretsPanelArgs.at(-1)?.selectedEnvId).toBe('')
+    })
   })
 
   it('renders details actions with selected secret and fallback environment label', async () => {
+    const revealEnv = vi.fn().mockResolvedValue(true)
     secretsPanelState = {
-      center: <div>SecretsCenter</div>,
-      deleteConfirmOpen: true,
-      setDeleteConfirmOpen: vi.fn(),
       selectedEnv: { id: 'secret-1', name: 'API_KEY' },
       hasValue: true,
-      revealEnv: vi.fn(),
+      revealEnv,
       copyEnv: vi.fn(),
       updateEnvValue: vi.fn(),
       deleteEnv: vi.fn(),
@@ -277,45 +482,21 @@ describe('App', () => {
     brover().listEnvironments.mockResolvedValue([])
 
     render(<App />)
+    await screen.findByText('Selected:none')
+    fireEvent.click(screen.getByText('Mock secret card'))
     await screen.findByText('SecretsDetails')
 
     expect(screen.getByText('EnvLabel:-')).toBeTruthy()
     expect(screen.getByText('CanDelete:true')).toBeTruthy()
 
-    fireEvent.click(screen.getByText('Detail reveal'))
+    expect(revealEnv).toHaveBeenCalledTimes(1)
+
     fireEvent.click(screen.getByText('Detail copy'))
     fireEvent.click(screen.getByText('Detail update'))
     fireEvent.click(screen.getByText('Detail delete'))
 
-    expect(secretsPanelState.revealEnv).toHaveBeenCalledTimes(1)
     expect(secretsPanelState.copyEnv).toHaveBeenCalledWith(true)
     expect(secretsPanelState.updateEnvValue).toHaveBeenCalledWith('changed')
     expect(secretsPanelState.deleteEnv).toHaveBeenCalledTimes(1)
-  })
-
-  it('forwards delete confirm callbacks from confirm dialog', async () => {
-    const setDeleteConfirmOpen = vi.fn()
-    const deleteEnvConfirmed = vi.fn()
-    secretsPanelState = {
-      center: <div>SecretsCenter</div>,
-      deleteConfirmOpen: true,
-      setDeleteConfirmOpen,
-      selectedEnv: { id: 'secret-1', name: 'API_KEY' },
-      hasValue: true,
-      revealEnv: vi.fn(),
-      copyEnv: vi.fn(),
-      updateEnvValue: vi.fn(),
-      deleteEnv: vi.fn(),
-      deleteEnvConfirmed,
-    }
-
-    render(<App />)
-    await screen.findByText('ConfirmOpen:true')
-
-    fireEvent.click(screen.getByText('Confirm delete'))
-    fireEvent.click(screen.getByText('Close confirm'))
-
-    expect(deleteEnvConfirmed).toHaveBeenCalledTimes(1)
-    expect(setDeleteConfirmOpen).toHaveBeenCalledWith(false)
   })
 })

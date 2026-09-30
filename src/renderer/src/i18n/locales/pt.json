@@ -35,7 +35,9 @@
     "noResultsDescription": "Tente um termo de busca diferente.",
     "revealSecret": "Revelar Segredo",
     "copySecret": "Copiar Segredo",
-    "updateValue": "Atualizar Valor Secreto",
+    "copyVariableName": "Copiar nome da variavel",
+    "variableNameCopied": "Nome da variavel copiado",
+    "copyVariableNameFailed": "Falha ao copiar o nome da variavel",
     "deleteSecret": "Excluir Segredo",
     "selectSecret": "Selecione um segredo.",
     "enabled": "Habilitado",
@@ -43,6 +45,7 @@
     "dialogTitle": "Adicionar Segredo",
     "dialogDescription": "Criar metadata + armazenar valor secreto em backend seguro.",
     "defineTitle": "Definir Segredo",
+    "rotateValue": "Rotacionar",
     "saveValue": "Salvar",
     "cancel": "Cancelar",
     "create": "Criar"

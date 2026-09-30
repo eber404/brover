@@ -1,6 +1,6 @@
 # Code Context Summary
 
-Generated: 2026-09-30T13:15:04.225Z
+Generated: 2026-09-30T20:19:07.589Z
 Files: 46
 
 ## `playwright.config.ts`
@@ -11,10 +11,13 @@ Exports: `default` (CallExpression)
 
 ## `src/main/authPrompt.ts`
 
-Exports: `createMacSecretAuthPrompt` (FunctionDeclaration)
+Exports: `createMacSecretAuthPrompt` (FunctionDeclaration), `isAuthCanceledError` (FunctionDeclaration)
 
 Functions:
 - `createMacSecretAuthPrompt(systemPreferences: MacSystemPreferences): (reason: string) => Promise<void>`
+- `isAuthCanceledError(error: unknown): boolean`
+- `readCode(error: unknown): unknown`
+- `readMessage(error: unknown): string`
 
 ## `src/main/authSessionCache.ts`
 
@@ -168,7 +171,7 @@ Classes:
 
 ## `src/renderer/src/App.tsx`
 
-Imports: `react`, `lucide-react`, `../../shared/models`, `./components/ui/confirmDialog`, `./components/ui/toaster`, `./components/HideSplash`, `./i18n`, `./features/onboarding/OnboardingFlow`, `./features/secrets/SecretsPanel`, `./features/environments/EnvironmentsSidebar`, `./features/secrets/SecretsCenterPanel`, `./features/secrets/SecretsDetailsPanel`, `./features/terminals/TerminalSidebar`
+Imports: `react`, `lucide-react`, `../../shared/models`, `./components/ui/confirmDialog`, `./components/ui/dialog`, `./components/ui/toaster`, `./components/HideSplash`, `./i18n`, `./features/onboarding/OnboardingFlow`, `./features/secrets/SecretsPanel`, `./features/environments/EnvironmentsSidebar`, `./features/secrets/SecretsCenterPanel`, `./features/secrets/SecretsDetailsPanel`, `./features/terminals/TerminalSidebar`
 
 Exports: `default` (FunctionDeclaration)
 
@@ -412,7 +415,7 @@ Exported Constants: `SecretsCenterPanel`
 
 ## `src/renderer/src/features/secrets/SecretsDetail.tsx`
 
-Imports: `react`, `../../../../shared/models`, `lucide-react`, `../../i18n`, `../../components/ui/button`, `../../components/ui/input`
+Imports: `react`, `../../../../shared/models`, `lucide-react`, `../../i18n`, `../../components/ui/toaster`, `../../components/ui/button`, `../../components/ui/input`
 
 Exports: `SecretsDetail` (FunctionDeclaration)
 
@@ -422,9 +425,10 @@ Functions:
   environmentName,
   revealValue,
   hasValue,
-  onReveal,
   onCopy,
-  onUpdateValue
+  onUpdateValue,
+  onDelete,
+  canDelete
 }: SecretsDetailProps): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
@@ -433,9 +437,10 @@ React Components:
   environmentName,
   revealValue,
   hasValue,
-  onReveal,
   onCopy,
-  onUpdateValue
+  onUpdateValue,
+  onDelete,
+  canDelete
 }: SecretsDetailProps
 
 ## `src/renderer/src/features/secrets/SecretsDetailsPanel.tsx`
@@ -448,7 +453,7 @@ Exported Constants: `SecretsDetailsPanel`
 
 ## `src/renderer/src/features/secrets/SecretsPanel.tsx`
 
-Imports: `react`, `react`, `lucide-react`, `../../../../shared/models`, `../../../../shared/models`, `../../i18n`, `../../components/ui/button`, `../../components/ui/card`, `../../components/ui/dialog`, `../../components/ui/confirmDialog`, `../../components/ui/input`, `../../components/ui/toaster`
+Imports: `react`, `react`, `lucide-react`, `../../../../shared/models`, `../../../../shared/models`, `../../i18n`, `../../components/ui/button`, `../../components/ui/card`, `../../components/ui/dialog`, `../../components/ui/input`, `../../components/ui/toaster`
 
 Exports: `useSecretsPanel` (FunctionDeclaration)
 
@@ -509,7 +514,7 @@ Types:
 
 ## `src/shared/models.ts`
 
-Exports: `Environment` (InterfaceDeclaration), `EnvMetadata` (InterfaceDeclaration), `EnvTarget` (TypeAliasDeclaration), `OnboardingStatus` (InterfaceDeclaration), `OnboardingSummary` (InterfaceDeclaration), `RetroactiveSelection` (InterfaceDeclaration), `ScanFile` (InterfaceDeclaration), `ScannedVariable` (InterfaceDeclaration), `ScanResult` (InterfaceDeclaration), `ScanWarning` (InterfaceDeclaration), `SecretActionResult` (InterfaceDeclaration), `TerminalApp` (InterfaceDeclaration), `UNSUPPORTED_SECRET_BACKEND` (VariableDeclaration)
+Exports: `AUTH_CANCELED` (VariableDeclaration), `Environment` (InterfaceDeclaration), `EnvMetadata` (InterfaceDeclaration), `EnvTarget` (TypeAliasDeclaration), `OnboardingStatus` (InterfaceDeclaration), `OnboardingSummary` (InterfaceDeclaration), `RetroactiveSelection` (InterfaceDeclaration), `ScanFile` (InterfaceDeclaration), `ScannedVariable` (InterfaceDeclaration), `ScanResult` (InterfaceDeclaration), `ScanWarning` (InterfaceDeclaration), `SecretActionResult` (InterfaceDeclaration), `TerminalApp` (InterfaceDeclaration), `UNSUPPORTED_SECRET_BACKEND` (VariableDeclaration)
 
 Types:
 - `EnvMetadata` (interface)
@@ -525,7 +530,7 @@ Types:
 - `OnboardingSummary` (interface)
 - `EnvTarget` (typeAlias)
 
-Exported Constants: `UNSUPPORTED_SECRET_BACKEND`="UNSUPPORTED_SECRET_BACKEND"
+Exported Constants: `AUTH_CANCELED`="AUTH_CANCELED", `UNSUPPORTED_SECRET_BACKEND`="UNSUPPORTED_SECRET_BACKEND"
 
 ## `src/shared/validators.ts`
 

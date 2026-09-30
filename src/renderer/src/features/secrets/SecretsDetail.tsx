@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { EnvMetadata } from '../../../../shared/models'
-import { Copy, Eye, EyeOff, RotateCw } from 'lucide-react'
+import { Copy, Trash2 } from 'lucide-react'
 import { useI18n } from '../../i18n'
+import { useToast } from '../../components/ui/toaster'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 
@@ -10,9 +11,10 @@ interface SecretsDetailProps {
   environmentName: string
   revealValue: string
   hasValue: boolean
-  onReveal: () => void
   onCopy: (isRevealed: boolean) => void
   onUpdateValue: (value: string) => void
+  onDelete: () => void
+  canDelete: boolean
 }
 
 export function SecretsDetail({
@@ -20,102 +22,124 @@ export function SecretsDetail({
   environmentName,
   revealValue,
   hasValue,
-  onReveal,
   onCopy,
-  onUpdateValue
+  onUpdateValue,
+  onDelete,
+  canDelete
 }: SecretsDetailProps) {
   const { t } = useI18n()
-  const [editValue, setEditValue] = useState('')
-  const [isRevealed, setIsRevealed] = useState(false)
+  const { toast } = useToast()
+  const [currentValue, setCurrentValue] = useState('')
+  const isRevealed = Boolean(revealValue)
 
   useEffect(() => {
-    setIsRevealed(false)
-  }, [env?.id])
-
-  useEffect(() => {
-    setIsRevealed(Boolean(revealValue))
-  }, [revealValue])
+    if (revealValue) {
+      setCurrentValue(revealValue)
+      return
+    }
+    if (hasValue) {
+      setCurrentValue('••••••••')
+      return
+    }
+    setCurrentValue('')
+  }, [revealValue, hasValue])
 
   if (!env) {
     return <p className="text-text-muted">{t('secrets.selectSecret')}</p>
   }
 
-  const currentSecretValue = isRevealed ? revealValue : '••••••••'
-  const secretAriaLabel = isRevealed ? 'Hide secret' : 'Reveal secret'
-  const currentSecretTitle = hasValue ? 'Rotate Secret' : t('secrets.defineTitle')
-  const updateActionLabel = hasValue ? t('secrets.updateValue') : t('secrets.saveValue')
+  let displayValue: string
+  if (isRevealed && revealValue) {
+    displayValue = revealValue
+  } else if (hasValue) {
+    displayValue = '••••••••'
+  } else {
+    displayValue = ''
+  }
+
+  const isValueChanged = currentValue !== displayValue && currentValue.length > 0
+  const updateLabel = hasValue ? t('secrets.rotateValue') : t('secrets.saveValue')
+  const sectionTitle = hasValue ? 'Current Secret' : t('secrets.defineTitle')
+  const secretName = env.name
+  const copyNameLabel = `${t('secrets.copyVariableName')}: ${secretName}`
+
+  async function copyName() {
+    try {
+      await navigator.clipboard.writeText(secretName)
+      toast(t('secrets.variableNameCopied'))
+    } catch {
+      toast(t('secrets.copyVariableNameFailed'), 'error')
+    }
+  }
 
   return (
     <div className="grid gap-3">
       <div>
-        <div className="text-lg font-semibold">{env.name}</div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-lg font-semibold">{env.name}</span>
+          <button
+            type="button"
+            data-testid="secret-copy-name-button"
+            aria-label={copyNameLabel}
+            title={copyNameLabel}
+            className="shrink-0 cursor-pointer rounded-md p-1 text-text-muted transition-colors hover:bg-surface-active hover:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            onClick={() => void copyName()}
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </button>
+        </div>
         <div className="text-xs text-text-muted">{t('common.environment')}: {environmentName}</div>
       </div>
 
-      {hasValue && (
-        <div className="grid gap-2 rounded-xl border border-edge bg-surface-card p-3">
-          <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">Current Secret</div>
-          <div className="relative">
-            <Input
-              readOnly
-              value={currentSecretValue}
-              className="pr-11 font-mono"
-            />
-            <button
-              data-testid="secret-reveal-toggle"
-              type="button"
-              className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer rounded-lg p-1.5 text-text-muted transition-all duration-200 hover:bg-surface-hover hover:text-accent"
-              onClick={() => {
-                if (isRevealed) {
-                  setIsRevealed(false)
-                  return
-                }
-                onReveal()
-              }}
-              aria-label={secretAriaLabel}
-            >
-              {isRevealed && <EyeOff className="h-4 w-4" />}
-              {!isRevealed && <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-          <Button
-            data-testid="secret-copy-button"
-            variant="card"
-            className="w-full px-4 py-2 text-sm font-semibold active:scale-[0.98]"
-            onClick={() => onCopy(isRevealed)}
-          >
-            <span className="flex items-center gap-2">
-              <Copy className="h-4 w-4 text-accent transition-all duration-200 group-hover:text-[#67d0ff] group-hover:scale-110" />
-              {t('secrets.copySecret')}
-            </span>
-          </Button>
-        </div>
-      )}
-
       <div className="grid gap-2 rounded-xl border border-edge bg-surface-card p-3">
-        <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">{currentSecretTitle}</div>
-        <Input
-          data-testid="secret-update-input"
-          placeholder={t('secrets.secretValue')}
-          value={editValue}
-          onChange={(event) => setEditValue(event.target.value)}
-        />
+        <div className="text-xs font-semibold uppercase tracking-widest text-text-muted">{sectionTitle}</div>
+        <div className="relative">
+          <Input
+            data-testid="secret-current-input"
+            value={currentValue}
+            onChange={(event) => setCurrentValue(event.target.value)}
+            className="pr-11 font-mono"
+            placeholder={t('secrets.secretValue')}
+          />
+          {hasValue && (
+            <Button
+              data-testid="secret-copy-button"
+              variant="outline"
+              className="absolute top-1/2 right-2 -translate-y-1/2 text-text-muted hover:text-accent p-1"
+              onClick={() => onCopy(isRevealed)}
+              aria-label={t('secrets.copySecret')}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
         <Button
           data-testid="secret-update-button"
           variant="card"
           className="w-full px-4 py-2 text-sm font-semibold active:scale-[0.98]"
           onClick={() => {
-            onUpdateValue(editValue)
-            setEditValue('')
+            onUpdateValue(currentValue)
           }}
-          disabled={editValue.length === 0}
+          disabled={!isValueChanged}
         >
           <span className="flex items-center gap-2">
-            <RotateCw className="h-4 w-4 text-accent transition-all duration-200 group-hover:text-[#67d0ff] group-hover:scale-110" />
-            {updateActionLabel}
+            <Copy className="h-4 w-4 text-accent transition-all duration-200 group-hover:text-[#67d0ff] group-hover:scale-110" />
+            {updateLabel}
           </span>
         </Button>
       </div>
+
+      {canDelete && (
+        <Button
+          data-testid="secret-delete-button"
+          variant="destructive"
+          className="w-full px-4 py-2 text-sm font-semibold active:scale-[0.98]"
+          onClick={onDelete}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          {t('secrets.deleteSecret')}
+        </Button>
+      )}
     </div>
   )
 }

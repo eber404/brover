@@ -10,7 +10,7 @@ export interface ConfirmDialogProps {
   confirmLabel?: string
   cancelLabel?: string
   destructive?: boolean
-  onConfirm?: () => void
+  onConfirm?: () => void | Promise<void>
 }
 
 export function ConfirmDialog({
@@ -25,6 +25,15 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const confirmVariant = destructive ? 'destructive' : 'success'
 
+  async function confirm() {
+    try {
+      await onConfirm?.()
+    } catch {
+      return
+    }
+    onOpenChange(false)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xs">
@@ -36,10 +45,7 @@ export function ConfirmDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>{cancelLabel}</Button>
           <Button
             variant={confirmVariant}
-            onClick={() => {
-              onConfirm?.()
-              onOpenChange(false)
-            }}
+            onClick={() => void confirm()}
           >
             {confirmLabel}
           </Button>

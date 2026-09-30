@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { createContext, useCallback, useContext, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 interface Toast {
   id: string
@@ -20,7 +20,16 @@ let toastId = Date.now()
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
-  const undoTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  const dismissTimer = useRef<{ id: string; handle: ReturnType<typeof setTimeout> } | undefined>(undefined)
+
+  const clearDismissTimer = useCallback(() => {
+    const timer = dismissTimer.current
+    if (!timer) return
+    dismissTimer.current = undefined
+    clearTimeout(timer.handle)
+  }, [])
+
+  useEffect(() => () => clearDismissTimer(), [clearDismissTimer])
 
   const toast = useCallback((
     message: string,
@@ -28,23 +37,25 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     undoCallback?: () => void
   ) => {
     const id = `${Date.now()}-${toastId++}`
-    setToasts((prev) => [...prev, { id, message, type, undoCallback }])
-    const existingTimer = undoTimers.current.get(id)
-    if (existingTimer) clearTimeout(existingTimer)
-    const timer = setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id))
-      undoTimers.current.delete(id)
-    }, 5000)
-    undoTimers.current.set(id, timer)
-  }, [])
+    clearDismissTimer()
+
+    setToasts([{ id, message, type, undoCallback }])
+    dismissTimer.current = {
+      id,
+      handle: setTimeout(() => {
+        if (dismissTimer.current?.id !== id) return
+        dismissTimer.current = undefined
+        setToasts((prev) => prev.filter((t) => t.id !== id))
+      }, 5000)
+    }
+  }, [clearDismissTimer])
 
   const remove = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
-    const timer = undoTimers.current.get(id)
-    if (timer) {
-      clearTimeout(timer)
-      undoTimers.current.delete(id)
-    }
+    const timer = dismissTimer.current
+    if (!timer || timer.id !== id) return
+    dismissTimer.current = undefined
+    clearTimeout(timer.handle)
   }, [])
 
   return (
@@ -70,16 +81,23 @@ function Toaster() {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 grid gap-2">
+    <div
+      data-testid="toaster"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      className="fixed bottom-4 left-1/2 z-[100] grid max-w-[calc(100%-2rem)] -translate-x-1/2"
+    >
       {toasts.map((t) => (
         <div
           key={t.id}
+          data-testid="toast"
           className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm shadow-lg ${getToastClass(t.type)}`}
         >
           <span className="flex-1">{t.message}</span>
           {t.undoCallback && (
             <button
-              className="cursor-pointer rounded px-2 py-0.5 text-xs font-medium underline hover:no-underline"
+              className="cursor-pointer rounded px-2 py-0.5 text-xs font-medium underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               onClick={() => {
                 t.undoCallback?.()
                 remove(t.id)
@@ -88,7 +106,14 @@ function Toaster() {
               Undo
             </button>
           )}
-          <button className="ml-1 cursor-pointer opacity-70 hover:opacity-100" onClick={() => remove(t.id)}>×</button>
+          <button
+            data-testid="toast-dismiss"
+            aria-label="Dismiss toast"
+            className="ml-1 cursor-pointer rounded opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            onClick={() => remove(t.id)}
+          >
+            ×
+          </button>
         </div>
       ))}
     </div>

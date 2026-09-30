@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { createAuthSessionCache } from './authSessionCache'
 
 describe('createAuthSessionCache', () => {
@@ -7,44 +7,29 @@ describe('createAuthSessionCache', () => {
     expect(cache.isAuthorized('target-1')).toBe(false)
   })
 
-  it('isAuthorized returns true within TTL', () => {
+  it('stays authorized for the whole app session without expiring', () => {
     const cache = createAuthSessionCache()
-    const now = 1_000_000
-    cache.grant('target-1', 60_000, now)
-    expect(cache.isAuthorized('target-1', now + 30_000)).toBe(true)
+    cache.grant('target-1')
+    expect(cache.isAuthorized('target-1')).toBe(true)
   })
 
-  it('isAuthorized returns false after TTL expires', () => {
+  it('session for targetA also authorizes targetB', () => {
     const cache = createAuthSessionCache()
-    const now = 1_000_000
-    cache.grant('target-1', 60_000, now)
-    expect(cache.isAuthorized('target-1', now + 60_001)).toBe(false)
+    cache.grant('target-A')
+    expect(cache.isAuthorized('target-B')).toBe(true)
   })
 
-  it('session for targetA also authorizes targetB within TTL', () => {
+  it('revoke clears the session', () => {
     const cache = createAuthSessionCache()
-    const now = 1_000_000
-    cache.grant('target-A', 60_000, now)
-    expect(cache.isAuthorized('target-B', now)).toBe(true)
-  })
-
-  it('revoke one target clears only that session', () => {
-    const cache = createAuthSessionCache()
-    const now = 1_000_000
-    cache.grant('target-A', 60_000, now)
-    cache.grant('target-B', 60_000, now)
+    cache.grant('target-A')
     cache.revoke('target-A')
-    expect(cache.isAuthorized('target-A', now)).toBe(false)
-    expect(cache.isAuthorized('target-B', now)).toBe(false)
+    expect(cache.isAuthorized('target-A')).toBe(false)
   })
 
-  it('revoke all clears all sessions', () => {
+  it('revoke without a target clears the session', () => {
     const cache = createAuthSessionCache()
-    const now = 1_000_000
-    cache.grant('target-A', 60_000, now)
-    cache.grant('target-B', 60_000, now)
+    cache.grant('target-A')
     cache.revoke()
-    expect(cache.isAuthorized('target-A', now)).toBe(false)
-    expect(cache.isAuthorized('target-B', now)).toBe(false)
+    expect(cache.isAuthorized('target-A')).toBe(false)
   })
 })

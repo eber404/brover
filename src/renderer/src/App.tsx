@@ -1,7 +1,8 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import type { EnvMetadata, Environment } from '../../shared/models'
 import { ConfirmDialog } from './components/ui/confirmDialog'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from './components/ui/dialog'
 import { ToastProvider } from './components/ui/toaster'
 import HideSplash from './components/HideSplash'
 import { I18nProvider, useI18n } from './i18n'
@@ -24,6 +25,7 @@ function AppShell() {
   const [sharedSecretNames, setSharedSecretNames] = useState(false)
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState<string | null>(null)
   const [selectedEnvId, setSelectedEnvId] = useState('')
+  const [authorizedSecretId, setAuthorizedSecretId] = useState<string | null>(null)
   const [revealValue, setRevealValue] = useState('')
   const [editingEnvironmentId, setEditingEnvironmentId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
@@ -150,8 +152,104 @@ function AppShell() {
     setSearchText(value)
   }, [])
 
+  const closeSecretDetails = useCallback(() => {
+    setSelectedEnvId('')
+    setAuthorizedSecretId(null)
+    setRevealValue('')
+  }, [])
+
+  useEffect(() => {
+    if (!selectedEnvId) {
+      setAuthorizedSecretId(null)
+      return
+    }
+
+    let cancelled = false
+    void Promise.resolve(secretsPanel.revealEnv()).then((authorized) => {
+      if (cancelled) return
+      if (authorized) {
+        setAuthorizedSecretId(selectedEnvId)
+        return
+      }
+      setSelectedEnvId('')
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [selectedEnvId])
+
+  const confirmationOpen = secretsPanel.updateConfirmOpen || secretsPanel.deleteConfirmOpen
+  let confirmationDialog = null
+  if (secretsPanel.updateConfirmOpen) {
+    confirmationDialog = (
+      <ConfirmDialog
+        open={secretsPanel.updateConfirmOpen}
+        onOpenChange={secretsPanel.closeUpdateConfirmation}
+        title={`Update "${secretsPanel.selectedEnv?.name}"?`}
+        description="This will replace the current secret value."
+        confirmLabel="Update"
+        cancelLabel="Cancel"
+        onConfirm={secretsPanel.updateEnvConfirmed}
+      />
+    )
+  } else if (secretsPanel.deleteConfirmOpen) {
+    confirmationDialog = (
+      <ConfirmDialog
+        open={secretsPanel.deleteConfirmOpen}
+        onOpenChange={secretsPanel.setDeleteConfirmOpen}
+        title={`Delete "${secretsPanel.selectedEnv?.name}"?`}
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={secretsPanel.deleteEnvConfirmed}
+      />
+    )
+  }
+
+  const isDetailsOpen = Boolean(selectedEnvId) && authorizedSecretId === selectedEnvId
+
+  const secretDetailsDialog = isDetailsOpen && !confirmationOpen ? (
+    <Dialog
+      open={isDetailsOpen}
+      onOpenChange={(open) => {
+        if (!open) closeSecretDetails()
+      }}
+    >
+      <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto">
+        <DialogTitle className="sr-only">{`${t('common.details')}: ${secretsPanel.selectedEnv?.name ?? 'secret'}`}</DialogTitle>
+        <DialogDescription className="sr-only">
+          {`${secretsPanel.selectedEnv?.name ?? 'Secret'} in ${selectedEnvironment?.name ?? '-'}`}
+        </DialogDescription>
+        <DialogClose asChild>
+          <button
+            type="button"
+            className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition hover:bg-surface-overlay hover:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            aria-label="Close details"
+            title="Close details"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </DialogClose>
+        <SecretsDetailsPanel
+          title={t('common.details')}
+          env={secretsPanel.selectedEnv}
+          environmentName={selectedEnvironment?.name ?? '-'}
+          revealValue={revealValue}
+          hasValue={secretsPanel.hasValue}
+          onCopy={(isRevealed) => void secretsPanel.copyEnv(isRevealed)}
+          onUpdateValue={(value) => void secretsPanel.updateEnvValue(value)}
+          onDelete={() => void secretsPanel.deleteEnv()}
+          canDelete={Boolean(secretsPanel.selectedEnv)}
+          deleteLabel={t('secrets.deleteSecret')}
+        />
+      </DialogContent>
+    </Dialog>
+  ) : null
+
   return (
-    <div className="relative grid h-screen grid-cols-[84px_320px_1fr_1fr] grid-rows-[52px_1fr] gap-0 text-sm">
+    <div className="relative grid h-screen grid-cols-[84px_320px_1fr] grid-rows-[52px_1fr] gap-0 text-sm">
       <div data-testid="drag-bar" className="absolute inset-x-0 top-0 z-50 h-11 w-20" style={DRAG_REGION_STYLE} />
       <div data-testid="drag-bar" className="absolute inset-x-0 right-0 top-0 z-50 h-4 w-full" style={DRAG_REGION_STYLE} />
 
@@ -183,18 +281,15 @@ function AppShell() {
         />
       </div>
 
-      <div className="col-start-3 col-end-5 row-start-1 row-end-2 border-b border-edge/60 bg-panel/85">
-        <div className="grid h-full grid-cols-[1fr_1fr]">
-          <div className="flex items-center gap-2 px-4">
-            <Search className="h-4 w-4 shrink-0 text-text-muted" />
-            <input
-              className="h-full w-full bg-transparent text-sm text-text-base outline-none placeholder:text-text-muted"
-              placeholder={t('search.secretsPlaceholder')}
-              value={searchText}
-              onChange={(event) => onSearchChange(event.target.value)}
-            />
-          </div>
-          <div />
+      <div className="col-start-3 col-end-4 row-start-1 row-end-2 border-b border-edge/60 bg-panel/85">
+        <div className="flex h-full items-center gap-2 px-4">
+          <Search className="h-4 w-4 shrink-0 text-text-muted" />
+          <input
+            className="h-full w-full bg-transparent text-sm text-text-base placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            placeholder={t('search.secretsPlaceholder')}
+            value={searchText}
+            onChange={(event) => onSearchChange(event.target.value)}
+          />
         </div>
       </div>
 
@@ -202,31 +297,8 @@ function AppShell() {
         <SecretsCenterPanel>{secretsPanel.center}</SecretsCenterPanel>
       </div>
 
-      <div className="col-start-4 col-end-5 row-start-2 row-end-3">
-        <ConfirmDialog
-          open={secretsPanel.deleteConfirmOpen}
-          onOpenChange={secretsPanel.setDeleteConfirmOpen}
-          title={`Delete "${secretsPanel.selectedEnv?.name}"?`}
-          description="This cannot be undone."
-          confirmLabel="Delete"
-          cancelLabel="Cancel"
-          destructive
-          onConfirm={() => void secretsPanel.deleteEnvConfirmed()}
-        />
-        <SecretsDetailsPanel
-          title={t('common.details')}
-          env={secretsPanel.selectedEnv}
-          environmentName={selectedEnvironment?.name ?? '-'}
-          revealValue={revealValue}
-          hasValue={secretsPanel.hasValue}
-          onReveal={() => void secretsPanel.revealEnv()}
-          onCopy={(isRevealed) => void secretsPanel.copyEnv(isRevealed)}
-          onUpdateValue={(value) => void secretsPanel.updateEnvValue(value)}
-          onDelete={() => void secretsPanel.deleteEnv()}
-          canDelete={Boolean(secretsPanel.selectedEnv)}
-          deleteLabel={t('secrets.deleteSecret')}
-        />
-      </div>
+      {confirmationDialog}
+      {secretDetailsDialog}
     </div>
   )
 }

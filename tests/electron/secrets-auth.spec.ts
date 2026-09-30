@@ -128,4 +128,65 @@ test.describe('Secrets Auth Flow', () => {
     }, { secretName })
     expect(remaining).toBe(0)
   })
+
+  test('details modal reveals real value and rotates it', async () => {
+    const secretName = `PW_MODAL_${Date.now()}`
+    const initialValue = 'modal-secret-1'
+    const updatedValue = 'modal-secret-2'
+
+    const window = await electronApp.firstWindow()
+    await window.waitForFunction(() => Boolean(window.brover))
+
+    const target = await window.evaluate(
+      async ({ secretName, initialValue }) => {
+        await window.brover.onboarding.complete()
+
+        const targets = await window.brover.createEnvironment({
+          name: `modal-target-${Date.now()}`,
+        })
+        const target = targets.find((item) => item.isActive) ?? targets[0]
+        if (!target) throw new Error('No target available')
+
+        const createdResult = await window.brover.createEnv({
+          name: secretName,
+          profile: target.id,
+          value: initialValue,
+        })
+
+        return { createdOk: createdResult.ok, environmentId: target.id }
+      },
+      { secretName, initialValue }
+    )
+    expect(target.createdOk).toBe(true)
+
+    await window.reload()
+    await window.waitForFunction(() => Boolean(window.brover))
+    await expect(window.locator('[data-testid="environments-list"]')).toBeVisible({ timeout: 10000 })
+
+    await window.locator(`[data-testid="environment-row-${target.environmentId}"]`).click()
+
+    const secretRow = window.locator(`[data-testid="secret-row-${secretName}"]`)
+    await expect(secretRow).toBeVisible({ timeout: 10000 })
+    await secretRow.click()
+
+    const currentInput = window.getByTestId('secret-current-input')
+    await expect(currentInput).toBeVisible({ timeout: 10000 })
+    await expect(currentInput).toHaveValue(initialValue)
+    await expect(currentInput).not.toHaveValue('••••••••')
+    await expect(window.getByTestId('secret-copy-button')).toBeVisible()
+
+    await currentInput.fill(updatedValue)
+    await window.getByTestId('secret-update-button').click()
+
+    const confirmUpdate = window.getByRole('button', { name: 'Update', exact: true })
+    await expect(confirmUpdate).toBeVisible({ timeout: 10000 })
+    await confirmUpdate.click()
+
+    const stored = await window.evaluate(async ({ environmentId, secretName }) => {
+      return window.brover.revealEnv({ profile: environmentId, name: secretName })
+    }, { environmentId: target.environmentId, secretName })
+
+    expect(stored.ok).toBe(true)
+    expect(stored.value).toBe(updatedValue)
+  })
 })

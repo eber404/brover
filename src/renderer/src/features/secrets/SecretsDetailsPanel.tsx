@@ -10,7 +10,6 @@ interface SecretsDetailsPanelProps {
   environmentName: string
   revealValue: string
   hasValue: boolean
-  onReveal: () => void
   onCopy: (isRevealed: boolean) => void
   onUpdateValue: (value: string) => void
   onDelete: () => void
@@ -27,27 +26,12 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
     environmentName,
     revealValue,
     hasValue,
-    onReveal,
     onCopy,
     onUpdateValue,
     onDelete,
     canDelete,
     deleteLabel,
   } = props
-
-  const deleteButton = canDelete ? (
-    <div className="px-4 pb-4">
-      <Button
-        data-testid="secret-delete-bottom"
-        className="mt-4 w-full shrink-0"
-        variant="destructive"
-        onClick={onDelete}
-      >
-        <Trash2 className="mr-2 h-4 w-4" />
-        {deleteLabel}
-      </Button>
-    </div>
-  ) : null
 
   return (
     <section className="flex h-full flex-col bg-panel/80 pt-4">
@@ -58,13 +42,13 @@ export const SecretsDetailsPanel = memo(function SecretsDetailsPanel(
             environmentName={environmentName}
             revealValue={revealValue}
             hasValue={hasValue}
-            onReveal={onReveal}
             onCopy={onCopy}
             onUpdateValue={onUpdateValue}
+            onDelete={onDelete}
+            canDelete={canDelete}
           />
         </div>
       </div>
-      {deleteButton}
     </section>
   )
 })

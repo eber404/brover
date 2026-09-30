@@ -1,4 +1,4 @@
-generatedAt: "2026-09-30T13:15:04.225Z"
+generatedAt: "2026-09-30T20:19:07.589Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 46
@@ -19,9 +19,10 @@ files[46]:
     exportedHooks[0]:
   - path: src/main/authPrompt.ts
     imports[0]:
-    exports[1]{name,kind}:
+    exports[2]{name,kind}:
       createMacSecretAuthPrompt,FunctionDeclaration
-    functions[1]:
+      isAuthCanceledError,FunctionDeclaration
+    functions[4]:
       - name: createMacSecretAuthPrompt
         exported: true
         defaultExport: false
@@ -30,6 +31,30 @@ files[46]:
           systemPreferences,MacSystemPreferences
         returnType: "(reason: string) => Promise<void>"
         signature: "createMacSecretAuthPrompt(systemPreferences: MacSystemPreferences): (reason: string) => Promise<void>"
+      - name: isAuthCanceledError
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          error,unknown
+        returnType: boolean
+        signature: "isAuthCanceledError(error: unknown): boolean"
+      - name: readCode
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          error,unknown
+        returnType: unknown
+        signature: "readCode(error: unknown): unknown"
+      - name: readMessage
+        exported: false
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          error,unknown
+        returnType: string
+        signature: "readMessage(error: unknown): string"
     reactComponents[0]:
     types[0]:
     classes[0]:
@@ -54,7 +79,7 @@ files[46]:
         kind: interface
         exported: true
         defaultExport: false
-        text: "export interface AuthSessionCache { isAuthorized(targetId: string, now?: number): boolean expiresAt(targetId: string): number | null grant(targetId: string, ..."
+        text: "export interface AuthSessionCache { isAuthorized(targetId: string): boolean grant(targetId: string): void revoke(targetId?: string): void }"
         properties[0]:
     classes[0]:
     exportedConstants[0]:
@@ -136,7 +161,7 @@ files[46]:
       - moduleSpecifier: ../shared/models
         defaultImport: null
         namespaceImport: null
-        namedImports[4]: UNSUPPORTED_SECRET_BACKEND,type SecretActionResult,type ScanResult,type RetroactiveSelection
+        namedImports[5]: AUTH_CANCELED,UNSUPPORTED_SECRET_BACKEND,type SecretActionResult,type ScanResult,type RetroactiveSelection
       - moduleSpecifier: ./onboardingScanner
         defaultImport: null
         namespaceImport: null
@@ -156,7 +181,7 @@ files[46]:
       - moduleSpecifier: ./authPrompt
         defaultImport: null
         namespaceImport: null
-        namedImports[1]: createMacSecretAuthPrompt
+        namedImports[2]: createMacSecretAuthPrompt,isAuthCanceledError
       - moduleSpecifier: ./terminalLauncher
         defaultImport: null
         namespaceImport: null
@@ -829,7 +854,7 @@ files[46]:
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/renderer/src/App.tsx
-    imports[13]:
+    imports[14]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
@@ -837,7 +862,7 @@ files[46]:
       - moduleSpecifier: lucide-react
         defaultImport: null
         namespaceImport: null
-        namedImports[1]: Search
+        namedImports[2]: Search,X
       - moduleSpecifier: ../../shared/models
         defaultImport: null
         namespaceImport: null
@@ -846,6 +871,10 @@ files[46]:
         defaultImport: null
         namespaceImport: null
         namedImports[1]: ConfirmDialog
+      - moduleSpecifier: ./components/ui/dialog
+        defaultImport: null
+        namespaceImport: null
+        namedImports[5]: Dialog,DialogClose,DialogContent,DialogDescription,DialogTitle
       - moduleSpecifier: ./components/ui/toaster
         defaultImport: null
         namespaceImport: null
@@ -1016,7 +1045,7 @@ files[46]:
         exported: true
         defaultExport: false
         text: "export interface ConfirmDialogProps { open: boolean onOpenChange: (open: boolean) => void title: string description: string confirmLabel?: string cancelLabel..."
-        properties[8]: "open: boolean","onOpenChange: (open: boolean) => void","title: string","description: string","confirmLabel?: string","cancelLabel?: string","destructive?: boolean","onConfirm?: () => void"
+        properties[8]: "open: boolean","onOpenChange: (open: boolean) => void","title: string","description: string","confirmLabel?: string","cancelLabel?: string","destructive?: boolean","onConfirm?: () => void | Promise<void>"
     classes[0]:
     exportedConstants[0]:
     exportedHooks[0]:
@@ -1134,7 +1163,7 @@ files[46]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
-        namedImports[5]: createContext,useCallback,useContext,useRef,useState
+        namedImports[6]: createContext,useCallback,useContext,useEffect,useRef,useState
     exports[2]{name,kind}:
       ToastProvider,FunctionDeclaration
       useToast,FunctionDeclaration
@@ -1558,7 +1587,7 @@ files[46]:
       SecretsCenterPanel,false
     exportedHooks[0]:
   - path: src/renderer/src/features/secrets/SecretsDetail.tsx
-    imports[6]:
+    imports[7]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
@@ -1570,11 +1599,15 @@ files[46]:
       - moduleSpecifier: lucide-react
         defaultImport: null
         namespaceImport: null
-        namedImports[4]: Copy,Eye,EyeOff,RotateCw
+        namedImports[2]: Copy,Trash2
       - moduleSpecifier: ../../i18n
         defaultImport: null
         namespaceImport: null
         namedImports[1]: useI18n
+      - moduleSpecifier: ../../components/ui/toaster
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: useToast
       - moduleSpecifier: ../../components/ui/button
         defaultImport: null
         namespaceImport: null
@@ -1591,11 +1624,11 @@ files[46]:
         defaultExport: false
         async: false
         params[1]{name,type}:
-          "{\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}",SecretsDetailProps
+          "{\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onCopy,\n  onUpdateValue,\n  onDelete,\n  canDelete\n}",SecretsDetailProps
         returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "SecretsDetail({\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}: SecretsDetailProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "SecretsDetail({\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onCopy,\n  onUpdateValue,\n  onDelete,\n  canDelete\n}: SecretsDetailProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
-      SecretsDetail,true,false,function,"{\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}",SecretsDetailProps
+      SecretsDetail,true,false,function,"{\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onCopy,\n  onUpdateValue,\n  onDelete,\n  canDelete\n}",SecretsDetailProps
     types[0]:
     classes[0]:
     exportedConstants[0]:
@@ -1632,11 +1665,11 @@ files[46]:
       SecretsDetailsPanel,false
     exportedHooks[0]:
   - path: src/renderer/src/features/secrets/SecretsPanel.tsx
-    imports[12]:
+    imports[11]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
-        namedImports[6]: memo,useCallback,useEffect,useMemo,useRef,useState
+        namedImports[5]: memo,useCallback,useEffect,useMemo,useState
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
@@ -1644,7 +1677,7 @@ files[46]:
       - moduleSpecifier: lucide-react
         defaultImport: null
         namespaceImport: null
-        namedImports[2]: KeyRound,Plus
+        namedImports[3]: Copy,KeyRound,Plus
       - moduleSpecifier: ../../../../shared/models
         defaultImport: null
         namespaceImport: null
@@ -1652,7 +1685,7 @@ files[46]:
       - moduleSpecifier: ../../../../shared/models
         defaultImport: null
         namespaceImport: null
-        namedImports[1]: UNSUPPORTED_SECRET_BACKEND
+        namedImports[2]: AUTH_CANCELED,UNSUPPORTED_SECRET_BACKEND
       - moduleSpecifier: ../../i18n
         defaultImport: null
         namespaceImport: null
@@ -1669,10 +1702,6 @@ files[46]:
         defaultImport: null
         namespaceImport: null
         namedImports[7]: Dialog,DialogClose,DialogContent,DialogDescription,DialogHeader,DialogTitle,DialogTrigger
-      - moduleSpecifier: ../../components/ui/confirmDialog
-        defaultImport: null
-        namespaceImport: null
-        namedImports[1]: ConfirmDialog
       - moduleSpecifier: ../../components/ui/input
         defaultImport: null
         namespaceImport: null
@@ -1880,7 +1909,8 @@ files[46]:
     exportedHooks[0]:
   - path: src/shared/models.ts
     imports[0]:
-    exports[13]{name,kind}:
+    exports[14]{name,kind}:
+      AUTH_CANCELED,VariableDeclaration
       Environment,InterfaceDeclaration
       EnvMetadata,InterfaceDeclaration
       EnvTarget,TypeAliasDeclaration
@@ -1907,8 +1937,8 @@ files[46]:
         kind: interface
         exported: true
         defaultExport: false
-        text: "export interface SecretActionResult { ok: boolean value?: string error?: string expiresAt?: number | null }"
-        properties[4]: "ok: boolean","value?: string","error?: string","expiresAt?: number | null"
+        text: "export interface SecretActionResult { ok: boolean value?: string error?: string }"
+        properties[3]: "ok: boolean","value?: string","error?: string"
       - name: TerminalApp
         kind: interface
         exported: true
@@ -1970,7 +2000,8 @@ files[46]:
         text: export type EnvTarget = Environment
         properties[0]:
     classes[0]:
-    exportedConstants[1]{name,defaultExport,literalValue}:
+    exportedConstants[2]{name,defaultExport,literalValue}:
+      AUTH_CANCELED,false,AUTH_CANCELED
       UNSUPPORTED_SECRET_BACKEND,false,UNSUPPORTED_SECRET_BACKEND
     exportedHooks[0]:
   - path: src/shared/validators.ts

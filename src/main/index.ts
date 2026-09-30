@@ -5,6 +5,7 @@ import {
   BroverStore,
 } from './store'
 import {
+  AUTH_CANCELED,
   UNSUPPORTED_SECRET_BACKEND,
   type SecretActionResult,
   type ScanResult,
@@ -14,7 +15,7 @@ import { scanDotfiles } from './onboardingScanner'
 import { runRetroactiveImport, runFreshStartImport } from './onboardingImporter'
 import { createSecretAuthGate } from './secretAuthGate'
 import { createAuthSessionCache } from './authSessionCache'
-import { createMacSecretAuthPrompt } from './authPrompt'
+import { createMacSecretAuthPrompt, isAuthCanceledError } from './authPrompt'
 import { createTerminalLauncher } from './terminalLauncher'
 import { runDeleteMutation, runUpdateMutation } from './envMutationFlow'
 import { loadTerminalIconDataUrl } from './terminalIconLoader'
@@ -35,6 +36,9 @@ function ok(value?: string): SecretActionResult {
 
 function failure(error: unknown): SecretActionResult {
   const message = error instanceof Error ? error.message : 'Unknown error'
+  if (isAuthCanceledError(error)) {
+    return { ok: false, error: AUTH_CANCELED }
+  }
   if (message.includes(UNSUPPORTED_SECRET_BACKEND)) {
     return { ok: false, error: UNSUPPORTED_SECRET_BACKEND }
   }
@@ -195,9 +199,8 @@ export async function bootstrap() {
       if (!cached) {
         await authGate.authorize('reveal', { targetId: payload.profile })
       }
-      const expiresAt = authSessionCache.expiresAt(payload.profile)
       const value = await store.revealEnv(payload.profile, payload.name)
-      return { ok: true, value: value ?? '', expiresAt }
+      return { ok: true, value: value ?? '' }
     } catch (error) {
       return failure(error)
     }
@@ -209,9 +212,8 @@ export async function bootstrap() {
       if (!cached) {
         await authGate.authorize('copy', { isRevealed: payload.isRevealed, targetId: payload.profile })
       }
-      const expiresAt = authSessionCache.expiresAt(payload.profile)
       const value = await store.revealEnv(payload.profile, payload.name)
-      return { ok: true, value: value ?? '', expiresAt }
+      return { ok: true, value: value ?? '' }
     } catch (error) {
       return failure(error)
     }
@@ -254,6 +256,9 @@ export async function bootstrap() {
       }
     ) => {
       try {
+        if (!authSessionCache.isAuthorized(payload.profile)) {
+          await authGate.authorize('update', { targetId: payload.profile })
+        }
         await store.updateEnv(payload)
         return ok()
       } catch (error) {
@@ -276,6 +281,9 @@ export async function bootstrap() {
 
   ipcMain.handle('envs:delete-confirmed', async (_, payload: { id: string; profile: string; name: string }) => {
     try {
+      if (!authSessionCache.isAuthorized(payload.profile)) {
+        await authGate.authorize('delete', { targetId: payload.profile })
+      }
       await store.deleteEnv(payload)
       return { ok: true }
     } catch (error) {
@@ -314,10 +322,12 @@ export async function bootstrap() {
   ipcMain.handle('onboarding:complete', () => store.markOnboardingComplete())
 
   const window = new BrowserWindow({
-    width: 1200,
+    width: 760,
     height: 760,
-    minWidth: 900,
+    minWidth: 640,
     minHeight: 600,
+    maxWidth: 760,
+    center: true,
     resizable: true,
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 16, y: 16 },

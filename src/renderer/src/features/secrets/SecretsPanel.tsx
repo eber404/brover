@@ -1,8 +1,8 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { KeyRound, Plus } from 'lucide-react'
+import { Copy, KeyRound, Plus } from 'lucide-react'
 import type { EnvMetadata } from '../../../../shared/models'
-import { UNSUPPORTED_SECRET_BACKEND } from '../../../../shared/models'
+import { AUTH_CANCELED, UNSUPPORTED_SECRET_BACKEND } from '../../../../shared/models'
 import { useI18n } from '../../i18n'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
@@ -15,7 +15,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../../components/ui/dialog'
-import { ConfirmDialog } from '../../components/ui/confirmDialog'
 import { Input } from '../../components/ui/input'
 import { useToast } from '../../components/ui/toaster'
 
@@ -35,25 +34,60 @@ interface SecretRowProps {
   item: EnvMetadata
   isSelected: boolean
   onSelect: (id: string) => void
+  onCopy: (item: EnvMetadata) => void
+  onCopyName: (name: string) => void
 }
 
 const SecretRow = memo(function SecretRow(props: SecretRowProps) {
-  const { item, isSelected, onSelect } = props
+  const { item, isSelected, onSelect, onCopy, onCopyName } = props
+  const { t } = useI18n()
+  const copyLabel = `${t('secrets.copySecret')}: ${item.name}`
+  const copyNameLabel = `${t('secrets.copyVariableName')}: ${item.name}`
 
   return (
-    <button
-      data-testid={`secret-row-${item.name}`}
-      className={`flex items-center gap-3 rounded-xl border p-3 text-left ${isSelected ? 'border-accent bg-surface-active' : 'border-edge bg-surface-card'}`}
+    <div
+      className={`group flex items-center gap-3 rounded-xl border p-3 text-left cursor-pointer ${isSelected ? 'border-accent bg-surface-active' : 'border-edge bg-surface-card'}`}
       onClick={() => onSelect(item.id)}
     >
       <KeyRound className="h-5 w-5 shrink-0 text-text-muted" />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate font-semibold">{item.name}</span>
+        <div className="flex items-center gap-1">
+          <span
+            data-testid={`secret-row-${item.name}`}
+            className="min-w-0 truncate font-semibold"
+          >
+            {item.name}
+          </span>
+          <button
+            type="button"
+            data-testid={`secret-copy-name-${item.name}`}
+            aria-label={copyNameLabel}
+            title={copyNameLabel}
+            className="shrink-0 rounded-md p-1 text-text-muted opacity-0 transition-opacity hover:bg-surface-active hover:text-text-base group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            onClick={(event) => {
+              event.stopPropagation()
+              onCopyName(item.name)
+            }}
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </button>
         </div>
         <div className="truncate text-xs text-text-muted">{item.description || 'No description'}</div>
       </div>
-    </button>
+      <button
+        type="button"
+        data-testid={`secret-copy-${item.name}`}
+        aria-label={copyLabel}
+        title={copyLabel}
+        className="shrink-0 rounded-lg p-2 text-text-muted hover:bg-surface-active hover:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        onClick={(event) => {
+          event.stopPropagation()
+          onCopy(item)
+        }}
+      >
+        <Copy className="h-4 w-4" />
+      </button>
+    </div>
   )
 })
 
@@ -72,28 +106,6 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   } = props
 
   const { toast } = useToast()
-  const expirationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (expirationTimerRef.current !== null) {
-        clearTimeout(expirationTimerRef.current)
-      }
-    }
-  }, [])
-
-  function scheduleExpiration(expiresAt: number) {
-    if (expirationTimerRef.current !== null) {
-      clearTimeout(expirationTimerRef.current)
-    }
-    const ms = expiresAt - Date.now()
-    if (ms <= 0) return
-    expirationTimerRef.current = setTimeout(() => {
-      setRevealValue('')
-      expirationTimerRef.current = null
-    }, ms)
-  }
-
   const [open, setOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false)
@@ -106,6 +118,11 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     () => envs.find((item) => item.id === selectedEnvId) ?? null,
     [envs, selectedEnvId]
   )
+
+  const closeUpdateConfirmation = useCallback((open: boolean) => {
+    setUpdateConfirmOpen(open)
+    if (!open) setPendingUpdateValue('')
+  }, [])
 
   useEffect(() => {
     if (!selectedEnv) return
@@ -131,6 +148,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       value: newEnvValue,
       description: newEnvDescription,
     })
+    if (!result.ok && result.error === AUTH_CANCELED) return
     if (!result.ok) {
       toast(
         result.error === UNSUPPORTED_SECRET_BACKEND
@@ -149,39 +167,38 @@ export function useSecretsPanel(props: SecretsPanelProps) {
   }
 
   async function revealEnv() {
-    if (!selectedEnv) return
+    if (!selectedEnv) return false
     setRevealValue('')
-    if (expirationTimerRef.current !== null) {
-      clearTimeout(expirationTimerRef.current)
-      expirationTimerRef.current = null
-    }
     const result = await window.brover.revealEnv({
       profile: selectedEnv.profile,
       name: selectedEnv.name,
     })
+    if (!result.ok && result.error === AUTH_CANCELED) {
+      setRevealValue('')
+      return false
+    }
     if (!result.ok) {
+      setRevealValue('')
       toast(
         result.error === UNSUPPORTED_SECRET_BACKEND
           ? t('common.unsupportedBackend')
           : (result.error ?? 'Failed to reveal secret'),
         'error'
       )
-      setRevealValue('')
-      return
+      return false
     }
     setRevealValue(result.value ?? '')
-    if (result.expiresAt) {
-      scheduleExpiration(result.expiresAt)
-    }
+    return true
   }
 
-  async function copyEnv(isRevealed: boolean) {
-    if (!selectedEnv) return
+  const copyEnv = useCallback(async (isRevealed: boolean, env = selectedEnv) => {
+    if (!env) return
     const result = await window.brover.copyEnv({
-      profile: selectedEnv.profile,
-      name: selectedEnv.name,
+      profile: env.profile,
+      name: env.name,
       isRevealed,
     })
+    if (!result.ok && result.error === AUTH_CANCELED) return
     if (!result.ok) {
       toast(
         result.error === UNSUPPORTED_SECRET_BACKEND
@@ -192,9 +209,38 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       return
     }
     const value = result.value ?? ''
-    await navigator.clipboard.writeText(value)
+    try {
+      await navigator.clipboard.writeText(value)
+    } catch {
+      toast('Failed to copy secret', 'error')
+      return
+    }
     toast(t('common.secretCopied'))
-  }
+  }, [selectedEnv, t, toast])
+
+  const onCopyEnv = useCallback(
+    (env: EnvMetadata) => {
+      void copyEnv(false, env)
+    },
+    [copyEnv]
+  )
+
+  const copyEnvName = useCallback(async (name: string) => {
+    try {
+      await navigator.clipboard.writeText(name)
+    } catch {
+      toast(t('secrets.copyVariableNameFailed'), 'error')
+      return
+    }
+    toast(t('secrets.variableNameCopied'))
+  }, [t, toast])
+
+  const onCopyEnvName = useCallback(
+    (name: string) => {
+      void copyEnvName(name)
+    },
+    [copyEnvName]
+  )
 
   async function updateEnvValue(editedValue: string) {
     if (!selectedEnv) return
@@ -205,6 +251,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       value: editedValue,
       description: selectedEnv.description,
     })
+    if (!result.ok && result.error === AUTH_CANCELED) return
     if (!result.ok) {
       toast(
         result.error === UNSUPPORTED_SECRET_BACKEND
@@ -219,7 +266,8 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       setUpdateConfirmOpen(true)
       return
     }
-    setRevealValue('')
+    setRevealValue(editedValue)
+    setHasValue(true)
     toast(t('common.secretUpdated'))
     if (selectedEnv) {
       window.brover.secretExists(selectedEnv.profile, selectedEnv.name).then(setHasValue)
@@ -235,6 +283,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       value: pendingUpdateValue,
       description: selectedEnv.description,
     })
+    if (!result.ok && result.error === AUTH_CANCELED) return
     if (!result.ok) {
       toast(
         result.error === UNSUPPORTED_SECRET_BACKEND
@@ -242,13 +291,11 @@ export function useSecretsPanel(props: SecretsPanelProps) {
           : (result.error ?? 'Failed to update secret'),
         'error'
       )
-      return
+      throw new Error(result.error ?? 'Failed to update secret')
     }
-    setUpdateConfirmOpen(false)
-    setPendingUpdateValue('')
-    setRevealValue('')
+    setRevealValue(pendingUpdateValue)
+    setHasValue(true)
     toast(t('common.secretUpdated'))
-    window.brover.secretExists(selectedEnv.profile, selectedEnv.name).then(setHasValue)
   }
 
   async function deleteEnv() {
@@ -258,6 +305,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       profile: selectedEnv.profile,
       name: selectedEnv.name,
     })
+    if (!result.ok && result.error === AUTH_CANCELED) return
     if (!result.ok) {
       toast(
         result.error === UNSUPPORTED_SECRET_BACKEND
@@ -284,6 +332,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       profile: selectedEnv.profile,
       name: selectedEnv.name,
     })
+    if (!result.ok && result.error === AUTH_CANCELED) return
     if (!result.ok) {
       toast(
         result.error === UNSUPPORTED_SECRET_BACKEND
@@ -291,9 +340,8 @@ export function useSecretsPanel(props: SecretsPanelProps) {
           : (result.error ?? 'Failed to delete secret'),
         'error'
       )
-      return
+      throw new Error(result.error ?? 'Failed to delete secret')
     }
-    setDeleteConfirmOpen(false)
     setEnvs(await window.brover.listEnvs())
     setSelectedEnvId('')
     setRevealValue('')
@@ -319,6 +367,8 @@ export function useSecretsPanel(props: SecretsPanelProps) {
             item={item}
             isSelected={selectedEnvId === item.id}
             onSelect={onSelectEnv}
+            onCopy={onCopyEnv}
+            onCopyName={onCopyEnvName}
           />
         ))}
       </div>
@@ -370,7 +420,7 @@ export function useSecretsPanel(props: SecretsPanelProps) {
                     />
                     <textarea
                       data-testid="add-secret-description"
-                      className="min-h-20 w-full rounded-lg border border-edge bg-slate-900 px-3 py-2 text-sm text-text-emphasis outline-none placeholder:text-text-muted"
+                      className="min-h-20 w-full rounded-lg border border-edge bg-slate-900 px-3 py-2 text-sm text-text-emphasis placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       placeholder={t('secrets.description')}
                       value={newEnvDescription}
                       onChange={(event) =>
@@ -394,26 +444,6 @@ export function useSecretsPanel(props: SecretsPanelProps) {
 
         {listContent}
 
-        <ConfirmDialog
-          open={updateConfirmOpen}
-          onOpenChange={setUpdateConfirmOpen}
-          title={`Update "${selectedEnv?.name}"?`}
-          description="This will replace the current secret value."
-          confirmLabel="Update"
-          cancelLabel="Cancel"
-          onConfirm={() => void updateEnvConfirmed()}
-        />
-
-        <ConfirmDialog
-          open={deleteConfirmOpen}
-          onOpenChange={setDeleteConfirmOpen}
-          title={`Delete "${selectedEnv?.name}"?`}
-          description="This cannot be undone."
-          confirmLabel="Delete"
-          cancelLabel="Cancel"
-          destructive
-          onConfirm={() => void deleteEnvConfirmed()}
-        />
       </>
     ),
     selectedEnv,
@@ -422,6 +452,8 @@ export function useSecretsPanel(props: SecretsPanelProps) {
     copyEnv,
     updateEnvValue,
     updateEnvConfirmed,
+    updateConfirmOpen,
+    closeUpdateConfirmation,
     deleteEnv,
     deleteEnvConfirmed,
     deleteConfirmOpen,

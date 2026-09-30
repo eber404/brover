@@ -11,7 +11,6 @@ export interface SecretActionResult {
   ok: boolean
   value?: string
   error?: string
-  expiresAt?: number | null
 }
 
 export interface TerminalApp {
@@ -71,3 +70,5 @@ export interface OnboardingSummary {
 }
 
 export const UNSUPPORTED_SECRET_BACKEND = 'UNSUPPORTED_SECRET_BACKEND'
+
+export const AUTH_CANCELED = 'AUTH_CANCELED'

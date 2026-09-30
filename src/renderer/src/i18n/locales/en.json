@@ -35,7 +35,9 @@
     "noResultsDescription": "Try a different search term.",
     "revealSecret": "Reveal Secret",
     "copySecret": "Copy Secret",
-    "updateValue": "Update Secret Value",
+    "copyVariableName": "Copy variable name",
+    "variableNameCopied": "Variable name copied",
+    "copyVariableNameFailed": "Failed to copy variable name",
     "deleteSecret": "Delete Secret",
     "selectSecret": "Select a secret.",
     "enabled": "Enabled",
@@ -43,6 +45,7 @@
     "dialogTitle": "Add Secret",
     "dialogDescription": "Create metadata + store secret value in secure backend.",
     "defineTitle": "Define Secret",
+    "rotateValue": "Rotate",
     "saveValue": "Save",
     "cancel": "Cancel",
     "create": "Create"

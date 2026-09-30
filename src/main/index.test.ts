@@ -18,7 +18,6 @@ const unwatchFile = vi.fn()
 const authPrompt = vi.fn()
 const authorize = vi.fn()
 const isAuthorized = vi.fn()
-const expiresAt = vi.fn()
 const revealEnv = vi.fn()
 const listEnvs = vi.fn()
 const listEnvironments = vi.fn()
@@ -87,7 +86,7 @@ const browserWindowState = {
     },
   },
 }
-const BrowserWindowMock = vi.fn(function BrowserWindowMock() {
+const BrowserWindowMock = vi.fn(function BrowserWindowMock(_options?: unknown) {
   return browserWindowState
 })
 const showOpenDialog = vi.fn()
@@ -113,12 +112,16 @@ vi.mock('./store', () => ({
 }))
 
 vi.mock('./authSessionCache', () => ({
-  createAuthSessionCache: vi.fn(() => ({ isAuthorized, expiresAt })),
+  createAuthSessionCache: vi.fn(() => ({ isAuthorized, grant: vi.fn(), revoke: vi.fn() })),
 }))
 
-vi.mock('./authPrompt', () => ({
-  createMacSecretAuthPrompt: vi.fn(() => authPrompt),
-}))
+vi.mock('./authPrompt', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./authPrompt')>()
+  return {
+    ...actual,
+    createMacSecretAuthPrompt: vi.fn(() => authPrompt),
+  }
+})
 
 vi.mock('./secretAuthGate', () => ({
   createSecretAuthGate: vi.fn(() => ({ authorize })),
@@ -171,7 +174,6 @@ describe('main IPC wiring', () => {
     vi.clearAllMocks()
     appMock.isPackaged = true
     isAuthorized.mockReturnValue(false)
-    expiresAt.mockReturnValue(123)
     revealEnv.mockResolvedValue('secret-value')
     listEnvs.mockResolvedValue([])
     listEnvironments.mockResolvedValue([{ id: 'env-1', isActive: true }])
@@ -214,7 +216,7 @@ describe('main IPC wiring', () => {
     const result = await handlers.get('envs:reveal')?.({}, { profile: 'env-1', name: 'API_KEY' })
 
     expect(authorize).not.toHaveBeenCalled()
-    expect(result).toEqual({ ok: true, value: 'secret-value', expiresAt: 123 })
+    expect(result).toEqual({ ok: true, value: 'secret-value' })
   })
 
   it('launch passes only selected environment secrets with stored values', async () => {
@@ -385,6 +387,42 @@ describe('main IPC wiring', () => {
     expect(deleteResult).toEqual({ ok: false, error: 'bad delete' })
   })
 
+  it('authorizes confirmed updates when the auth cache is absent', async () => {
+    isAuthorized.mockReturnValue(false)
+    await loadModule()
+
+    const result = await handlers.get('envs:update-confirmed')?.({}, {
+      id: 'secret-1',
+      profile: 'env-1',
+      name: 'API_KEY',
+      value: 'next',
+    })
+
+    expect(authorize).toHaveBeenCalledWith('update', { targetId: 'env-1' })
+    expect(updateEnv).toHaveBeenCalledWith({
+      id: 'secret-1',
+      profile: 'env-1',
+      name: 'API_KEY',
+      value: 'next',
+    })
+    expect(result).toEqual({ ok: true })
+  })
+
+  it('authorizes confirmed deletes when the auth cache is absent', async () => {
+    isAuthorized.mockReturnValue(false)
+    await loadModule()
+
+    const result = await handlers.get('envs:delete-confirmed')?.({}, {
+      id: 'secret-1',
+      profile: 'env-1',
+      name: 'API_KEY',
+    })
+
+    expect(authorize).toHaveBeenCalledWith('delete', { targetId: 'env-1' })
+    expect(deleteEnv).toHaveBeenCalledWith({ id: 'secret-1', profile: 'env-1', name: 'API_KEY' })
+    expect(result).toEqual({ ok: true })
+  })
+
   it('maps update and delete mutation wrapper failures', async () => {
     runUpdateMutation.mockRejectedValueOnce(new Error('update wrapper failed'))
     runDeleteMutation.mockRejectedValueOnce(new Error('delete wrapper failed'))
@@ -420,6 +458,28 @@ describe('main IPC wiring', () => {
     expect(deleteEnv).toHaveBeenCalledWith({ id: 'secret-1', profile: 'env-1', name: 'API_KEY' })
     expect(updateResult).toEqual({ ok: true, value: 'needs-confirmation' })
     expect(deleteResult).toEqual({ ok: true, value: 'needs-confirmation' })
+  })
+
+  it('caps the window width at 760px', async () => {
+    await loadFreshModule()
+
+    const options = BrowserWindowMock.mock.calls.at(-1)?.[0] as {
+      width: number
+      maxWidth: number
+      minWidth: number
+    }
+
+    expect(options.maxWidth).toBe(760)
+    expect(options.width).toBeLessThanOrEqual(760)
+    expect(options.minWidth).toBeLessThanOrEqual(options.maxWidth)
+  })
+
+  it('centers the window so the system auth sheet anchors to the app', async () => {
+    await loadFreshModule()
+
+    const options = BrowserWindowMock.mock.calls.at(-1)?.[0] as { center?: boolean }
+
+    expect(options.center).toBe(true)
   })
 
   it('boots dev window with storage cleanup and preload watcher', async () => {
