@@ -36,14 +36,7 @@ macOS-only for now.
 Install via Homebrew:
 
 ```sh
-brew tap eber404/brover
-brew install brover
-```
-
-Or in one step:
-
-```sh
-brew install eber404/brover/brover
+brew tap eber404/brover https://github.com/eber404/brover && brew install --cask brover
 ```
 
 Current releases are unsigned and not notarized. For test installs, after dragging `Brover.app` into `/Applications`, run:

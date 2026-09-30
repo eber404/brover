@@ -1,6 +1,6 @@
-generatedAt: "2026-06-10T00:55:42.305Z"
-repoRoot: /Users/eber/dev/brover
-tsconfigPath: /Users/eber/dev/brover/tsconfig.json
+generatedAt: "2026-09-30T13:16:26.383Z"
+repoRoot: /Users/eber/dev/brover/.worktrees/homebrew-main
+tsconfigPath: /Users/eber/dev/brover/.worktrees/homebrew-main/tsconfig.json
 fileCount: 46
 files[46]:
   - path: playwright.config.ts
@@ -823,8 +823,8 @@ files[46]:
           - name: render
             async: false
             params[0]:
-            returnType: "string | number | bigint | boolean | import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element | Iterable<React.ReactNode> | Promise..."
-            signature: "render(): string | number | bigint | boolean | import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element | Iterable<React.ReactNode> | Promise..."
+            returnType: "string | number | bigint | boolean | import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element | Iterable<R..."
+            signature: "render(): string | number | bigint | boolean | import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element | Iterable<R..."
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/renderer/src/App.tsx
@@ -889,15 +889,15 @@ files[46]:
         defaultExport: true
         async: false
         params[0]:
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
-        signature: "App(): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        signature: "App(): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
       - name: AppShell
         exported: false
         defaultExport: false
         async: false
         params[0]:
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "AppShell(): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "AppShell(): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[2]{name,exported,defaultExport,kind,propsName,propsType}:
       App,true,true,function,null,null
       AppShell,false,false,function,null,null
@@ -920,8 +920,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{ children }","{ children: React.ReactNode }"
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "HideSplash({ children }: { children: React.ReactNode }): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "HideSplash({ children }: { children: React.ReactNode }): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
       HideSplash,true,true,function,"{ children }","{ children: React.ReactNode }"
     types[0]:
@@ -973,8 +973,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{ className, ...props }",React.HTMLAttributes<HTMLDivElement>
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
       Card,true,false,function,"{ className, ...props }",React.HTMLAttributes<HTMLDivElement>
     types[0]:
@@ -1005,8 +1005,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{\n  open,\n  onOpenChange,\n  title,\n  description,\n  confirmLabel = 'Delete',\n  cancelLabel = 'Cancel',\n  destructive = false,\n  onConfirm,\n}",ConfirmDialogProps
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "ConfirmDialog({\n  open,\n  onOpenChange,\n  title,\n  description,\n  confirmLabel = 'Delete',\n  cancelLabel = 'Cancel',\n  destructive = false,\n  onConfirm,\n}: ConfirmDialogProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "ConfirmDialog({\n  open,\n  onOpenChange,\n  title,\n  description,\n  confirmLabel = 'Delete',\n  cancelLabel = 'Cancel',\n  destructive = false,\n  onConfirm,\n}: ConfirmDialogProps): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
       ConfirmDialog,true,false,function,"{\n  open,\n  onOpenChange,\n  title,\n  description,\n  confirmLabel = 'Delete',\n  cancelLabel = 'Cancel',\n  destructive = false,\n  onConfirm,\n}",ConfirmDialogProps
     types[1]:
@@ -1048,32 +1048,32 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{ className, children, ...props }",React.ComponentProps<typeof DialogPrimitive.Content>
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "DialogContent({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "DialogContent({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
       - name: DialogDescription
         exported: true
         defaultExport: false
         async: false
         params[1]{name,type}:
           "{ className, ...props }",React.ComponentProps<typeof DialogPrimitive.Description>
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
       - name: DialogHeader
         exported: true
         defaultExport: false
         async: false
         params[1]{name,type}:
           "{ className, ...props }",React.HTMLAttributes<HTMLDivElement>
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
       - name: DialogTitle
         exported: true
         defaultExport: false
         async: false
         params[1]{name,type}:
           "{ className, ...props }",React.ComponentProps<typeof DialogPrimitive.Title>
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[4]{name,exported,defaultExport,kind,propsName,propsType}:
       DialogContent,true,false,function,"{ className, children, ...props }",React.ComponentProps<typeof DialogPrimitive.Content>
       DialogDescription,true,false,function,"{ className, ...props }",React.ComponentProps<typeof DialogPrimitive.Description>
@@ -1143,16 +1143,16 @@ files[46]:
         defaultExport: false
         async: false
         params[0]:
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "Toaster(): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "Toaster(): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
       - name: ToastProvider
         exported: true
         defaultExport: false
         async: false
         params[1]{name,type}:
           "{ children }","{ children: React.ReactNode }"
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "ToastProvider({ children }: { children: React.ReactNode }): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "ToastProvider({ children }: { children: React.ReactNode }): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
       - name: useToast
         exported: true
         defaultExport: false
@@ -1318,8 +1318,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{ summary, onConfirm, onBack }",ConfirmationStepProps
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "ConfirmationStep({ summary, onConfirm, onBack }: ConfirmationStepProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "ConfirmationStep({ summary, onConfirm, onBack }: ConfirmationStepProps): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
       ConfirmationStep,true,true,function,"{ summary, onConfirm, onBack }",ConfirmationStepProps
     types[0]:
@@ -1386,8 +1386,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{ onComplete }",OnboardingFlowProps
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "OnboardingFlow({ onComplete }: OnboardingFlowProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "OnboardingFlow({ onComplete }: OnboardingFlowProps): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
       OnboardingFlow,true,true,function,"{ onComplete }",OnboardingFlowProps
     types[0]:
@@ -1445,8 +1445,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{\n  onContinue,\n  onBack,\n}",RetroactiveReviewStepProps
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "RetroactiveReviewStep({\n  onContinue,\n  onBack,\n}: RetroactiveReviewStepProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "RetroactiveReviewStep({\n  onContinue,\n  onBack,\n}: RetroactiveReviewStepProps): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
       RetroactiveReviewStep,true,true,function,"{\n  onContinue,\n  onBack,\n}",RetroactiveReviewStepProps
     types[0]:
@@ -1502,8 +1502,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{\n  onBack,\n  onContinue,\n}",TerminalPreferencesStepProps
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "TerminalPreferencesStep({\n  onBack,\n  onContinue,\n}: TerminalPreferencesStepProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "TerminalPreferencesStep({\n  onBack,\n  onContinue,\n}: TerminalPreferencesStepProps): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
       TerminalPreferencesStep,true,true,function,"{\n  onBack,\n  onContinue,\n}",TerminalPreferencesStepProps
     types[0]:
@@ -1533,8 +1533,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{ onSelectMode }",WelcomeStepProps
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "WelcomeStep({ onSelectMode }: WelcomeStepProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "WelcomeStep({ onSelectMode }: WelcomeStepProps): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
       WelcomeStep,true,true,function,"{ onSelectMode }",WelcomeStepProps
     types[0]:
@@ -1591,8 +1591,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}",SecretsDetailProps
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "SecretsDetail({\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}: SecretsDetailProps): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "SecretsDetail({\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}: SecretsDetailProps): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
     reactComponents[1]{name,exported,defaultExport,kind,propsName,propsType}:
       SecretsDetail,true,false,function,"{\n  env,\n  environmentName,\n  revealValue,\n  hasValue,\n  onReveal,\n  onCopy,\n  onUpdateValue\n}",SecretsDetailProps
     types[0]:
@@ -1689,8 +1689,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           props,SecretsPanelProps
-        returnType: "{ center: import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ..."
-        signature: "useSecretsPanel(props: SecretsPanelProps): { center: import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ..."
+        returnType: "{ center: import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasVa..."
+        signature: "useSecretsPanel(props: SecretsPanelProps): { center: import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasVa..."
     reactComponents[0]:
     types[0]:
     classes[0]:
@@ -1702,8 +1702,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           props,SecretsPanelProps
-        returnType: "{ center: import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ..."
-        signature: "useSecretsPanel(props: SecretsPanelProps): { center: import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ..."
+        returnType: "{ center: import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasVa..."
+        signature: "useSecretsPanel(props: SecretsPanelProps): { center: import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element; selectedEnv: EnvMetadata | null; hasVa..."
   - path: src/renderer/src/features/terminals/TerminalSidebar.tsx
     imports[6]:
       - moduleSpecifier: react
@@ -1788,8 +1788,8 @@ files[46]:
         async: false
         params[1]{name,type}:
           "{ children }","{ children: ReactNode }"
-        returnType: "import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        signature: "I18nProvider({ children }: { children: ReactNode }): import(\"/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        returnType: "import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        signature: "I18nProvider({ children }: { children: ReactNode }): import(\"/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime\").JSX.Element"
       - name: storeLocale
         exported: false
         defaultExport: false

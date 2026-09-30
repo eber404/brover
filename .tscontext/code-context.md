@@ -1,6 +1,6 @@
 # Code Context Summary
 
-Generated: 2026-06-10T00:55:42.305Z
+Generated: 2026-09-30T13:16:26.383Z
 Files: 46
 
 ## `playwright.config.ts`
@@ -162,7 +162,7 @@ Imports: `./index`
 Imports: `react`, `react-dom/client`, `./src/App`, `./src/styles.css`
 
 Classes:
-- `ErrorBoundary`: getDerivedStateFromError(error: Error): { hasError: boolean; error: string; }; componentDidCatch(error: Error, info: React.ErrorInfo): void; render(): string | number | bigint | boolean | import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element | Iterable<React.ReactNode> | Promise...
+- `ErrorBoundary`: getDerivedStateFromError(error: Error): { hasError: boolean; error: string; }; componentDidCatch(error: Error, info: React.ErrorInfo): void; render(): string | number | bigint | boolean | import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element | Iterable<R...
 
 ## `src/renderer/src/App.tsx`
 
@@ -171,8 +171,8 @@ Imports: `react`, `lucide-react`, `../../shared/models`, `./components/ui/confir
 Exports: `default` (FunctionDeclaration)
 
 Functions:
-- `App(): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element | null`
-- `AppShell(): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `App(): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element | null`
+- `AppShell(): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `App` [function] props: none
@@ -185,7 +185,7 @@ Imports: `react`
 Exports: `default` (FunctionDeclaration)
 
 Functions:
-- `HideSplash({ children }: { children: React.ReactNode }): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `HideSplash({ children }: { children: React.ReactNode }): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `HideSplash` [function] props: { children }: { children: React.ReactNode }
@@ -208,7 +208,7 @@ Imports: `react`, `../../lib/utils`
 Exports: `Card` (FunctionDeclaration)
 
 Functions:
-- `Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `Card` [function] props: { className, ...props }: React.HTMLAttributes<HTMLDivElement>
@@ -229,7 +229,7 @@ Functions:
   cancelLabel = 'Cancel',
   destructive = false,
   onConfirm,
-}: ConfirmDialogProps): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+}: ConfirmDialogProps): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `ConfirmDialog` [function] props: {
@@ -253,10 +253,10 @@ Imports: `react`, `@radix-ui/react-dialog`, `../../lib/utils`
 Exports: `Dialog` (VariableDeclaration), `DialogClose` (VariableDeclaration), `DialogContent` (FunctionDeclaration), `DialogDescription` (FunctionDeclaration), `DialogHeader` (FunctionDeclaration), `DialogTitle` (FunctionDeclaration), `DialogTrigger` (VariableDeclaration)
 
 Functions:
-- `DialogContent({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
-- `DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
-- `DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
-- `DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `DialogContent({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `DialogContent` [function] props: { className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>
@@ -289,8 +289,8 @@ Imports: `react`, `react`
 Exports: `ToastProvider` (FunctionDeclaration), `useToast` (FunctionDeclaration)
 
 Functions:
-- `Toaster(): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
-- `ToastProvider({ children }: { children: React.ReactNode }): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `Toaster(): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `ToastProvider({ children }: { children: React.ReactNode }): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 - `useToast(): ToastContextValue`
 
 React Components:
@@ -331,7 +331,7 @@ Imports: `lucide-react`, `../../i18n`, `../../components/ui/button`, `../../comp
 Exports: `default` (FunctionDeclaration)
 
 Functions:
-- `ConfirmationStep({ summary, onConfirm, onBack }: ConfirmationStepProps): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `ConfirmationStep({ summary, onConfirm, onBack }: ConfirmationStepProps): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `ConfirmationStep` [function] props: { summary, onConfirm, onBack }: ConfirmationStepProps
@@ -344,7 +344,7 @@ Exports: `default` (FunctionDeclaration)
 
 Functions:
 - `computePreviewSummary(scanResult: ScanResult, selectedIds: string[]): OnboardingSummary`
-- `OnboardingFlow({ onComplete }: OnboardingFlowProps): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `OnboardingFlow({ onComplete }: OnboardingFlowProps): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `OnboardingFlow` [function] props: { onComplete }: OnboardingFlowProps
@@ -361,7 +361,7 @@ Functions:
 - `RetroactiveReviewStep({
   onContinue,
   onBack,
-}: RetroactiveReviewStepProps): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+}: RetroactiveReviewStepProps): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `RetroactiveReviewStep` [function] props: {
@@ -380,7 +380,7 @@ Functions:
 - `TerminalPreferencesStep({
   onBack,
   onContinue,
-}: TerminalPreferencesStepProps): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+}: TerminalPreferencesStepProps): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `TerminalPreferencesStep` [function] props: {
@@ -395,7 +395,7 @@ Imports: `react`, `../../i18n`, `../../components/ui/card`
 Exports: `default` (FunctionDeclaration)
 
 Functions:
-- `WelcomeStep({ onSelectMode }: WelcomeStepProps): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `WelcomeStep({ onSelectMode }: WelcomeStepProps): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `WelcomeStep` [function] props: { onSelectMode }: WelcomeStepProps
@@ -423,7 +423,7 @@ Functions:
   onReveal,
   onCopy,
   onUpdateValue
-}: SecretsDetailProps): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+}: SecretsDetailProps): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 
 React Components:
 - `SecretsDetail` [function] props: {
@@ -451,10 +451,10 @@ Imports: `react`, `react`, `lucide-react`, `../../../../shared/models`, `../../.
 Exports: `useSecretsPanel` (FunctionDeclaration)
 
 Functions:
-- `useSecretsPanel(props: SecretsPanelProps): { center: import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ...`
+- `useSecretsPanel(props: SecretsPanelProps): { center: import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element; selectedEnv: EnvMetadata | null; hasVa...`
 
 Hooks:
-- `useSecretsPanel(props: SecretsPanelProps): { center: import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element; selectedEnv: EnvMetadata | null; hasValue: boolean; revealEnv: ...`
+- `useSecretsPanel(props: SecretsPanelProps): { center: import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element; selectedEnv: EnvMetadata | null; hasVa...`
 
 ## `src/renderer/src/features/terminals/TerminalSidebar.tsx`
 
@@ -473,7 +473,7 @@ Exports: `I18nProvider` (FunctionDeclaration), `Locale` (TypeAliasDeclaration), 
 Functions:
 - `getNestedValue(obj: Record<string, unknown>, path: string): string`
 - `getStoredLocale(): Locale`
-- `I18nProvider({ children }: { children: ReactNode }): import("/Users/eber/dev/brover/node_modules/@types/react/jsx-runtime").JSX.Element`
+- `I18nProvider({ children }: { children: ReactNode }): import("/Users/eber/dev/brover/.worktrees/homebrew-main/node_modules/@types/react/jsx-runtime").JSX.Element`
 - `storeLocale(newLocale: Locale): void`
 - `useI18n(): I18nContextValue`
 
