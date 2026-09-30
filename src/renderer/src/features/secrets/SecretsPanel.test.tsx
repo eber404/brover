@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act } from '@testing-library/react'
 import { afterEach } from 'vitest'
 import { I18nProvider } from '../../i18n'
 import { ToastProvider } from '../../components/ui/toaster'
@@ -231,6 +232,65 @@ describe('SecretsPanel', () => {
     })
   })
 
+  it('reveals secret value without expiration timer when expiresAt missing', async () => {
+    const revealEnv = vi.fn().mockResolvedValue({ ok: true, value: 'plain-secret' })
+    const setRevealValue = vi.fn()
+    // @ts-expect-error mock
+    window.brover = { revealEnv, secretExists: vi.fn().mockResolvedValue(true) }
+
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper
+            envs={[mockEnv]}
+            filteredEnvs={[mockEnv]}
+            selectedEnvId={mockEnv.id}
+            setRevealValue={setRevealValue}
+          />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('reveal-btn'))
+
+    await waitFor(() => {
+      expect(setRevealValue).toHaveBeenCalledWith('plain-secret')
+    })
+  })
+
+  it('reveal clears previous expiration timer before scheduling next one', async () => {
+    vi.useFakeTimers()
+    const revealEnv = vi.fn()
+      .mockResolvedValueOnce({ ok: true, value: 'first', expiresAt: Date.now() + 5000 })
+      .mockResolvedValueOnce({ ok: true, value: 'second', expiresAt: Date.now() + 10000 })
+    const setRevealValue = vi.fn()
+    // @ts-expect-error mock
+    window.brover = { revealEnv, secretExists: vi.fn().mockResolvedValue(true) }
+
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper envs={[mockEnv]} filteredEnvs={[mockEnv]} selectedEnvId={mockEnv.id} setRevealValue={setRevealValue} />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('reveal-btn'))
+    await Promise.resolve()
+    fireEvent.click(screen.getByTestId('reveal-btn'))
+    await Promise.resolve()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000)
+    })
+    expect(setRevealValue).not.toHaveBeenLastCalledWith('')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000)
+    })
+    expect(setRevealValue).toHaveBeenLastCalledWith('')
+  })
+
   it('clears revealed value after auth expiration', async () => {
     vi.useFakeTimers()
     const revealEnv = vi.fn().mockResolvedValue({
@@ -342,6 +402,29 @@ describe('SecretsPanel', () => {
     })
   })
 
+  it('shows toast when confirmed update fails', async () => {
+    const updateEnv = vi.fn().mockResolvedValue({ ok: true, value: 'needs-confirmation' })
+    const updateEnvConfirmed = vi.fn().mockResolvedValue({ ok: false, error: UNSUPPORTED_SECRET_BACKEND })
+    // @ts-expect-error mock
+    window.brover = { updateEnv, updateEnvConfirmed, secretExists: vi.fn().mockResolvedValue(true) }
+
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper envs={[mockEnv]} filteredEnvs={[mockEnv]} selectedEnvId={mockEnv.id} />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('update-btn'))
+    await screen.findByText('Update "API_KEY"?')
+    fireEvent.click(screen.getByRole('button', { name: 'Update' }))
+
+    await waitFor(() => {
+      expect(updateEnvConfirmed).toHaveBeenCalled()
+    })
+  })
+
   it('opens update confirmation when auth cache already exists', async () => {
     const updateEnv = vi.fn().mockResolvedValue({ ok: true, value: 'needs-confirmation' })
     const updateEnvConfirmed = vi.fn().mockResolvedValue({ ok: true })
@@ -439,6 +522,32 @@ describe('SecretsPanel', () => {
     expect(screen.getByText('No secrets match your search')).toBeTruthy()
   })
 
+  it('shows no secrets empty state when environment has no secrets and no search query', () => {
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper envs={[]} filteredEnvs={[]} />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    expect(screen.getByText('No secrets yet')).toBeTruthy()
+  })
+
+  it('selects secret row through list content', async () => {
+    const setSelectedEnvId = vi.fn()
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper envs={[mockEnv]} filteredEnvs={[mockEnv]} setSelectedEnvId={setSelectedEnvId} />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('secret-row-API_KEY'))
+    expect(setSelectedEnvId).toHaveBeenCalledWith('env-1')
+  })
+
   it('shows toast when deleteEnv fails', async () => {
     const deleteEnv = vi.fn().mockResolvedValue({ ok: false, error: 'Failed to delete' })
     const listEnvs = vi.fn().mockResolvedValue([])
@@ -464,6 +573,83 @@ describe('SecretsPanel', () => {
     await waitFor(() => {
       expect(deleteEnv).toHaveBeenCalled()
     })
+  })
+
+  it('shows toast when confirmed delete fails', async () => {
+    const deleteEnv = vi.fn().mockResolvedValue({ ok: true, value: 'needs-confirmation' })
+    const deleteEnvConfirmed = vi.fn().mockResolvedValue({ ok: false, error: UNSUPPORTED_SECRET_BACKEND })
+    // @ts-expect-error mock
+    window.brover = { deleteEnv, deleteEnvConfirmed, secretExists: vi.fn().mockResolvedValue(true), listEnvs: vi.fn().mockResolvedValue([]) }
+
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper envs={[mockEnv]} filteredEnvs={[mockEnv]} selectedEnvId={mockEnv.id} />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('delete-btn'))
+    await screen.findByText('Delete "API_KEY"?')
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete', hidden: true })
+    fireEvent.click(deleteButtons[deleteButtons.length - 1]!)
+
+    await waitFor(() => {
+      expect(deleteEnvConfirmed).toHaveBeenCalled()
+    })
+  })
+
+  it('no-ops action handlers when no secret is selected', () => {
+    const revealEnv = vi.fn()
+    const copyEnv = vi.fn()
+    const updateEnv = vi.fn()
+    const deleteEnv = vi.fn()
+    // @ts-expect-error mock
+    window.brover = { revealEnv, copyEnv, updateEnv, deleteEnv, secretExists: vi.fn().mockResolvedValue(false) }
+
+    render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper envs={[]} filteredEnvs={[]} />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('reveal-btn'))
+    fireEvent.click(screen.getByTestId('copy-btn'))
+    fireEvent.click(screen.getByTestId('update-btn'))
+    fireEvent.click(screen.getByTestId('delete-btn'))
+
+    expect(revealEnv).not.toHaveBeenCalled()
+    expect(copyEnv).not.toHaveBeenCalled()
+    expect(updateEnv).not.toHaveBeenCalled()
+    expect(deleteEnv).not.toHaveBeenCalled()
+  })
+
+  it('clears expiration timer on unmount', async () => {
+    vi.useFakeTimers()
+    const revealEnv = vi.fn().mockResolvedValue({ ok: true, value: 'first', expiresAt: Date.now() + 5000 })
+    const setRevealValue = vi.fn()
+    // @ts-expect-error mock
+    window.brover = { revealEnv, secretExists: vi.fn().mockResolvedValue(true) }
+
+    const rendered = render(
+      <I18nProvider>
+        <ToastProvider>
+          <SecretsTestWrapper envs={[mockEnv]} filteredEnvs={[mockEnv]} selectedEnvId={mockEnv.id} setRevealValue={setRevealValue} />
+        </ToastProvider>
+      </I18nProvider>
+    )
+
+    fireEvent.click(screen.getByTestId('reveal-btn'))
+    await Promise.resolve()
+    rendered.unmount()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000)
+    })
+
+    expect(setRevealValue).not.toHaveBeenLastCalledWith('')
   })
 
   it('clears selected env after successful delete', async () => {

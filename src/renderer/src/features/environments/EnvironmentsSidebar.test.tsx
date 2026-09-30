@@ -190,4 +190,77 @@ describe('EnvironmentsSidebar', () => {
 
     expect(onReorderEnvironments).toHaveBeenCalledWith(['environment-2', 'environment-1'])
   })
+
+  it('closes color menu from overlay click and shows tooltip on hover', () => {
+    render(<EnvironmentsSidebar {...defaultProps} />)
+
+    fireEvent.click(screen.getByTestId('environment-color-environment-1'))
+    expect(screen.getByTestId('environment-color-menu')).toBeTruthy()
+
+    fireEvent.mouseEnter(screen.getByTestId('environment-name-environment-1'))
+    expect(screen.getAllByText('dev').length).toBeGreaterThan(0)
+
+    const overlay = document.querySelector('button.absolute.inset-0') as HTMLButtonElement | null
+    if (!overlay) {
+      throw new Error('Expected color menu overlay')
+    }
+    fireEvent.click(overlay)
+    expect(screen.queryByTestId('environment-color-menu')).toBeNull()
+
+    fireEvent.mouseLeave(screen.getByTestId('environment-name-environment-1'))
+  })
+
+  it('ignores drop when dragged environment is same as target', () => {
+    const onReorderEnvironments = vi.fn()
+    render(<EnvironmentsSidebar {...defaultProps} onReorderEnvironments={onReorderEnvironments} />)
+
+    const transfer = {
+      effectAllowed: 'move',
+      dropEffect: 'move',
+      setData: vi.fn(),
+      getData: vi.fn(() => 'environment-1'),
+    }
+
+    fireEvent.drop(screen.getByTestId('environment-row-environment-1'), {
+      dataTransfer: transfer,
+    })
+
+    expect(onReorderEnvironments).not.toHaveBeenCalled()
+  })
+
+  it('saves rename on blur and clears drag opacity on drag end', () => {
+    const onSaveRenameEnvironment = vi.fn()
+    const { rerender } = render(
+      <EnvironmentsSidebar
+        {...defaultProps}
+        editingEnvironmentId="environment-1"
+        editingName="prod"
+        onSaveRenameEnvironment={onSaveRenameEnvironment}
+      />
+    )
+
+    fireEvent.blur(screen.getByTestId('environment-rename-environment-1'))
+    expect(onSaveRenameEnvironment).toHaveBeenCalledWith('environment-1')
+
+    rerender(<EnvironmentsSidebar {...defaultProps} />)
+    const transfer = {
+      effectAllowed: 'move',
+      dropEffect: 'move',
+      setData: vi.fn(),
+      getData: vi.fn(() => 'environment-1'),
+    }
+    fireEvent.dragStart(screen.getByTestId('environment-row-environment-1'), { dataTransfer: transfer })
+    expect(screen.getByTestId('environment-row-environment-1').className).toContain('opacity-50')
+    fireEvent.dragEnd(screen.getByTestId('environment-row-environment-1'))
+    expect(screen.getByTestId('environment-row-environment-1').className).not.toContain('opacity-50')
+  })
+
+  it('closes delete dialog through onOpenChange false path', () => {
+    render(<EnvironmentsSidebar {...defaultProps} />)
+
+    fireEvent.click(screen.getByTestId('environment-delete-environment-1'))
+    expect(screen.getByText('Delete environment?')).toBeTruthy()
+    fireEvent.click(screen.getByText('Cancel'))
+    expect(screen.queryByText('Delete environment?')).toBeNull()
+  })
 })

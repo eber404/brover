@@ -305,4 +305,237 @@ describe('TerminalSidebar', () => {
       defaultTerminalId: 'warp',
     })
   })
+
+  it('renders initials when terminal has no icon', async () => {
+    window.brover.launch.listTerminals = vi.fn().mockResolvedValue({
+      terminals: [
+        { id: 'kitty', name: 'Kitty', bundlePath: '/Kitty.app', installed: true },
+      ],
+    }) as any
+
+    window.localStorage.setItem('brover.launch-preferences', JSON.stringify({
+      favoriteTerminalIds: ['kitty'],
+      defaultTerminalId: 'kitty',
+    }))
+
+    render(
+      <TerminalSidebar locale="en" onLocaleChange={vi.fn()} selectedEnvironmentId="environment-1" />
+    )
+
+    expect(await screen.findByText('KI')).toBeTruthy()
+  })
+
+  it('ignores picker result without terminal and without unsupported error', async () => {
+    ;(window.brover.launch.pickTerminalApp as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      canceled: false,
+    })
+
+    render(
+      <TerminalSidebar locale="en" onLocaleChange={vi.fn()} selectedEnvironmentId="environment-1" />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-add-button')).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByTestId('terminal-add-button'))
+
+    await waitFor(() => {
+      expect(window.brover.launch.pickTerminalApp).toHaveBeenCalled()
+    })
+
+    expect(toast).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('terminal-launch-terminal')).toBeNull()
+  })
+
+  it('does not duplicate terminal already present after picker add', async () => {
+    ;(window.brover.launch.pickTerminalApp as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      canceled: false,
+      terminal: {
+        id: 'warp',
+        name: 'Warp',
+        bundlePath: '/Warp.app',
+        installed: true,
+        iconDataUrl: 'data:image/png;base64,warp',
+      },
+    })
+
+    const { container } = render(
+      <TerminalSidebar locale="en" onLocaleChange={vi.fn()} selectedEnvironmentId="environment-1" />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-add-button')).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByTestId('terminal-add-button'))
+
+    await waitFor(() => {
+      const buttons = Array.from(container.querySelectorAll('[data-testid^="terminal-launch-"]'))
+      expect(buttons).toHaveLength(2)
+    })
+  })
+
+  it('closes context menu when clicking overlay', async () => {
+    render(
+      <TerminalSidebar locale="en" onLocaleChange={vi.fn()} selectedEnvironmentId="environment-1" />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-launch-warp')).toBeTruthy()
+    })
+
+    fireEvent.contextMenu(screen.getByTestId('terminal-launch-warp'), {
+      clientX: 12,
+      clientY: 16,
+    })
+
+    expect(await screen.findByTestId('terminal-remove-warp')).toBeTruthy()
+    const overlay = document.querySelector('button.absolute.inset-0') as HTMLButtonElement | null
+    if (!overlay) {
+      throw new Error('Expected context-menu overlay')
+    }
+    fireEvent.click(overlay)
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('terminal-remove-warp')).toBeNull()
+    })
+  })
+
+  it('keeps favorites order when drop uses same source and target', async () => {
+    const { container } = render(
+      <TerminalSidebar locale="en" onLocaleChange={vi.fn()} selectedEnvironmentId="environment-1" />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-launch-iterm2')).toBeTruthy()
+    })
+
+    const transfer = {
+      effectAllowed: 'move',
+      dropEffect: 'move',
+      setData: vi.fn(),
+      getData: vi.fn(() => 'iterm2'),
+    }
+
+    fireEvent.drop(screen.getByTestId('terminal-launch-iterm2'), { dataTransfer: transfer })
+
+    const buttons = Array.from(container.querySelectorAll('[data-testid^="terminal-launch-"]'))
+    expect(buttons.map((button) => button.getAttribute('data-testid'))).toEqual([
+      'terminal-launch-iterm2',
+      'terminal-launch-warp',
+    ])
+  })
+
+  it('handles failed terminal list by rendering only add button', async () => {
+    window.brover.launch.listTerminals = vi.fn().mockRejectedValue(new Error('no terminals')) as any
+
+    render(
+      <TerminalSidebar locale="en" onLocaleChange={vi.fn()} selectedEnvironmentId="environment-1" />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-add-button')).toBeTruthy()
+    })
+
+    expect(screen.queryByTestId('terminal-launch-iterm2')).toBeNull()
+  })
+
+  it('filters out uninstalled terminals and sorts favorites by saved rank', async () => {
+    window.brover.launch.listTerminals = vi.fn().mockResolvedValue({
+      terminals: [
+        { id: 'zed', name: 'ZedTerm', bundlePath: '/Zed.app', installed: false },
+        { id: 'warp', name: 'Warp', bundlePath: '/Warp.app', installed: true, iconDataUrl: 'data:image/png;base64,warp' },
+        { id: 'iterm2', name: 'iTerm2', bundlePath: '/iTerm.app', installed: true, iconDataUrl: 'data:image/png;base64,iterm2' },
+      ],
+    }) as any
+
+    const { container } = render(
+      <TerminalSidebar locale="en" onLocaleChange={vi.fn()} selectedEnvironmentId="environment-1" />
+    )
+
+    await waitFor(() => {
+      const buttons = Array.from(container.querySelectorAll('[data-testid^="terminal-launch-"]'))
+      expect(buttons.map((button) => button.getAttribute('data-testid'))).toEqual([
+        'terminal-launch-iterm2',
+        'terminal-launch-warp',
+      ])
+    })
+
+    expect(screen.queryByTestId('terminal-launch-zed')).toBeNull()
+  })
+
+  it('reorders favorites when dropped onto another favorite', async () => {
+    const { container } = render(
+      <TerminalSidebar locale="en" onLocaleChange={vi.fn()} selectedEnvironmentId="environment-1" />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-launch-iterm2')).toBeTruthy()
+    })
+
+    const transfer = {
+      effectAllowed: 'move',
+      dropEffect: 'move',
+      setData: vi.fn(),
+      getData: vi.fn(() => 'iterm2'),
+    }
+
+    fireEvent.dragStart(screen.getByTestId('terminal-launch-iterm2'), { dataTransfer: transfer })
+    fireEvent.dragOver(screen.getByTestId('terminal-launch-warp'), { dataTransfer: transfer })
+    fireEvent.drop(screen.getByTestId('terminal-launch-warp'), { dataTransfer: transfer })
+
+    const buttons = Array.from(container.querySelectorAll('[data-testid^="terminal-launch-"]'))
+    expect(buttons.map((button) => button.getAttribute('data-testid'))).toEqual([
+      'terminal-launch-warp',
+      'terminal-launch-iterm2',
+    ])
+  })
+
+  it('ignores drop when source favorite is missing', async () => {
+    const { container } = render(
+      <TerminalSidebar locale="en" onLocaleChange={vi.fn()} selectedEnvironmentId="environment-1" />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-launch-warp')).toBeTruthy()
+    })
+
+    const transfer = {
+      effectAllowed: 'move',
+      dropEffect: 'move',
+      setData: vi.fn(),
+      getData: vi.fn(() => 'missing'),
+    }
+
+    fireEvent.drop(screen.getByTestId('terminal-launch-warp'), { dataTransfer: transfer })
+
+    const buttons = Array.from(container.querySelectorAll('[data-testid^="terminal-launch-"]'))
+    expect(buttons.map((button) => button.getAttribute('data-testid'))).toEqual([
+      'terminal-launch-iterm2',
+      'terminal-launch-warp',
+    ])
+  })
+
+  it('clears dragging opacity on drag end', async () => {
+    render(
+      <TerminalSidebar locale="en" onLocaleChange={vi.fn()} selectedEnvironmentId="environment-1" />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('terminal-launch-iterm2')).toBeTruthy()
+    })
+
+    const transfer = {
+      effectAllowed: 'move',
+      dropEffect: 'move',
+      setData: vi.fn(),
+      getData: vi.fn(() => 'iterm2'),
+    }
+
+    fireEvent.dragStart(screen.getByTestId('terminal-launch-iterm2'), { dataTransfer: transfer })
+    expect(screen.getByTestId('terminal-launch-iterm2').className).toContain('opacity-40')
+    fireEvent.dragEnd(screen.getByTestId('terminal-launch-iterm2'))
+    expect(screen.getByTestId('terminal-launch-iterm2').className).not.toContain('opacity-40')
+  })
 })

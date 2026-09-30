@@ -106,4 +106,117 @@ describe('TerminalPreferencesStep', () => {
 
     expect(continueButton.hasAttribute('disabled')).toBe(false)
   })
+
+  it('calls onBack from back button', async () => {
+    const onBack = vi.fn()
+    render(<TerminalPreferencesStep onBack={onBack} onContinue={() => {}} />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'back' })).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'back' }))
+    expect(onBack).toHaveBeenCalledTimes(1)
+  })
+
+  it('renders refresh state when terminal load fails', async () => {
+    window.brover.launch.listTerminals = vi.fn().mockRejectedValue(new Error('Load failed')) as any
+    const reload = vi.fn()
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { reload },
+    })
+
+    render(<TerminalPreferencesStep onBack={() => {}} onContinue={() => {}} />)
+
+    expect(await screen.findByText('Load failed')).toBeTruthy()
+    fireEvent.click(screen.getByText(/common\.refresh/i))
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('renders refresh state when no installed terminals exist', async () => {
+    window.brover.launch.listTerminals = vi.fn().mockResolvedValue({
+      terminals: [{ id: 'ghost', name: 'Ghost', bundlePath: '/Ghost.app', installed: false }],
+    }) as any
+
+    render(<TerminalPreferencesStep onBack={() => {}} onContinue={() => {}} />)
+
+    expect(await screen.findByText(/onboarding\.terminalPreferences\.error/i)).toBeTruthy()
+  })
+
+  it('move controls stop at bounds and unchecking favorite disables continue again', async () => {
+    const onContinue = vi.fn()
+    render(<TerminalPreferencesStep onBack={() => {}} onContinue={onContinue} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('favorite-terminal-warp')).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /Warp/i }))
+    fireEvent.click(screen.getByRole('checkbox', { name: /iTerm2/i }))
+
+    const moveWarpDown = screen.getByRole('button', { name: 'move Warp down' }) as HTMLButtonElement
+    expect(moveWarpDown.disabled).toBe(false)
+
+    fireEvent.click(moveWarpDown)
+    const moveItermUpAfter = screen.getByRole('button', { name: 'move iTerm2 up' }) as HTMLButtonElement
+    const moveWarpDownAfter = screen.getByRole('button', { name: 'move Warp down' }) as HTMLButtonElement
+    expect(moveItermUpAfter.disabled).toBe(true)
+    expect(moveWarpDownAfter.disabled).toBe(true)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /Warp/i }))
+    fireEvent.click(screen.getByRole('checkbox', { name: /iTerm2/i }))
+
+    expect((screen.getByText(/onboarding\.terminalPreferences\.continue/i) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('ignores dropping non-favorite terminal on favorite card', async () => {
+    const onContinue = vi.fn()
+    render(<TerminalPreferencesStep onBack={() => {}} onContinue={onContinue} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('favorite-terminal-warp')).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /Warp/i }))
+
+    const transfer = {
+      effectAllowed: 'move',
+      dropEffect: 'move',
+      setData: vi.fn(),
+      getData: vi.fn(() => 'terminal'),
+    }
+
+    fireEvent.drop(screen.getByTestId('favorite-terminal-warp'), { dataTransfer: transfer })
+    fireEvent.click(screen.getByText(/onboarding\.terminalPreferences\.continue/i))
+
+    expect(onContinue).toHaveBeenCalledWith({
+      favoriteTerminalIds: ['warp'],
+      defaultTerminalId: 'warp',
+    })
+  })
+
+  it('resets dragging state on drag end and ignores drag over non-favorite card', async () => {
+    render(<TerminalPreferencesStep onBack={() => {}} onContinue={() => {}} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('favorite-terminal-warp')).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /Warp/i }))
+
+    const transfer = {
+      effectAllowed: 'move',
+      dropEffect: 'move',
+      setData: vi.fn(),
+      getData: vi.fn(() => 'warp'),
+    }
+
+    fireEvent.dragStart(screen.getByTestId('favorite-terminal-warp'), { dataTransfer: transfer })
+    expect(screen.getByTestId('favorite-terminal-warp').className).toContain('opacity-50')
+
+    fireEvent.dragOver(screen.getByTestId('favorite-terminal-terminal'), { dataTransfer: transfer })
+    fireEvent.dragEnd(screen.getByTestId('favorite-terminal-warp'))
+    expect(screen.getByTestId('favorite-terminal-warp').className).not.toContain('opacity-50')
+  })
 })

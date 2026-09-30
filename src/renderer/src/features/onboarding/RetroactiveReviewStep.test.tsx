@@ -121,4 +121,52 @@ describe('RetroactiveReviewStep', () => {
     fireEvent.click(screen.getByTestId('arrow-left'))
     expect(onBack).toHaveBeenCalled()
   })
+
+  it('reveals and hides variable values from eye toggle', async () => {
+    render(<RetroactiveReviewStep onContinue={vi.fn()} onBack={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/onboarding\.review\.reveal/i).length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(screen.getAllByLabelText(/onboarding\.review\.reveal/i)[0]!)
+    expect(screen.getByText('secret123')).toBeTruthy()
+    expect(screen.getAllByTestId('eye-off-icon').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByLabelText(/onboarding\.review\.hide/i))
+    expect(screen.queryByText('secret123')).toBeNull()
+  })
+
+  it('disables continue until at least one variable is selected', async () => {
+    render(<RetroactiveReviewStep onContinue={vi.fn()} onBack={vi.fn()} />)
+
+    const continueButton = await screen.findByText(/onboarding\.review\.continue/i)
+    expect((continueButton as HTMLButtonElement).disabled).toBe(true)
+
+    fireEvent.click(screen.getByText('API_KEY'))
+    expect((continueButton as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('shows refresh state when scan fails', async () => {
+    window.brover.onboarding.scanDotfiles = vi.fn().mockRejectedValue(new Error('Scan failed')) as any
+    const reload = vi.fn()
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { reload },
+    })
+
+    render(<RetroactiveReviewStep onContinue={vi.fn()} onBack={vi.fn()} />)
+
+    expect(await screen.findByText('Scan failed')).toBeTruthy()
+    fireEvent.click(screen.getByText(/common\.refresh/i))
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('renders no variables state when scan result is empty', async () => {
+    window.brover.onboarding.scanDotfiles = vi.fn().mockResolvedValue({ files: [], warnings: [] }) as any
+
+    render(<RetroactiveReviewStep onContinue={vi.fn()} onBack={vi.fn()} />)
+
+    expect(await screen.findByText(/onboarding\.review\.noVariables/i)).toBeTruthy()
+  })
 })

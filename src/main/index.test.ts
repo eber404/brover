@@ -2,6 +2,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { UNSUPPORTED_SECRET_BACKEND } from '../shared/models'
 
 const handlers = new Map<string, (event: unknown, payload?: unknown) => unknown>()
+const appOn = vi.fn()
+const appMock = {
+  isPackaged: true,
+  commandLine: { appendSwitch: vi.fn() },
+  getPath: vi.fn(() => '/tmp/app-data'),
+  getAppPath: vi.fn(() => '/tmp/app'),
+  whenReady: vi.fn(() => new Promise(() => {})),
+  on: appOn,
+  quit: vi.fn(),
+}
+const watchFile = vi.fn()
+const unwatchFile = vi.fn()
 
 const authPrompt = vi.fn()
 const authorize = vi.fn()
@@ -11,6 +23,16 @@ const revealEnv = vi.fn()
 const listEnvs = vi.fn()
 const listEnvironments = vi.fn()
 const secretExists = vi.fn()
+const createEnv = vi.fn()
+const updateEnv = vi.fn()
+const deleteEnv = vi.fn()
+const toggleEnvEnabled = vi.fn()
+const createEnvironment = vi.fn()
+const deleteEnvironment = vi.fn()
+const reorderEnvironments = vi.fn()
+const renameEnvironment = vi.fn()
+const setEnvironmentColor = vi.fn()
+const setActiveEnvironment = vi.fn()
 const getSharedSecretNames = vi.fn()
 const setSharedSecretNames = vi.fn()
 const getOnboardingStatus = vi.fn()
@@ -20,12 +42,27 @@ const listTerminals = vi.fn()
 const startupCleanup = vi.fn()
 const shutdownCleanup = vi.fn()
 const scanDotfiles = vi.fn()
+const loadTerminalIconDataUrl = vi.fn()
+const runRetroactiveImport = vi.fn()
+const runFreshStartImport = vi.fn()
+const runDeleteMutation = vi.fn()
+const runUpdateMutation = vi.fn()
 const storeInstance = {
   secrets: { get: vi.fn() },
   revealEnv,
   listEnvs,
   listEnvironments,
   secretExists,
+  createEnv,
+  updateEnv,
+  deleteEnv,
+  toggleEnvEnabled,
+  createEnvironment,
+  deleteEnvironment,
+  reorderEnvironments,
+  renameEnvironment,
+  setEnvironmentColor,
+  setActiveEnvironment,
   getSharedSecretNames,
   setSharedSecretNames,
   getOnboardingStatus,
@@ -53,20 +90,13 @@ const browserWindowState = {
 const BrowserWindowMock = vi.fn(function BrowserWindowMock() {
   return browserWindowState
 })
+const showOpenDialog = vi.fn()
 
 vi.mock('electron', () => ({
-  app: {
-    isPackaged: true,
-    commandLine: { appendSwitch: vi.fn() },
-    getPath: vi.fn(() => '/tmp/app-data'),
-    getAppPath: vi.fn(() => '/tmp/app'),
-    whenReady: vi.fn(() => new Promise(() => {})),
-    on: vi.fn(),
-    quit: vi.fn(),
-  },
+  app: appMock,
   BrowserWindow: BrowserWindowMock,
   dialog: {
-    showOpenDialog: vi.fn(),
+    showOpenDialog,
   },
   ipcMain: {
     handle: vi.fn((channel: string, handler: (event: unknown, payload?: unknown) => unknown) => {
@@ -75,6 +105,8 @@ vi.mock('electron', () => ({
   },
   systemPreferences: {},
 }))
+
+vi.mock('node:fs', () => ({ watchFile, unwatchFile }))
 
 vi.mock('./store', () => ({
   BroverStore: BroverStoreMock,
@@ -102,17 +134,17 @@ vi.mock('./terminalLauncher', () => ({
 }))
 
 vi.mock('./terminalIconLoader', () => ({
-  loadTerminalIconDataUrl: vi.fn(async () => null),
+  loadTerminalIconDataUrl,
 }))
 
 vi.mock('./onboardingScanner', () => ({ scanDotfiles }))
 vi.mock('./onboardingImporter', () => ({
-  runRetroactiveImport: vi.fn(),
-  runFreshStartImport: vi.fn(),
+  runRetroactiveImport,
+  runFreshStartImport,
 }))
 vi.mock('./envMutationFlow', () => ({
-  runDeleteMutation: vi.fn(),
-  runUpdateMutation: vi.fn(),
+  runDeleteMutation,
+  runUpdateMutation,
 }))
 vi.mock('./devSession', () => ({
   getDevStorageClearOptions: vi.fn(() => ({})),
@@ -127,25 +159,52 @@ async function loadModule() {
   await module.bootstrap()
 }
 
+async function loadFreshModule() {
+  handlers.clear()
+  vi.resetModules()
+  const module = await import('./index')
+  await module.bootstrap()
+}
+
 describe('main IPC wiring', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    appMock.isPackaged = true
     isAuthorized.mockReturnValue(false)
     expiresAt.mockReturnValue(123)
     revealEnv.mockResolvedValue('secret-value')
     listEnvs.mockResolvedValue([])
     listEnvironments.mockResolvedValue([{ id: 'env-1', isActive: true }])
+    secretExists.mockResolvedValue(true)
+    createEnv.mockResolvedValue(undefined)
+    updateEnv.mockResolvedValue(undefined)
+    deleteEnv.mockResolvedValue(undefined)
+    toggleEnvEnabled.mockResolvedValue([])
+    createEnvironment.mockResolvedValue([{ id: 'env-1', isActive: true }])
+    deleteEnvironment.mockResolvedValue([{ id: 'env-2', isActive: true }])
+    reorderEnvironments.mockResolvedValue([{ id: 'env-2', isActive: true }])
+    renameEnvironment.mockResolvedValue([{ id: 'env-1', isActive: true }])
+    setEnvironmentColor.mockResolvedValue([{ id: 'env-1', isActive: true }])
+    setActiveEnvironment.mockResolvedValue([{ id: 'env-1', isActive: true }])
     getSharedSecretNames.mockResolvedValue(false)
     setSharedSecretNames.mockResolvedValue(false)
     getOnboardingStatus.mockResolvedValue({ completedAt: undefined })
     markOnboardingComplete.mockResolvedValue(undefined)
     terminalLaunch.mockResolvedValue(undefined)
-    listTerminals.mockResolvedValue([])
+    listTerminals.mockReturnValue([])
     startupCleanup.mockResolvedValue(undefined)
     shutdownCleanup.mockResolvedValue(undefined)
     scanDotfiles.mockResolvedValue({ files: [], warnings: [] })
+    loadTerminalIconDataUrl.mockResolvedValue(null)
+    runRetroactiveImport.mockResolvedValue({ importedSensitive: 1 })
+    runFreshStartImport.mockResolvedValue({ importedSensitive: 0 })
+    runDeleteMutation.mockResolvedValue({ ok: true })
+    runUpdateMutation.mockResolvedValue({ ok: true })
+    showOpenDialog.mockResolvedValue({ canceled: true, filePaths: [] })
     storeInstance.secrets.get = vi.fn()
     process.env.BROVER_HOME = '/tmp/home'
+    process.env.BROVER_E2E = '0'
+    process.env.VITE_DEV_SERVER_URL = 'http://127.0.0.1:5173'
   })
 
   it('reveal skips auth prompt when session cache already authorized', async () => {
@@ -179,6 +238,14 @@ describe('main IPC wiring', () => {
     expect(terminalLaunch).toHaveBeenCalledWith('env-1', 'Warp', [{ name: 'API_KEY', value: 'abc' }])
   })
 
+  it('launch returns failure payload when launcher throws', async () => {
+    terminalLaunch.mockRejectedValueOnce(new Error('launch failed'))
+    await loadModule()
+
+    const result = await handlers.get('launch:terminal')?.({}, { environmentId: 'env-1', terminalApp: 'Warp' })
+    expect(result).toEqual({ success: false, error: 'Error: launch failed' })
+  })
+
   it('scan-dotfiles throws when home missing', async () => {
     delete process.env.BROVER_HOME
     delete process.env.HOME
@@ -195,5 +262,195 @@ describe('main IPC wiring', () => {
     const result = await handlers.get('envs:reveal')?.({}, { profile: 'env-1', name: 'API_KEY' })
 
     expect(result).toEqual({ ok: false, error: UNSUPPORTED_SECRET_BACKEND })
+  })
+
+  it('lists terminals with icon augmentation', async () => {
+    listTerminals.mockReturnValue([
+      { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app' },
+      { id: 'iterm2', name: 'iTerm2', bundlePath: '/Applications/iTerm.app' },
+    ])
+    loadTerminalIconDataUrl
+      .mockResolvedValueOnce('data:image/png;base64,warp')
+      .mockResolvedValueOnce(null)
+
+    await loadModule()
+
+    const result = await handlers.get('launch:list-terminals')?.({})
+    expect(result).toEqual({
+      terminals: [
+        { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app', iconDataUrl: 'data:image/png;base64,warp' },
+        { id: 'iterm2', name: 'iTerm2', bundlePath: '/Applications/iTerm.app' },
+      ],
+    })
+  })
+
+  it('pick-terminal-app returns cancel and unsupported cases', async () => {
+    listTerminals.mockReturnValue([
+      { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app' },
+    ])
+    await loadModule()
+
+    const handler = handlers.get('launch:pick-terminal-app')
+    const canceled = await handler?.({})
+    expect(canceled).toEqual({ canceled: true })
+
+    showOpenDialog.mockResolvedValueOnce({ canceled: false, filePaths: [] })
+    const emptyPath = await handler?.({})
+    expect(emptyPath).toEqual({ canceled: true })
+
+    showOpenDialog.mockResolvedValueOnce({ canceled: false, filePaths: ['/Applications/Notes.app'] })
+    const unsupported = await handler?.({})
+    expect(unsupported).toEqual({ canceled: false, error: 'UNSUPPORTED_TERMINAL_APP', appName: 'Notes' })
+  })
+
+  it('pick-terminal-app returns matched known terminal', async () => {
+    listTerminals.mockReturnValue([
+      { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app' },
+    ])
+    loadTerminalIconDataUrl.mockResolvedValue('data:image/png;base64,warp')
+    showOpenDialog.mockResolvedValue({ canceled: false, filePaths: ['/Applications/Warp.app'] })
+    await loadModule()
+
+    const result = await handlers.get('launch:pick-terminal-app')?.({})
+    expect(result).toEqual({
+      canceled: false,
+      terminal: { id: 'warp', name: 'Warp', bundlePath: '/Applications/Warp.app', iconDataUrl: 'data:image/png;base64,warp' },
+    })
+  })
+
+  it('passes through environment and secret handlers', async () => {
+    await loadModule()
+
+    await handlers.get('secrets:exists')?.({}, { profile: 'env-1', name: 'API_KEY' })
+    await handlers.get('environments:get-shared-secret-names')?.({})
+    await handlers.get('environments:set-shared-secret-names')?.({}, true)
+    await handlers.get('environments:list')?.({})
+    await handlers.get('environments:create')?.({}, { name: 'dev' })
+    await handlers.get('environments:delete')?.({}, { environmentId: 'env-1' })
+    await handlers.get('environments:reorder')?.({}, { orderedEnvironmentIds: ['env-2', 'env-1'] })
+    await handlers.get('environments:rename')?.({}, { environmentId: 'env-1', name: 'prod' })
+    await handlers.get('environments:set-color')?.({}, { environmentId: 'env-1', color: '#123456' })
+    await handlers.get('environments:set-active')?.({}, { environmentId: 'env-1' })
+    await handlers.get('envs:list')?.({})
+    await handlers.get('envs:toggle-enabled')?.({}, 'secret-1')
+
+    expect(secretExists).toHaveBeenCalledWith('env-1', 'API_KEY')
+    expect(createEnvironment).toHaveBeenCalledWith({ name: 'dev' })
+    expect(deleteEnvironment).toHaveBeenCalledWith({ environmentId: 'env-1' })
+    expect(reorderEnvironments).toHaveBeenCalledWith({ orderedEnvironmentIds: ['env-2', 'env-1'] })
+    expect(renameEnvironment).toHaveBeenCalledWith({ environmentId: 'env-1', name: 'prod' })
+    expect(setEnvironmentColor).toHaveBeenCalledWith({ environmentId: 'env-1', color: '#123456' })
+    expect(setActiveEnvironment).toHaveBeenCalledWith({ environmentId: 'env-1' })
+    expect(toggleEnvEnabled).toHaveBeenCalledWith('secret-1')
+  })
+
+  it('handles env mutations and onboarding imports', async () => {
+    isAuthorized.mockReturnValue(true)
+    await loadModule()
+
+    await handlers.get('envs:create')?.({}, { name: 'API_KEY', profile: 'env-1', value: 'secret' })
+    await handlers.get('envs:copy')?.({}, { profile: 'env-1', name: 'API_KEY', isRevealed: false })
+    await handlers.get('envs:update')?.({}, { id: 'secret-1', profile: 'env-1', name: 'API_KEY', value: 'next' })
+    await handlers.get('envs:update-confirmed')?.({}, { id: 'secret-1', profile: 'env-1', name: 'API_KEY', value: 'next' })
+    await handlers.get('envs:delete')?.({}, { id: 'secret-1', profile: 'env-1', name: 'API_KEY' })
+    await handlers.get('envs:delete-confirmed')?.({}, { id: 'secret-1', profile: 'env-1', name: 'API_KEY' })
+    await handlers.get('onboarding:get-status')?.({})
+    await handlers.get('onboarding:run-retroactive')?.({}, { scanResult: { files: [], warnings: [] }, selection: { selectedSensitiveIds: ['v1'] } })
+    await handlers.get('onboarding:run-fresh-start')?.({}, { scanResult: { files: [], warnings: [] } })
+    await handlers.get('onboarding:complete')?.({})
+
+    expect(createEnv).toHaveBeenCalledWith({ name: 'API_KEY', profile: 'env-1', value: 'secret' })
+    expect(authorize).not.toHaveBeenCalledWith('copy', { isRevealed: false, targetId: 'env-1' })
+    expect(runUpdateMutation).toHaveBeenCalledTimes(1)
+    expect(updateEnv).toHaveBeenCalledWith({ id: 'secret-1', profile: 'env-1', name: 'API_KEY', value: 'next' })
+    expect(runDeleteMutation).toHaveBeenCalledTimes(1)
+    expect(deleteEnv).toHaveBeenCalledWith({ id: 'secret-1', profile: 'env-1', name: 'API_KEY' })
+    expect(runRetroactiveImport).toHaveBeenCalled()
+    expect(runFreshStartImport).toHaveBeenCalled()
+    expect(markOnboardingComplete).toHaveBeenCalledTimes(1)
+  })
+
+  it('maps env create and confirmed mutation failures', async () => {
+    createEnv.mockRejectedValueOnce(new Error('boom'))
+    updateEnv.mockRejectedValueOnce(new Error('bad update'))
+    deleteEnv.mockRejectedValueOnce(new Error('bad delete'))
+    await loadModule()
+
+    const createResult = await handlers.get('envs:create')?.({}, { name: 'API_KEY', profile: 'env-1', value: 'secret' })
+    const updateResult = await handlers.get('envs:update-confirmed')?.({}, { id: 'secret-1', profile: 'env-1', name: 'API_KEY', value: 'next' })
+    const deleteResult = await handlers.get('envs:delete-confirmed')?.({}, { id: 'secret-1', profile: 'env-1', name: 'API_KEY' })
+
+    expect(createResult).toEqual({ ok: false, error: 'boom' })
+    expect(updateResult).toEqual({ ok: false, error: 'bad update' })
+    expect(deleteResult).toEqual({ ok: false, error: 'bad delete' })
+  })
+
+  it('maps update and delete mutation wrapper failures', async () => {
+    runUpdateMutation.mockRejectedValueOnce(new Error('update wrapper failed'))
+    runDeleteMutation.mockRejectedValueOnce(new Error('delete wrapper failed'))
+    await loadModule()
+
+    const updateResult = await handlers.get('envs:update')?.({}, { id: 'secret-1', profile: 'env-1', name: 'API_KEY', value: 'next' })
+    const deleteResult = await handlers.get('envs:delete')?.({}, { id: 'secret-1', profile: 'env-1', name: 'API_KEY' })
+
+    expect(updateResult).toEqual({ ok: false, error: 'update wrapper failed' })
+    expect(deleteResult).toEqual({ ok: false, error: 'delete wrapper failed' })
+  })
+
+  it('passes authorize and mutation closures into update and delete flows', async () => {
+    isAuthorized.mockReturnValue(false)
+    runUpdateMutation.mockImplementationOnce(async ({ authorize: auth, update }) => {
+      await auth()
+      await update()
+      return { ok: true, value: 'needs-confirmation' }
+    })
+    runDeleteMutation.mockImplementationOnce(async ({ authorize: auth, remove }) => {
+      await auth()
+      await remove()
+      return { ok: true, value: 'needs-confirmation' }
+    })
+    await loadModule()
+
+    const updateResult = await handlers.get('envs:update')?.({}, { id: 'secret-1', profile: 'env-1', name: 'API_KEY', value: 'next' })
+    const deleteResult = await handlers.get('envs:delete')?.({}, { id: 'secret-1', profile: 'env-1', name: 'API_KEY' })
+
+    expect(authorize).toHaveBeenCalledWith('update', { targetId: 'env-1' })
+    expect(authorize).toHaveBeenCalledWith('delete', { targetId: 'env-1' })
+    expect(updateEnv).toHaveBeenCalledWith({ id: 'secret-1', profile: 'env-1', name: 'API_KEY', value: 'next' })
+    expect(deleteEnv).toHaveBeenCalledWith({ id: 'secret-1', profile: 'env-1', name: 'API_KEY' })
+    expect(updateResult).toEqual({ ok: true, value: 'needs-confirmation' })
+    expect(deleteResult).toEqual({ ok: true, value: 'needs-confirmation' })
+  })
+
+  it('boots dev window with storage cleanup and preload watcher', async () => {
+    appMock.isPackaged = false
+    await loadFreshModule()
+
+    expect(browserWindowState.webContents.openDevTools).toHaveBeenCalledTimes(1)
+    expect(browserWindowState.webContents.session.clearStorageData).toHaveBeenCalledTimes(1)
+    expect(browserWindowState.webContents.session.clearCache).toHaveBeenCalledTimes(1)
+    expect(browserWindowState.loadURL).toHaveBeenCalledWith('http://127.0.0.1:5173')
+    expect(watchFile).toHaveBeenCalledTimes(1)
+    const didFinishLoadHandler = browserWindowState.webContents.on.mock.calls.find((call) => call[0] === 'did-finish-load')?.[1]
+    didFinishLoadHandler?.()
+
+    const closedHandler = browserWindowState.on.mock.calls.find((call) => call[0] === 'closed')?.[1]
+    closedHandler?.()
+    expect(unwatchFile).toHaveBeenCalledTimes(1)
+
+    const watchCallback = watchFile.mock.calls[0]?.[1]
+    watchCallback?.()
+    expect(browserWindowState.webContents.reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('quits app on window-all-closed outside darwin', async () => {
+    const originalPlatform = process.platform
+    Object.defineProperty(process, 'platform', { value: 'linux' })
+    await loadFreshModule()
+
+    const allClosedHandler = appOn.mock.calls.find((call) => call[0] === 'window-all-closed')?.[1]
+    allClosedHandler?.()
+    expect(appMock.quit).toHaveBeenCalledTimes(1)
+    Object.defineProperty(process, 'platform', { value: originalPlatform })
   })
 })
