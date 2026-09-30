@@ -7,6 +7,7 @@ import {
 import {
   AUTH_CANCELED,
   UNSUPPORTED_SECRET_BACKEND,
+  type EnvMetadata,
   type SecretActionResult,
   type ScanResult,
   type RetroactiveSelection,
@@ -17,6 +18,13 @@ import { createSecretAuthGate } from './secretAuthGate'
 import { createAuthSessionCache } from './authSessionCache'
 import { createMacSecretAuthPrompt, isAuthCanceledError } from './authPrompt'
 import { createTerminalLauncher } from './terminalLauncher'
+import {
+  collectLaunchEntries,
+  mergeLaunchEntries,
+  pickGlobalEnvironmentId,
+  type LaunchEnvEntry,
+  type LaunchValueLookup,
+} from './launchEnvMerge'
 import { runDeleteMutation, runUpdateMutation } from './envMutationFlow'
 import { loadTerminalIconDataUrl } from './terminalIconLoader'
 import { getDevStorageClearOptions } from './devSession'
@@ -32,6 +40,17 @@ const isE2E = process.env.BROVER_E2E === '1'
 
 function ok(value?: string): SecretActionResult {
   return { ok: true, value }
+}
+
+async function collectGlobalLaunchEntries(
+  envs: EnvMetadata[],
+  globalEnvironmentId: string | null,
+  launchedEnvironmentId: string,
+  readValue: LaunchValueLookup
+): Promise<LaunchEnvEntry[]> {
+  if (globalEnvironmentId === null) return []
+  if (globalEnvironmentId === launchedEnvironmentId) return []
+  return collectLaunchEntries(envs, globalEnvironmentId, readValue)
 }
 
 function failure(error: unknown): SecretActionResult {
@@ -86,13 +105,24 @@ export async function bootstrap() {
   ipcMain.handle('launch:terminal', async (_, payload: { environmentId: string; terminalApp: string }) => {
     try {
       const envs = await store.listEnvs()
-      const environmentEnvs = envs.filter(e => e.profile === payload.environmentId)
-      const entries: { name: string; value: string }[] = []
-      for (const env of environmentEnvs) {
-        const value = await store.secrets.get(`${payload.environmentId}:${env.name}`)
-        if (value != null) entries.push({ name: env.name, value })
-      }
-      await terminalLauncher.launch(payload.environmentId, payload.terminalApp, entries)
+      const environments = await store.listEnvironments()
+      const globalEnvironmentId = pickGlobalEnvironmentId(environments)
+      const readValue = (environmentId: string, name: string) =>
+        store.secrets.get(`${environmentId}:${name}`)
+
+      const launchedEntries = await collectLaunchEntries(envs, payload.environmentId, readValue)
+      const globalEntries = await collectGlobalLaunchEntries(
+        envs,
+        globalEnvironmentId,
+        payload.environmentId,
+        readValue
+      )
+
+      await terminalLauncher.launch(
+        payload.environmentId,
+        payload.terminalApp,
+        mergeLaunchEntries(globalEntries, launchedEntries)
+      )
       return { success: true }
     } catch (e) {
       return { success: false, error: String(e) }

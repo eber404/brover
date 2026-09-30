@@ -1,7 +1,7 @@
 # Code Context Summary
 
-Generated: 2026-09-30T20:42:17.796Z
-Files: 46
+Generated: 2026-09-30T21:02:57.456Z
+Files: 47
 
 ## `playwright.config.ts`
 
@@ -49,14 +49,30 @@ Functions:
 
 ## `src/main/index.ts`
 
-Imports: `electron`, `node:path`, `node:fs`, `./store`, `../shared/models`, `./onboardingScanner`, `./onboardingImporter`, `./secretAuthGate`, `./authSessionCache`, `./authPrompt`, `./terminalLauncher`, `./envMutationFlow`, `./terminalIconLoader`, `./devSession`, `./secretStoreFactory`
+Imports: `electron`, `node:path`, `node:fs`, `./store`, `../shared/models`, `./onboardingScanner`, `./onboardingImporter`, `./secretAuthGate`, `./authSessionCache`, `./authPrompt`, `./terminalLauncher`, `./launchEnvMerge`, `./envMutationFlow`, `./terminalIconLoader`, `./devSession`, `./secretStoreFactory`
 
 Exports: `bootstrap` (FunctionDeclaration)
 
 Functions:
 - `async bootstrap(): Promise<void>`
+- `async collectGlobalLaunchEntries(envs: EnvMetadata[], globalEnvironmentId: string | null, launchedEnvironmentId: string, readValue: LaunchValueLookup): Promise<LaunchEnvEntry[]>`
 - `failure(error: unknown): SecretActionResult`
 - `ok(value: string): SecretActionResult`
+
+## `src/main/launchEnvMerge.ts`
+
+Imports: `../shared/models`
+
+Exports: `collectLaunchEntries` (FunctionDeclaration), `LaunchEnvEntry` (InterfaceDeclaration), `LaunchValueLookup` (TypeAliasDeclaration), `mergeLaunchEntries` (FunctionDeclaration), `pickGlobalEnvironmentId` (FunctionDeclaration)
+
+Functions:
+- `async collectLaunchEntries(envs: EnvMetadata[], environmentId: string, readValue: LaunchValueLookup): Promise<LaunchEnvEntry[]>`
+- `mergeLaunchEntries(globalEntries: LaunchEnvEntry[], launchedEntries: LaunchEnvEntry[]): LaunchEnvEntry[]`
+- `pickGlobalEnvironmentId(environments: Pick<Environment, 'id' | 'isGlobal'>[]): string | null`
+
+Types:
+- `LaunchEnvEntry` (interface)
+- `LaunchValueLookup` (typeAlias)
 
 ## `src/main/main.ts`
 

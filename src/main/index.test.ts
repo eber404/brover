@@ -240,6 +240,62 @@ describe('main IPC wiring', () => {
     expect(terminalLaunch).toHaveBeenCalledWith('env-1', 'Warp', [{ name: 'API_KEY', value: 'abc' }])
   })
 
+  it('launch injects global secrets first and lets the launched environment override them', async () => {
+    listEnvironments.mockResolvedValue([
+      { id: 'env-0', isActive: false, isGlobal: true },
+      { id: 'env-1', isActive: true, isGlobal: false },
+    ])
+    listEnvs.mockResolvedValue([
+      { id: '1', profile: 'env-0', name: 'GLOBAL_ONLY' },
+      { id: '2', profile: 'env-0', name: 'SHARED' },
+      { id: '3', profile: 'env-0', name: 'NO_VALUE' },
+      { id: '4', profile: 'env-1', name: 'SHARED' },
+      { id: '5', profile: 'env-1', name: 'LOCAL_ONLY' },
+    ])
+
+    await loadModule()
+
+    storeInstance.secrets.get = vi.fn(async (account: string) => {
+      if (account === 'env-0:GLOBAL_ONLY') return 'global-only'
+      if (account === 'env-0:SHARED') return 'from-global'
+      if (account === 'env-0:NO_VALUE') return null
+      if (account === 'env-1:SHARED') return 'from-launched'
+      if (account === 'env-1:LOCAL_ONLY') return 'local-only'
+      return null
+    })
+
+    await handlers.get('launch:terminal')?.({}, { environmentId: 'env-1', terminalApp: 'Warp' })
+
+    expect(terminalLaunch).toHaveBeenCalledWith('env-1', 'Warp', [
+      { name: 'GLOBAL_ONLY', value: 'global-only' },
+      { name: 'SHARED', value: 'from-launched' },
+      { name: 'LOCAL_ONLY', value: 'local-only' },
+    ])
+  })
+
+  it('launch from the global environment does not duplicate entries', async () => {
+    listEnvironments.mockResolvedValue([
+      { id: 'env-0', isActive: true, isGlobal: true },
+      { id: 'env-1', isActive: false, isGlobal: false },
+    ])
+    listEnvs.mockResolvedValue([
+      { id: '1', profile: 'env-0', name: 'A' },
+      { id: '2', profile: 'env-1', name: 'B' },
+    ])
+
+    await loadModule()
+
+    storeInstance.secrets.get = vi.fn(async (account: string) => {
+      if (account === 'env-0:A') return 'a'
+      if (account === 'env-1:B') return 'b'
+      return null
+    })
+
+    await handlers.get('launch:terminal')?.({}, { environmentId: 'env-0', terminalApp: 'Warp' })
+
+    expect(terminalLaunch).toHaveBeenCalledWith('env-0', 'Warp', [{ name: 'A', value: 'a' }])
+  })
+
   it('launch returns failure payload when launcher throws', async () => {
     terminalLaunch.mockRejectedValueOnce(new Error('launch failed'))
     await loadModule()

@@ -1,8 +1,8 @@
-generatedAt: "2026-09-30T20:42:17.796Z"
-repoRoot: /Users/eber/dev/brover/.worktrees/e2e-crud
-tsconfigPath: /Users/eber/dev/brover/.worktrees/e2e-crud/tsconfig.json
-fileCount: 46
-files[46]:
+generatedAt: "2026-09-30T21:02:57.456Z"
+repoRoot: /Users/eber/dev/brover/.worktrees/launch-merge
+tsconfigPath: /Users/eber/dev/brover/.worktrees/launch-merge/tsconfig.json
+fileCount: 47
+files[47]:
   - path: playwright.config.ts
     imports[1]:
       - moduleSpecifier: @playwright/test
@@ -141,7 +141,7 @@ files[46]:
     exportedConstants[0]:
     exportedHooks[0]:
   - path: src/main/index.ts
-    imports[15]:
+    imports[16]:
       - moduleSpecifier: electron
         defaultImport: null
         namespaceImport: null
@@ -161,7 +161,7 @@ files[46]:
       - moduleSpecifier: ../shared/models
         defaultImport: null
         namespaceImport: null
-        namedImports[5]: AUTH_CANCELED,UNSUPPORTED_SECRET_BACKEND,type SecretActionResult,type ScanResult,type RetroactiveSelection
+        namedImports[6]: AUTH_CANCELED,UNSUPPORTED_SECRET_BACKEND,type EnvMetadata,type SecretActionResult,type ScanResult,type RetroactiveSelection
       - moduleSpecifier: ./onboardingScanner
         defaultImport: null
         namespaceImport: null
@@ -186,6 +186,10 @@ files[46]:
         defaultImport: null
         namespaceImport: null
         namedImports[1]: createTerminalLauncher
+      - moduleSpecifier: ./launchEnvMerge
+        defaultImport: null
+        namespaceImport: null
+        namedImports[5]: collectLaunchEntries,mergeLaunchEntries,pickGlobalEnvironmentId,type LaunchEnvEntry,type LaunchValueLookup
       - moduleSpecifier: ./envMutationFlow
         defaultImport: null
         namespaceImport: null
@@ -204,7 +208,7 @@ files[46]:
         namedImports[1]: createSecretStore
     exports[1]{name,kind}:
       bootstrap,FunctionDeclaration
-    functions[3]:
+    functions[4]:
       - name: bootstrap
         exported: true
         defaultExport: false
@@ -212,6 +216,17 @@ files[46]:
         params[0]:
         returnType: Promise<void>
         signature: "async bootstrap(): Promise<void>"
+      - name: collectGlobalLaunchEntries
+        exported: false
+        defaultExport: false
+        async: true
+        params[4]{name,type}:
+          envs,"EnvMetadata[]"
+          globalEnvironmentId,string | null
+          launchedEnvironmentId,string
+          readValue,LaunchValueLookup
+        returnType: "Promise<LaunchEnvEntry[]>"
+        signature: "async collectGlobalLaunchEntries(envs: EnvMetadata[], globalEnvironmentId: string | null, launchedEnvironmentId: string, readValue: LaunchValueLookup): Promise<LaunchEnvEntry[]>"
       - name: failure
         exported: false
         defaultExport: false
@@ -230,6 +245,63 @@ files[46]:
         signature: "ok(value: string): SecretActionResult"
     reactComponents[0]:
     types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/main/launchEnvMerge.ts
+    imports[1]:
+      - moduleSpecifier: ../shared/models
+        defaultImport: null
+        namespaceImport: null
+        namedImports[2]: EnvMetadata,Environment
+    exports[5]{name,kind}:
+      collectLaunchEntries,FunctionDeclaration
+      LaunchEnvEntry,InterfaceDeclaration
+      LaunchValueLookup,TypeAliasDeclaration
+      mergeLaunchEntries,FunctionDeclaration
+      pickGlobalEnvironmentId,FunctionDeclaration
+    functions[3]:
+      - name: collectLaunchEntries
+        exported: true
+        defaultExport: false
+        async: true
+        params[3]{name,type}:
+          envs,"EnvMetadata[]"
+          environmentId,string
+          readValue,LaunchValueLookup
+        returnType: "Promise<LaunchEnvEntry[]>"
+        signature: "async collectLaunchEntries(envs: EnvMetadata[], environmentId: string, readValue: LaunchValueLookup): Promise<LaunchEnvEntry[]>"
+      - name: mergeLaunchEntries
+        exported: true
+        defaultExport: false
+        async: false
+        params[2]{name,type}:
+          globalEntries,"LaunchEnvEntry[]"
+          launchedEntries,"LaunchEnvEntry[]"
+        returnType: "LaunchEnvEntry[]"
+        signature: "mergeLaunchEntries(globalEntries: LaunchEnvEntry[], launchedEntries: LaunchEnvEntry[]): LaunchEnvEntry[]"
+      - name: pickGlobalEnvironmentId
+        exported: true
+        defaultExport: false
+        async: false
+        params[1]{name,type}:
+          environments,"Pick<Environment, 'id' | 'isGlobal'>[]"
+        returnType: string | null
+        signature: "pickGlobalEnvironmentId(environments: Pick<Environment, 'id' | 'isGlobal'>[]): string | null"
+    reactComponents[0]:
+    types[2]:
+      - name: LaunchEnvEntry
+        kind: interface
+        exported: true
+        defaultExport: false
+        text: "export interface LaunchEnvEntry { name: string value: string }"
+        properties[2]: "name: string","value: string"
+      - name: LaunchValueLookup
+        kind: typeAlias
+        exported: true
+        defaultExport: false
+        text: "export type LaunchValueLookup = ( environmentId: string, name: string ) => Promise<string | null | undefined>"
+        properties[0]:
     classes[0]:
     exportedConstants[0]:
     exportedHooks[0]:
