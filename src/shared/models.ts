@@ -27,6 +27,8 @@ export interface Environment {
   color: string
   isActive: boolean
   updatedAt: string
+  createdAt?: string
+  isGlobal?: boolean
 }
 
 export type EnvTarget = Environment

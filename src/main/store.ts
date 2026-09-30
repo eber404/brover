@@ -105,6 +105,12 @@ export class MacOSKeytarSecretStore implements SecretStore {
 
 const ENVIRONMENT_COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
 
+const LEGACY_CREATED_AT_BASE_MS = Date.UTC(2000, 0, 1)
+
+function legacyCreatedAtFor(index: number): string {
+  return new Date(LEGACY_CREATED_AT_BASE_MS + index).toISOString()
+}
+
 function randomEnvironmentColor(): string {
   const index = Math.floor(Math.random() * ENVIRONMENT_COLORS.length)
   return ENVIRONMENT_COLORS[index] ?? '#f59e0b'
@@ -169,7 +175,10 @@ export class BroverStore {
     return candidate
   }
 
-  private normalizeEnvironments(parsed: PersistedDBShape, spaces: CompatSpace[]): StoredEnvironment[] {
+  private normalizeEnvironments(
+    parsed: PersistedDBShape,
+    spaces: CompatSpace[]
+  ): { environments: StoredEnvironment[]; backfilledCreatedAt: boolean } {
     let persistedEnvironments: StoredEnvironment[] | null = null
     if (Array.isArray(parsed.environments)) {
       persistedEnvironments = parsed.environments as StoredEnvironment[]
@@ -179,38 +188,45 @@ export class BroverStore {
     }
 
     if (!persistedEnvironments) {
-      return []
+      return { environments: [], backfilledCreatedAt: false }
     }
 
     const now = new Date().toISOString()
     const spaceNames = new Map(spaces.map((space) => [space.id, space.name]))
     const usedNames = new Set<string>()
+    let backfilledCreatedAt = false
 
-    const normalizedEnvironments = persistedEnvironments.map((environment) => {
+    const normalizedEnvironments = persistedEnvironments.map((environment, index) => {
       const legacySpaceName = environment.spaceId ? spaceNames.get(environment.spaceId) : null
       const migratedName =
         environment.spaceId && environment.name.trim().toLowerCase() === 'default' && legacySpaceName
           ? legacySpaceName
           : environment.name
 
+      if (typeof environment.createdAt !== 'string' || !environment.createdAt) {
+        backfilledCreatedAt = true
+      }
+
       return {
         ...environment,
         spaceId: undefined,
         name: this.makeUniqueEnvironmentName(migratedName, usedNames),
         isActive: Boolean(environment.isActive),
+        createdAt: environment.createdAt ?? legacyCreatedAtFor(index),
         updatedAt: environment.updatedAt ?? now,
       }
     })
 
-    return normalizedEnvironments
+    return { environments: normalizedEnvironments, backfilledCreatedAt }
   }
 
-  private async readDB(): Promise<DBShape> {
+  private async loadDB(): Promise<{ db: DBShape; needsCreatedAtBackfill: boolean }> {
     try {
       const raw = await readFile(this.dbPath, 'utf8')
       const parsed = JSON.parse(raw) as PersistedDBShape
       const spaces = this.normalizeSpaces(parsed)
-      const environments = this.normalizeEnvironments(parsed, spaces)
+      const normalized = this.normalizeEnvironments(parsed, spaces)
+      const environments = normalized.environments
       const activeEnvironmentId = environments.find((environment) => environment.isActive)?.id ?? environments[0]?.id
       const normalizedEnvironments = environments.map((environment) => ({
         ...environment,
@@ -218,19 +234,64 @@ export class BroverStore {
       }))
 
       return {
-        envs: Array.isArray(parsed.envs) ? (parsed.envs as EnvMetadata[]) : [],
-        environments: normalizedEnvironments,
-        sharedSecretNames: this.normalizeSharedSecretNames(parsed, spaces),
-        onboardingCompletedAt: typeof parsed.onboardingCompletedAt === 'string' ? parsed.onboardingCompletedAt : undefined,
+        db: {
+          envs: Array.isArray(parsed.envs) ? (parsed.envs as EnvMetadata[]) : [],
+          environments: normalizedEnvironments,
+          sharedSecretNames: this.normalizeSharedSecretNames(parsed, spaces),
+          onboardingCompletedAt: typeof parsed.onboardingCompletedAt === 'string' ? parsed.onboardingCompletedAt : undefined,
+        },
+        needsCreatedAtBackfill: normalized.backfilledCreatedAt,
       }
     } catch {
       return {
-        envs: [],
-        environments: [],
-        sharedSecretNames: false,
-        onboardingCompletedAt: undefined,
+        db: {
+          envs: [],
+          environments: [],
+          sharedSecretNames: false,
+          onboardingCompletedAt: undefined,
+        },
+        needsCreatedAtBackfill: false,
       }
     }
+  }
+
+  private async readDB(): Promise<DBShape> {
+    const { db, needsCreatedAtBackfill } = await this.loadDB()
+    if (needsCreatedAtBackfill) {
+      await this.writeDB(db)
+    }
+    return db
+  }
+
+  private nextCreatedAt(environments: StoredEnvironment[], now: string): string {
+    let latestCreatedAt: string | null = null
+
+    for (const environment of environments) {
+      const createdAt = environment.createdAt
+      if (!createdAt) continue
+      if (latestCreatedAt === null || createdAt > latestCreatedAt) {
+        latestCreatedAt = createdAt
+      }
+    }
+
+    if (latestCreatedAt === null || now > latestCreatedAt) return now
+    return new Date(new Date(latestCreatedAt).getTime() + 1).toISOString()
+  }
+
+  private resolveGlobalEnvironmentId(environments: StoredEnvironment[]): string | null {
+    let globalId: string | null = null
+    let earliestCreatedAt = ''
+
+    for (const environment of environments) {
+      const createdAt = environment.createdAt
+      if (!createdAt) continue
+      if (globalId === null || createdAt < earliestCreatedAt) {
+        globalId = environment.id
+        earliestCreatedAt = createdAt
+      }
+    }
+
+    return globalId
   }
 
   private normalizeSharedSecretNames(parsed: PersistedDBShape, spaces: CompatSpace[]): boolean {
@@ -250,14 +311,21 @@ export class BroverStore {
     await writeFile(this.dbPath, JSON.stringify(data, null, 2), 'utf8')
   }
 
-  private toPublicEnvironment(environment: StoredEnvironment): Environment {
+  private toPublicEnvironment(environment: StoredEnvironment, globalEnvironmentId: string | null): Environment {
     return {
       id: environment.id,
       name: environment.name,
       color: environment.color,
       isActive: environment.isActive,
+      createdAt: environment.createdAt,
       updatedAt: environment.updatedAt,
+      isGlobal: environment.id === globalEnvironmentId,
     }
+  }
+
+  private toPublicEnvironments(db: DBShape): Environment[] {
+    const globalEnvironmentId = this.resolveGlobalEnvironmentId(db.environments)
+    return db.environments.map((environment) => this.toPublicEnvironment(environment, globalEnvironmentId))
   }
 
   private getEnvironmentScope(db: DBShape, profile: string): { environmentIds: string[]; shared: boolean } {
@@ -393,7 +461,7 @@ export class BroverStore {
 
   async listEnvironments(): Promise<Environment[]> {
     const db = await this.readDB()
-    return db.environments.map((environment) => this.toPublicEnvironment(environment))
+    return this.toPublicEnvironments(db)
   }
 
   async createEnvironment(payload: { name: string }): Promise<Environment[]> {
@@ -405,11 +473,13 @@ export class BroverStore {
     if (duplicate) throw new Error('Environment name already exists')
 
     const now = new Date().toISOString()
+    const createdAt = this.nextCreatedAt(db.environments, now)
     const createdEnvironment: StoredEnvironment = {
       id: randomUUID(),
       name,
       color: randomEnvironmentColor(),
       isActive: db.environments.length === 0,
+      createdAt,
       updatedAt: now,
     }
     db.environments.push(createdEnvironment)
@@ -431,13 +501,17 @@ export class BroverStore {
     }
 
     await this.writeDB(db)
-    return db.environments.map((environment) => this.toPublicEnvironment(environment))
+    return this.toPublicEnvironments(db)
   }
 
   async deleteEnvironment(payload: { environmentId: string }): Promise<Environment[]> {
     const db = await this.readDB()
     const environment = db.environments.find((item) => item.id === payload.environmentId)
     if (!environment) throw new Error('Environment not found')
+
+    if (this.resolveGlobalEnvironmentId(db.environments) === payload.environmentId) {
+      throw new Error('The global environment cannot be deleted')
+    }
 
     const environmentEnvs = db.envs.filter((env) => env.profile === payload.environmentId)
     for (const env of environmentEnvs) {
@@ -461,7 +535,7 @@ export class BroverStore {
     }
 
     await this.writeDB(db)
-    return db.environments.map((item) => this.toPublicEnvironment(item))
+    return this.toPublicEnvironments(db)
   }
 
   async reorderEnvironments(payload: { orderedEnvironmentIds: string[] }): Promise<Environment[]> {
@@ -475,7 +549,7 @@ export class BroverStore {
     db.environments = [...db.environments].sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0))
 
     await this.writeDB(db)
-    return db.environments.map((item) => this.toPublicEnvironment(item))
+    return this.toPublicEnvironments(db)
   }
 
   async renameEnvironment(payload: { environmentId: string; name: string }): Promise<Environment[]> {
@@ -497,7 +571,7 @@ export class BroverStore {
         : item
     )
     await this.writeDB(db)
-    return db.environments.map((item) => this.toPublicEnvironment(item))
+    return this.toPublicEnvironments(db)
   }
 
   async setEnvironmentColor(payload: { environmentId: string; color: string }): Promise<Environment[]> {
@@ -511,7 +585,7 @@ export class BroverStore {
         : item
     )
     await this.writeDB(db)
-    return db.environments.map((item) => this.toPublicEnvironment(item))
+    return this.toPublicEnvironments(db)
   }
 
   async setActiveEnvironment(payload: { environmentId: string }): Promise<Environment[]> {
@@ -527,7 +601,7 @@ export class BroverStore {
       }
     })
     await this.writeDB(db)
-    return db.environments.map((environment) => this.toPublicEnvironment(environment))
+    return this.toPublicEnvironments(db)
   }
 
   private async readTextFile(path: string): Promise<string> {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { UnsupportedSecretStore, BroverStore, MemorySecretStore } from './store'
-import { mkdtempSync, writeFileSync, unlinkSync, rmdirSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, readFileSync, unlinkSync, rmdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -209,6 +209,169 @@ describe('BroverStore onboarding', () => {
       expect(environments).toHaveLength(2)
       expect(environments.map((environment) => environment.name)).toEqual(['.bash_profile', '.zshrc'])
       expect(environments.find((environment) => environment.isActive)?.id).toBe('target-1')
+    } finally {
+      cleanup()
+    }
+  })
+})
+
+function createTestStore(dbContent?: object): { store: BroverStore; dbPath: string; cleanup: () => void } {
+  const dir = mkdtempSync(join(tmpdir(), 'brover-global-'))
+  const dbPath = join(dir, 'config.json')
+  if (dbContent) {
+    writeFileSync(dbPath, JSON.stringify(dbContent))
+  }
+  const store = new BroverStore(dbPath, new MemorySecretStore())
+  const cleanup = () => {
+    try { unlinkSync(dbPath) } catch { /* ignore */ }
+    try { rmdirSync(dir) } catch { /* ignore */ }
+  }
+  return { store, dbPath, cleanup }
+}
+
+describe('BroverStore global environment identity', () => {
+  it('persists createdAt on create', async () => {
+    const { store, dbPath, cleanup } = createTestStore()
+    try {
+      await store.createEnvironment({ name: 'default' })
+
+      const persisted = JSON.parse(readFileSync(dbPath, 'utf8')) as {
+        environments: { name: string; createdAt?: string }[]
+      }
+      const persistedEnvironment = persisted.environments.find((environment) => environment.name === 'default')
+      expect(typeof persistedEnvironment?.createdAt).toBe('string')
+      expect(new Date(persistedEnvironment!.createdAt!).getTime()).not.toBeNaN()
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('marks the first created environment as global and later ones as not global', async () => {
+    const { store, cleanup } = createTestStore()
+    try {
+      const withDefault = await store.createEnvironment({ name: 'default' })
+      const withStaging = await store.createEnvironment({ name: 'staging' })
+      const withProd = await store.createEnvironment({ name: 'prod' })
+
+      expect(withDefault.find((environment) => environment.name === 'default')?.isGlobal).toBe(true)
+      expect(withStaging.find((environment) => environment.name === 'default')?.isGlobal).toBe(true)
+      expect(withStaging.find((environment) => environment.name === 'staging')?.isGlobal).toBe(false)
+      expect(withProd.find((environment) => environment.name === 'prod')?.isGlobal).toBe(false)
+      expect(withProd.filter((environment) => environment.isGlobal)).toHaveLength(1)
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('keeps isGlobal on the global environment after rename', async () => {
+    const { store, cleanup } = createTestStore()
+    try {
+      const created = await store.createEnvironment({ name: 'default' })
+      const globalId = created[0]!.id
+      await store.createEnvironment({ name: 'staging' })
+
+      const renamed = await store.renameEnvironment({ environmentId: globalId, name: 'production' })
+      expect(renamed.find((environment) => environment.id === globalId)?.isGlobal).toBe(true)
+      expect(renamed.find((environment) => environment.name === 'staging')?.isGlobal).toBe(false)
+
+      const listed = await store.listEnvironments()
+      expect(listed.find((environment) => environment.id === globalId)?.isGlobal).toBe(true)
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('keeps isGlobal on the same environment after reorder moves it to the end', async () => {
+    const { store, cleanup } = createTestStore()
+    try {
+      const created = await store.createEnvironment({ name: 'default' })
+      const globalId = created[0]!.id
+      const staging = await store.createEnvironment({ name: 'staging' })
+      const stagingId = staging.find((environment) => environment.name === 'staging')!.id
+      const prod = await store.createEnvironment({ name: 'prod' })
+      const prodId = prod.find((environment) => environment.name === 'prod')!.id
+
+      const reordered = await store.reorderEnvironments({
+        orderedEnvironmentIds: [stagingId, prodId, globalId],
+      })
+
+      expect(reordered.map((environment) => environment.id)).toEqual([stagingId, prodId, globalId])
+      expect(new Set(reordered.map((environment) => environment.createdAt)).size).toBe(3)
+      expect(reordered[reordered.length - 1]?.id).toBe(globalId)
+      expect(reordered[reordered.length - 1]?.isGlobal).toBe(true)
+      expect(reordered.filter((environment) => environment.isGlobal)).toHaveLength(1)
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('refuses to delete the global environment and keeps its secrets', async () => {
+    const { store, cleanup } = createTestStore()
+    try {
+      const created = await store.createEnvironment({ name: 'default' })
+      const globalId = created[0]!.id
+      await store.createEnv({ name: 'API_KEY', profile: globalId, value: 'hunter2' })
+
+      await expect(store.deleteEnvironment({ environmentId: globalId })).rejects.toThrow(/global/i)
+
+      const remaining = await store.listEnvironments()
+      expect(remaining.map((environment) => environment.id)).toEqual([globalId])
+      expect(remaining[0]?.isGlobal).toBe(true)
+      expect((await store.listEnvs()).map((env) => env.name)).toEqual(['API_KEY'])
+      await expect(store.revealEnv(globalId, 'API_KEY')).resolves.toBe('hunter2')
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('still deletes a non-global environment', async () => {
+    const { store, cleanup } = createTestStore()
+    try {
+      const created = await store.createEnvironment({ name: 'default' })
+      const globalId = created[0]!.id
+      const withStaging = await store.createEnvironment({ name: 'staging' })
+      const stagingId = withStaging.find((environment) => environment.name === 'staging')!.id
+      await store.createEnv({ name: 'STAGING_KEY', profile: stagingId, value: 'staging-secret' })
+
+      await expect(store.deleteEnvironment({ environmentId: stagingId })).resolves.toHaveLength(1)
+
+      const remaining = await store.listEnvironments()
+      expect(remaining.map((environment) => environment.id)).toEqual([globalId])
+      expect(remaining[0]?.isGlobal).toBe(true)
+      await expect(store.revealEnv(stagingId, 'STAGING_KEY')).resolves.toBeNull()
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('resolves a global deterministically for legacy records without createdAt', async () => {
+    const legacy = {
+      envs: [],
+      sharedSecretNames: false,
+      environments: [
+        { id: 'legacy-1', name: 'dev', color: '#111111', isActive: false, updatedAt: '2026-01-01T00:00:00.000Z' },
+        { id: 'legacy-2', name: 'prod', color: '#222222', isActive: true, updatedAt: '2026-01-02T00:00:00.000Z' },
+        { id: 'legacy-3', name: 'staging', color: '#333333', isActive: false, updatedAt: '2026-01-03T00:00:00.000Z' },
+      ],
+    }
+    const { store, dbPath, cleanup } = createTestStore(legacy)
+    try {
+      const environments = await store.listEnvironments()
+      expect(environments.find((environment) => environment.isGlobal)?.id).toBe('legacy-1')
+      expect(environments.filter((environment) => environment.isGlobal)).toHaveLength(1)
+
+      const persisted = JSON.parse(readFileSync(dbPath, 'utf8')) as { environments: { id: string; createdAt?: string }[] }
+      for (const environment of persisted.environments) {
+        expect(typeof environment.createdAt).toBe('string')
+      }
+      const persistedCreatedAt = persisted.environments.map((environment) => environment.createdAt)
+      expect(new Set(persistedCreatedAt).size).toBe(3)
+
+      const reloaded = await new BroverStore(dbPath, new MemorySecretStore()).listEnvironments()
+      expect(reloaded.find((environment) => environment.isGlobal)?.id).toBe('legacy-1')
+
+      const reordered = await store.reorderEnvironments({ orderedEnvironmentIds: ['legacy-3', 'legacy-2', 'legacy-1'] })
+      expect(reordered.find((environment) => environment.isGlobal)?.id).toBe('legacy-1')
     } finally {
       cleanup()
     }

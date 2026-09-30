@@ -70,27 +70,32 @@ describe('BroverStore', () => {
 
     it('deleteEnvironment removes secrets from store', async () => {
       const targets = await store.createEnvironment({ name: 'default' })
-      const defaultTarget = targets.find((target) => target.name === 'default')!
+      const stagingTargets = await store.createEnvironment({ name: 'staging' })
+      const stagingTarget = stagingTargets.find((target) => target.name === 'staging')!
 
-      await store.createEnv({ name: 'SECRET', profile: defaultTarget.id, value: 'hunter2' })
+      await store.createEnv({ name: 'SECRET', profile: stagingTarget.id, value: 'hunter2' })
 
-      await store.deleteEnvironment({ environmentId: defaultTarget.id })
+      await store.deleteEnvironment({ environmentId: stagingTarget.id })
 
       const remaining = await store.listEnvironments()
-      expect(remaining.find((target) => target.id === defaultTarget.id)).toBeUndefined()
+      expect(remaining.find((target) => target.id === stagingTarget.id)).toBeUndefined()
+      expect(targets[0]?.id).not.toBe(stagingTarget.id)
+      await expect(store.revealEnv(stagingTarget.id, 'SECRET')).resolves.toBeNull()
     })
 
     it('deleteEnvironment promotes next environment if deleted was active', async () => {
       const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
-      await store.createEnvironment({ name: 'staging' })
-      await store.setActiveEnvironment({ environmentId: defaultTarget.id })
+      const stagingTargets = await store.createEnvironment({ name: 'staging' })
+      const stagingTarget = stagingTargets.find((target) => target.name === 'staging')!
+      await store.setActiveEnvironment({ environmentId: stagingTarget.id })
 
-      await store.deleteEnvironment({ environmentId: defaultTarget.id })
+      await store.deleteEnvironment({ environmentId: stagingTarget.id })
 
       const remaining = await store.listEnvironments()
-      expect(remaining.find((target) => target.isActive)?.name).toBe('staging')
+      expect(remaining.find((target) => target.isActive)?.name).toBe('default')
+      expect(defaultTarget.id).toBe(remaining[0]?.id)
     })
 
     it('renameEnvironment updates environment name', async () => {
