@@ -100,7 +100,7 @@ test.describe('Onboarding First-Run Flow', () => {
     expect(importedEnv?.name).toBe('API_KEY')
   })
 
-  test('fresh start creates a single default environment', async () => {
+  test('fresh start creates a single global environment', async () => {
     const window = await launchApp()
 
     await window.getByText('Start fresh →').click()
@@ -115,7 +115,7 @@ test.describe('Onboarding First-Run Flow', () => {
 
     const environments = await window.evaluate(() => window.brover.listEnvironments())
     expect(environments).toHaveLength(1)
-    expect(environments[0]?.name).toBe('default')
+    expect(environments[0]?.name).toBe('global')
   })
 
   test('second launch skips onboarding after completion', async () => {
