@@ -37,9 +37,8 @@ export async function runFreshStartImport(
 
   try {
     const environments = await store.listEnvironments()
-    const hasDefault = environments.some((env) => env.name === 'default')
-    if (!hasDefault) {
-      await store.createEnvironment({ name: 'default' })
+    if (environments.length === 0) {
+      await store.createEnvironment({ name: 'global' })
     }
 
     return {

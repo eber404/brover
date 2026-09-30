@@ -1,6 +1,6 @@
-generatedAt: "2026-09-30T20:19:23.263Z"
-repoRoot: /Users/eber/dev/brover
-tsconfigPath: /Users/eber/dev/brover/tsconfig.json
+generatedAt: "2026-09-30T20:35:30.061Z"
+repoRoot: /Users/eber/dev/brover/.worktrees/fresh-global-name
+tsconfigPath: /Users/eber/dev/brover/.worktrees/fresh-global-name/tsconfig.json
 fileCount: 46
 files[46]:
   - path: playwright.config.ts
