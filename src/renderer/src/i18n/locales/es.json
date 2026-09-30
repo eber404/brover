@@ -97,7 +97,7 @@
     }
   },
   "environments": {
-    "matchingSecretNamesTooltip": "Mantener nombres de secretos sincronizados en todos los environments. Los valores permanecen especificos de cada environment."
+    "matchingSecretNamesTooltip": "Mantener nombres de secretos sincronizados en todos los espacios. Los valores permanecen especificos de cada espacio."
   },
   "launch": {
     "launch": "Launch",
@@ -110,7 +110,7 @@
   "common": {
     "refresh": "Actualizar",
     "details": "Detalles",
-    "environment": "Environment",
+    "environment": "Espacio",
     "unsupportedBackend": "Almacenamiento seguro no implementado para este SO aun.",
     "secretCreated": "Secreto creado",
     "secretCopied": "Secreto copiado",

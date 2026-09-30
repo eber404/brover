@@ -135,7 +135,8 @@ export async function runRetroactiveImport(
       try {
         await store.deleteEnvironment({ environmentId })
       } catch {
-        // Best-effort cleanup
+        // Best-effort cleanup. The global environment is never deletable, so a
+        // failed rollback can legitimately leave it behind.
       }
     }
     throw err

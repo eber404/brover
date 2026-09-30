@@ -1,6 +1,6 @@
-generatedAt: "2026-09-30T21:02:57.456Z"
-repoRoot: /Users/eber/dev/brover/.worktrees/launch-merge
-tsconfigPath: /Users/eber/dev/brover/.worktrees/launch-merge/tsconfig.json
+generatedAt: "2026-09-30T21:10:56.726Z"
+repoRoot: /Users/eber/dev/brover
+tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 47
 files[47]:
   - path: playwright.config.ts
