@@ -235,6 +235,26 @@ describe('SecretsDetail', () => {
     expect(screen.getByTestId('secret-update-button').textContent).not.toContain('Save')
   })
 
+  it('labels the owning space instead of the environment', () => {
+    render(
+      <I18nProvider>
+        <SecretsDetail
+          env={env}
+          environmentName="dev"
+          revealValue="secret123"
+          hasValue={true}
+          onCopy={() => {}}
+          onUpdateValue={() => {}}
+          onDelete={() => {}}
+          canDelete={true}
+        />
+      </I18nProvider>
+    )
+
+    expect(screen.getByText(/^Space: dev$/)).toBeTruthy()
+    expect(screen.queryByText(/^Environment:/)).toBeNull()
+  })
+
   it('copies the secret name from the header without touching the value copy', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     const onCopy = vi.fn()

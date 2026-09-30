@@ -97,7 +97,7 @@
     }
   },
   "environments": {
-    "matchingSecretNamesTooltip": "Keep secret names synced across all environments. Values remain environment-specific."
+    "matchingSecretNamesTooltip": "Keep secret names synced across all spaces. Values remain space-specific."
   },
   "launch": {
     "launch": "Launch",
@@ -110,7 +110,7 @@
   "common": {
     "refresh": "Refresh",
     "details": "Details",
-    "environment": "Environment",
+    "environment": "Space",
     "unsupportedBackend": "Secure storage not implemented for this OS yet.",
     "secretCreated": "Secret created",
     "secretCopied": "Secret copied",

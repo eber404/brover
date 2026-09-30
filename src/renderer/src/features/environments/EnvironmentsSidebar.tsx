@@ -83,6 +83,16 @@ export const EnvironmentsSidebar = memo(function EnvironmentsSidebar(props: Envi
     })
   }
 
+  function shouldRenderGlobalMarker(environment: Environment): boolean {
+    if (!environment.isGlobal) return false
+    return environment.name !== 'global'
+  }
+
+  function shouldRenderDeleteButton(environment: Environment): boolean {
+    if (environment.isGlobal) return false
+    return editingEnvironmentId !== environment.id
+  }
+
   function renderEnvironmentNameCell(environment: Environment) {
     if (editingEnvironmentId === environment.id) {
       return (
@@ -113,6 +123,14 @@ export const EnvironmentsSidebar = memo(function EnvironmentsSidebar(props: Envi
         >
           {environment.name}
         </span>
+        {shouldRenderGlobalMarker(environment) && (
+          <span
+            data-testid={`environment-global-marker-${environment.id}`}
+            className="ml-1 align-top text-[10px] leading-tight text-text-muted"
+          >
+            (global)
+          </span>
+        )}
       </div>
     )
   }
@@ -121,7 +139,7 @@ export const EnvironmentsSidebar = memo(function EnvironmentsSidebar(props: Envi
     <aside ref={asideRef} className="relative flex h-full min-w-0 flex-col border-r border-edge/60 bg-surface-sidebar p-4 pt-3">
       <div className="flex items-center gap-2">
         <Layers className="h-4 w-4 text-text-muted" />
-        <h1 className="text-sm font-semibold tracking-wide text-text-base">ENVIRONMENTS</h1>
+        <h1 className="text-sm font-semibold tracking-wide text-text-base">SPACES</h1>
         <button onClick={onAddEnvironment} className="ml-auto cursor-pointer rounded p-1 text-text-base hover:bg-surface-hover" data-testid="environment-add">
           <Plus className="h-4 w-4" />
         </button>
@@ -176,7 +194,7 @@ export const EnvironmentsSidebar = memo(function EnvironmentsSidebar(props: Envi
                 <span className="block h-full w-full rounded-full" style={{ backgroundColor: environment.color }} />
               </button>
               <div className="min-w-0 flex-1 pr-2">{renderEnvironmentNameCell(environment)}</div>
-              {editingEnvironmentId !== environment.id && (
+              {shouldRenderDeleteButton(environment) && (
                 <button
                   className={`shrink-0 cursor-pointer rounded p-1 transition ${selectedEnvironmentId === environment.id ? 'text-text-muted hover:bg-surface-hover hover:text-rose-status' : 'pointer-events-none opacity-0 text-slate-500 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:hover:bg-surface-hover group-hover:hover:text-rose-status'}`}
                   data-testid={`environment-delete-${environment.id}`}

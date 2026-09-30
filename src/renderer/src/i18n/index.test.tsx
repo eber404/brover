@@ -3,6 +3,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { I18nProvider, useI18n } from './index'
 
+const LOCALE_EXPECTATIONS = [
+  { locale: 'en', space: 'Space' },
+  { locale: 'es', space: 'Espacio' },
+  { locale: 'pt', space: 'Espaco' },
+] as const
+
 function TestHarness() {
   const { locale, setLocale, t } = useI18n()
 
@@ -11,6 +17,8 @@ function TestHarness() {
       <div data-testid="locale">{locale}</div>
       <div data-testid="translated">{t('secrets.cancel')}</div>
       <div data-testid="missing">{t('missing.path')}</div>
+      <div data-testid="space-label">{t('common.environment')}</div>
+      <div data-testid="matching-tooltip">{t('environments.matchingSecretNamesTooltip')}</div>
       <button onClick={() => setLocale('pt')}>set-pt</button>
     </div>
   )
@@ -83,5 +91,21 @@ describe('i18n', () => {
     )
 
     expect(screen.getByTestId('locale').textContent).toBe('en')
+  })
+
+  it.each(LOCALE_EXPECTATIONS)('translates the space label in $locale', ({ locale, space }) => {
+    window.localStorage.setItem('brover-locale', locale)
+
+    render(
+      <I18nProvider>
+        <TestHarness />
+      </I18nProvider>
+    )
+
+    expect(screen.getByTestId('space-label').textContent).toBe(space)
+
+    const tooltip = screen.getByTestId('matching-tooltip').textContent ?? ''
+    expect(tooltip.toLowerCase()).toContain(space.toLowerCase())
+    expect(tooltip.toLowerCase()).not.toContain('environment')
   })
 })

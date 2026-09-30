@@ -45,7 +45,7 @@ describe('EnvironmentsSidebar', () => {
   it('renders environments column with matching secret names control', () => {
     render(<EnvironmentsSidebar {...defaultProps} />)
 
-    expect(screen.getByText('ENVIRONMENTS')).toBeTruthy()
+    expect(screen.getByText('SPACES')).toBeTruthy()
     expect(screen.getByText('Matching secret names')).toBeTruthy()
     expect(screen.getByTestId('environment-row-environment-1')).toBeTruthy()
     expect(screen.getByText('Brover · Local secrets manager')).toBeTruthy()
@@ -59,6 +59,60 @@ describe('EnvironmentsSidebar', () => {
     expect(screen.queryByTitle('Add space')).toBeNull()
     expect(screen.queryByText('TARGETS')).toBeNull()
     expect(screen.queryByText('Tied targets')).toBeNull()
+    expect(screen.queryByText('ENVIRONMENTS')).toBeNull()
+  })
+
+  it('marks the global environment when it was renamed away from global', () => {
+    const environments = [makeEnvironment({ name: 'my-space', isGlobal: true })]
+
+    render(<EnvironmentsSidebar {...defaultProps} environments={environments} />)
+
+    const marker = screen.getByTestId('environment-global-marker-environment-1')
+    expect(marker.textContent).toBe('(global)')
+    expect(marker.className).toContain('text-text-muted')
+    expect(marker.className).toContain('text-[10px]')
+    expect(screen.getByTestId('environment-name-environment-1').textContent).toBe('my-space')
+  })
+
+  it('omits the global marker when the name is already global', () => {
+    const environments = [makeEnvironment({ name: 'global', isGlobal: true })]
+
+    render(<EnvironmentsSidebar {...defaultProps} environments={environments} />)
+
+    expect(screen.queryByTestId('environment-global-marker-environment-1')).toBeNull()
+    expect(screen.getAllByText('global').length).toBeGreaterThan(0)
+  })
+
+  it('omits the global marker for non global environments', () => {
+    render(<EnvironmentsSidebar {...defaultProps} />)
+
+    expect(screen.queryByTestId('environment-global-marker-environment-1')).toBeNull()
+  })
+
+  it('does not render a delete affordance for the global environment', () => {
+    const environments = [
+      makeEnvironment({ id: 'environment-1', name: 'my-space', isGlobal: true }),
+      makeEnvironment({ id: 'environment-2', name: 'prod', isActive: false }),
+    ]
+
+    render(
+      <EnvironmentsSidebar
+        {...defaultProps}
+        environments={environments}
+        selectedEnvironmentId={null}
+      />
+    )
+
+    expect(screen.queryByTestId('environment-delete-environment-1')).toBeNull()
+    expect(screen.getByTestId('environment-delete-environment-2')).toBeTruthy()
+  })
+
+  it('does not render a delete affordance for the global environment while selected', () => {
+    const environments = [makeEnvironment({ name: 'my-space', isGlobal: true })]
+
+    render(<EnvironmentsSidebar {...defaultProps} environments={environments} />)
+
+    expect(screen.queryByTestId('environment-delete-environment-1')).toBeNull()
   })
 
   it('clicking add environment triggers handler', () => {

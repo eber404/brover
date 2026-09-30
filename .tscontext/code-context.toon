@@ -1,6 +1,6 @@
-generatedAt: "2026-09-30T20:42:17.796Z"
-repoRoot: /Users/eber/dev/brover/.worktrees/e2e-crud
-tsconfigPath: /Users/eber/dev/brover/.worktrees/e2e-crud/tsconfig.json
+generatedAt: "2026-09-30T21:07:55.839Z"
+repoRoot: /Users/eber/dev/brover/.worktrees/spaces-ui
+tsconfigPath: /Users/eber/dev/brover/.worktrees/spaces-ui/tsconfig.json
 fileCount: 46
 files[46]:
   - path: playwright.config.ts
