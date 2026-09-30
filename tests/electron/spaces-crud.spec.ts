@@ -38,6 +38,10 @@ test.describe('Targets Cleanup Flow', () => {
 
     const result = await window.evaluate(
       async ({ defaultTargetName, secretName }) => {
+        const scaffoldTargets = await window.brover.createEnvironment({ name: 'global' })
+        const globalTarget = scaffoldTargets.find((item) => item.name === 'global')
+        if (!globalTarget) throw new Error('No global target created')
+
         const targets = await window.brover.createEnvironment({ name: defaultTargetName })
         const defaultTarget = targets.find((item) => item.name === defaultTargetName)
         if (!defaultTarget) throw new Error('No default target created')
