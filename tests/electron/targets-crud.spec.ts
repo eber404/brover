@@ -39,6 +39,10 @@ test.describe('Targets CRUD Flow', () => {
 
     const result = await window.evaluate(
       async ({ targetName, renamed, updatedColor }) => {
+        const scaffoldTargets = await window.brover.createEnvironment({ name: 'global' })
+        const globalTarget = scaffoldTargets.find((item) => item.name === 'global')
+        if (!globalTarget) throw new Error('No global target created')
+
         const currentTargets = await window.brover.listEnvironments()
         const stale = currentTargets.filter(
           (item) => item.name === targetName || item.name === renamed

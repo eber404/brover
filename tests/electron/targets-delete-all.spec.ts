@@ -33,22 +33,46 @@ test.describe('Targets Delete All Flow', () => {
     const window = await electronApp.firstWindow()
     await window.waitForFunction(() => Boolean(window.brover))
 
-    const result = await window.evaluate(
-      async () => {
-        await window.brover.createEnvironment({ name: `delete-all-${Date.now()}` })
-        await window.brover.createEnvironment({ name: `delete-all-${Date.now()}-2` })
+    const result = await window.evaluate(async () => {
+      const scaffoldTargets = await window.brover.createEnvironment({ name: 'global' })
+      const globalTarget = scaffoldTargets.find((item) => item.name === 'global')
+      if (!globalTarget) throw new Error('No global target created')
 
-        let targets = await window.brover.listEnvironments()
-        while (targets.length > 0) {
-          await window.brover.deleteEnvironment({ environmentId: targets[0].id })
-          targets = await window.brover.listEnvironments()
-        }
-        return {
-          targetCount: targets.length,
-        }
+      await window.brover.createEnvironment({ name: `delete-all-${Date.now()}` })
+      await window.brover.createEnvironment({ name: `delete-all-${Date.now()}-2` })
+
+      const initialTargets = await window.brover.listEnvironments()
+      if (!initialTargets.some((item) => item.isGlobal)) throw new Error('Global target not flagged')
+
+      let attempts = 0
+      let pending = initialTargets.find((item) => !item.isGlobal)
+      while (pending) {
+        await window.brover.deleteEnvironment({ environmentId: pending.id })
+        attempts += 1
+        if (attempts > 10) throw new Error('Delete loop did not converge')
+        pending = (await window.brover.listEnvironments()).find((item) => !item.isGlobal)
       }
-    )
 
-    expect(result.targetCount).toBe(0)
+      let deleteGlobalError = ''
+      try {
+        await window.brover.deleteEnvironment({ environmentId: globalTarget.id })
+      } catch (e) {
+        deleteGlobalError = (e as Error).message
+      }
+
+      const finalTargets = await window.brover.listEnvironments()
+
+      return {
+        attempts,
+        targetCount: finalTargets.length,
+        globalSurvived: finalTargets.some((item) => item.id === globalTarget.id),
+        globalDeleteRefused: deleteGlobalError.includes('cannot be deleted'),
+      }
+    })
+
+    expect(result.attempts).toBe(2)
+    expect(result.targetCount).toBe(1)
+    expect(result.globalSurvived).toBe(true)
+    expect(result.globalDeleteRefused).toBe(true)
   })
 })
