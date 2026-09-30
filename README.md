@@ -3,7 +3,7 @@
 [![CI](https://github.com/eber404/brover/actions/workflows/ci.yml/badge.svg)](https://github.com/eber404/brover/actions/workflows/ci.yml)
 [![Coverage](https://github.com/eber404/brover/raw/badges/coverage-badge.svg)](https://github.com/eber404/brover/tree/badges)
 
-Brover is macOS desktop app for managing local environment secrets across environments and launch terminals.
+Brover is macOS desktop app for managing local environment secrets across spaces and launch terminals.
 
 macOS-only for now.
 
@@ -11,21 +11,23 @@ macOS-only for now.
 
 ## Features
 
-- environments workflow for local setups;
-- environment-scoped secret values stored in macOS Keychain;
+- spaces workflow for local setups, with the first space acting as the global space;
+- space-scoped secret values stored in macOS Keychain;
 - auth-gated reveal, copy, update, and delete actions;
 - secret details open in a centered modal only after authentication succeeds;
 - local JSON persistence for non-sensitive metadata only;
-- onboarding from existing dotfiles or fresh start setup;
-- ephemeral terminal launch with environment variables injected into selected terminal, without editing dotfiles during normal use.
+- onboarding from existing dotfiles or fresh start setup, which creates the first space named `global`;
+- ephemeral terminal launch that always injects the global space's secrets, with the launched space overriding them on name collision, without editing dotfiles during normal use.
 
 ## How It Works
 
-- organize secrets by environment;
+- organize secrets by space;
 - keep secret values in Keychain and metadata in local app data;
 - reuse one auth session for sensitive actions until the app restarts;
 - optionally import selected plaintext values from existing dotfiles on first run;
-- launch Warp, iTerm2, or Terminal with selected environment loaded for current session only.
+- launch Warp, iTerm2, or Terminal with the selected space plus the global space loaded for the current session only.
+
+The global space is whichever space was created first. Renaming it or dragging it to a different position does not change that, and it cannot be deleted. Existing installs keep their original name for it and the sidebar marks it with a dimmed `(global)` label.
 
 ## Requirements
 
