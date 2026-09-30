@@ -50,7 +50,14 @@ Deliver a stable local control plane to:
 - update secret value;
 - delete secret.
 
-Auth session is shared across environments for the current in-memory TTL window. Re-auth is not required when switching environments until that TTL expires.
+Auth session is app-scoped with no TTL: once `authSessionCache` is granted, every later sensitive action stays authorized until the main process restarts. Re-auth is never prompted again within a running app.
+
+Canceled system authentication returns the `AUTH_CANCELED` sentinel (from `src/shared/models.ts`, detected by `isAuthCanceledError` in `src/main/authPrompt.ts`). Callers must treat it as a silent no-op: no error toast, no state change.
+
+### Revealed values
+
+- Revealed values do not auto-hide. There is no reveal timer.
+- A revealed value is cleared only on modal close, environment switch, and app quit.
 
 ### Non-auth actions
 
@@ -67,7 +74,7 @@ Auth session is shared across environments for the current in-memory TTL window.
 Electron App
   ├── Main process (IPC, auth gate, persistence, terminalLauncher)
   ├── Preload bridge (typed window.brover API)
-  └── Renderer (React UI: terminals, environments, secrets, details)
+  └── Renderer (React UI: terminals, environments, secrets, details modal)
 
 Secure store (macOS)
   └── Keychain service
@@ -210,8 +217,14 @@ Reject spaces, shell metacharacters, empty names, and numeric-leading names.
 
 ## UI conventions
 
-- Three-column layout: terminals, environments, secrets/details.
-- Left rail manages terminals; middle panel manages environments.
+- Three-column layout: terminal rail, environments sidebar, secrets list.
+- Left rail manages terminals; middle panel manages environments; secrets list fills the remaining column.
+- There is no fixed right-hand details column. Secret details render in a centered `Dialog` (wired in `App.tsx`).
+- The details modal opens only after authentication succeeds: a card click triggers the authenticated reveal, and a canceled prompt leaves the modal closed.
+- Each secret card has two copy controls: a value copy (authenticated, right side) and a variable-name copy (metadata only, no auth, beside the name). The modal header repeats the name-copy control.
+- The modal exposes a single editable `Current Secret` field. Its action button reads `Rotate` when a value already exists and `Save` when it does not. There is no separate `Rotate Secret` field.
+- Window is capped at 760px width (`src/main/index.ts`: width 760, maxWidth 760, minWidth 640, center true).
+- Toasts render bottom-center, only one at a time, and above dialog overlays.
 - Prevent text selection for static UI labels.
 - Show destructive actions with confirmation.
 

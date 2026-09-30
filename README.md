@@ -14,6 +14,7 @@ macOS-only for now.
 - environments workflow for local setups;
 - environment-scoped secret values stored in macOS Keychain;
 - auth-gated reveal, copy, update, and delete actions;
+- secret details open in a centered modal only after authentication succeeds;
 - local JSON persistence for non-sensitive metadata only;
 - onboarding from existing dotfiles or fresh start setup;
 - ephemeral terminal launch with environment variables injected into selected terminal, without editing dotfiles during normal use.
@@ -22,7 +23,7 @@ macOS-only for now.
 
 - organize secrets by environment;
 - keep secret values in Keychain and metadata in local app data;
-- reuse one auth session for sensitive actions until in-memory TTL expires;
+- reuse one auth session for sensitive actions until the app restarts;
 - optionally import selected plaintext values from existing dotfiles on first run;
 - launch Warp, iTerm2, or Terminal with selected environment loaded for current session only.
 
