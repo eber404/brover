@@ -10,9 +10,9 @@ let secretsPanelState: any = null
 let runConfirmedUpdate: () => Promise<void>
 let runConfirmedDelete: () => Promise<void>
 
-function createDeferred() {
-  let resolve!: () => void
-  const promise = new Promise<void>((complete) => {
+function createDeferred<T = void>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((complete) => {
     resolve = complete
   })
   return { promise, resolve }
@@ -218,6 +218,24 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.getByText('Selected:env-2')).toBeTruthy()
     })
+  })
+
+  it('keeps a secret selected when the environment resolves after the click', async () => {
+    const environments = createDeferred<unknown[]>()
+    brover().listEnvironments.mockReturnValue(environments.promise as never)
+
+    render(<App />)
+    await screen.findByText('Mock secret card')
+
+    fireEvent.click(screen.getByText('Mock secret card'))
+    expect(await screen.findByRole('dialog')).toBeTruthy()
+
+    environments.resolve([
+      { id: 'env-1', name: 'prod', color: '#111', isActive: true, updatedAt: '1' },
+    ])
+
+    expect(await screen.findByRole('dialog')).toBeTruthy()
+    expect(screen.getByText('SecretsDetails')).toBeTruthy()
   })
 
   it('switching environment clears selected secret and revealed value', async () => {

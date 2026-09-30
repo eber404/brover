@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { Search, X } from 'lucide-react'
 import type { EnvMetadata, Environment } from '../../shared/models'
 import { ConfirmDialog } from './components/ui/confirmDialog'
@@ -86,7 +86,17 @@ function AppShell() {
     setRevealValue,
   })
 
+  // Only clear the selection when the user actually switches environments.
+  // Skipping the first run and the initial `null` resolution keeps a secret
+  // the user picked while the environment list was still loading.
+  const previousEnvironmentIdRef = useRef<string | null | undefined>(undefined)
+
   useEffect(() => {
+    const previous = previousEnvironmentIdRef.current
+    previousEnvironmentIdRef.current = selectedEnvironmentId
+    if (previous === undefined) return
+    if (previous === null) return
+    if (previous === selectedEnvironmentId) return
     setSelectedEnvId('')
     setRevealValue('')
   }, [selectedEnvironmentId])

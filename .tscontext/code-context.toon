@@ -1,8 +1,8 @@
-generatedAt: "2026-09-30T21:15:21.877Z"
+generatedAt: "2026-09-30T21:27:23.163Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
-fileCount: 47
-files[47]:
+fileCount: 48
+files[48]:
   - path: playwright.config.ts
     imports[1]:
       - moduleSpecifier: @playwright/test
@@ -938,7 +938,7 @@ files[47]:
       - moduleSpecifier: react
         defaultImport: null
         namespaceImport: null
-        namedImports[5]: useCallback,useDeferredValue,useEffect,useMemo,useState
+        namedImports[6]: useCallback,useDeferredValue,useEffect,useMemo,useRef,useState
       - moduleSpecifier: lucide-react
         defaultImport: null
         namespaceImport: null
@@ -2097,6 +2097,23 @@ files[47]:
           value,string
         returnType: boolean
         signature: "isValidEnvName(value: string): boolean"
+    reactComponents[0]:
+    types[0]:
+    classes[0]:
+    exportedConstants[0]:
+    exportedHooks[0]:
+  - path: src/test/setup.ts
+    imports[2]:
+      - moduleSpecifier: @testing-library/dom
+        defaultImport: null
+        namespaceImport: null
+        namedImports[1]: configure
+      - moduleSpecifier: @testing-library/jest-dom/vitest
+        defaultImport: null
+        namespaceImport: null
+        namedImports[0]:
+    exports[0]:
+    functions[0]:
     reactComponents[0]:
     types[0]:
     classes[0]:

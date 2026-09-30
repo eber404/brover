@@ -1,7 +1,7 @@
 # Code Context Summary
 
-Generated: 2026-09-30T21:15:21.877Z
-Files: 47
+Generated: 2026-09-30T21:27:23.163Z
+Files: 48
 
 ## `playwright.config.ts`
 
@@ -555,6 +555,10 @@ Exports: `isValidEnvName` (FunctionDeclaration)
 
 Functions:
 - `isValidEnvName(value: string): boolean`
+
+## `src/test/setup.ts`
+
+Imports: `@testing-library/dom`, `@testing-library/jest-dom/vitest`
 
 ## `tailwind.config.ts`
 
