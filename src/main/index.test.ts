@@ -90,10 +90,12 @@ const BrowserWindowMock = vi.fn(function BrowserWindowMock(_options?: unknown) {
   return browserWindowState
 })
 const showOpenDialog = vi.fn()
+const clipboardWriteText = vi.fn()
 
 vi.mock('electron', () => ({
   app: appMock,
   BrowserWindow: BrowserWindowMock,
+  clipboard: { writeText: clipboardWriteText },
   dialog: {
     showOpenDialog,
   },
@@ -426,6 +428,25 @@ describe('main IPC wiring', () => {
     expect(runRetroactiveImport).toHaveBeenCalled()
     expect(runFreshStartImport).toHaveBeenCalled()
     expect(markOnboardingComplete).toHaveBeenCalledTimes(1)
+  })
+
+  it('authenticates hidden copy before writing secret to system clipboard', async () => {
+    isAuthorized.mockReturnValue(false)
+    authPrompt.mockResolvedValue(undefined)
+    revealEnv.mockResolvedValue('copy-secret-value')
+    clipboardWriteText.mockImplementation(() => {
+      expect(authorize).toHaveBeenCalledWith('copy', { isRevealed: false, targetId: 'env-1' })
+    })
+    await loadFreshModule()
+
+    const result = await handlers.get('envs:copy')?.({}, {
+      profile: 'env-1',
+      name: 'API_KEY',
+      isRevealed: false,
+    })
+
+    expect(result).toEqual({ ok: true })
+    expect(clipboardWriteText).toHaveBeenCalledWith('copy-secret-value')
   })
 
   it('maps env create and confirmed mutation failures', async () => {

@@ -107,6 +107,19 @@ describe('TerminalPreferencesStep', () => {
     expect(continueButton.hasAttribute('disabled')).toBe(false)
   })
 
+  it('keeps the back button inside the content column instead of a negative offset', async () => {
+    render(<TerminalPreferencesStep onBack={vi.fn()} onContinue={() => {}} />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'back' })).toBeTruthy()
+    })
+
+    const backButton = screen.getByRole('button', { name: 'back' })
+    expect(backButton.closest('[class*="absolute"]')).toBeNull()
+    expect(backButton.className).not.toContain('-left-')
+    expect(backButton.className).not.toContain('-ml-')
+  })
+
   it('calls onBack from back button', async () => {
     const onBack = vi.fn()
     render(<TerminalPreferencesStep onBack={onBack} onContinue={() => {}} />)

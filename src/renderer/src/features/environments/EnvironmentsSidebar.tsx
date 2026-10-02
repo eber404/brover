@@ -114,9 +114,9 @@ export const EnvironmentsSidebar = memo(function EnvironmentsSidebar(props: Envi
     }
 
     return (
-      <div className={`min-w-0 flex-1 overflow-hidden rounded px-2 py-1 text-left text-sm ${selectedEnvironmentId === environment.id ? 'text-accent' : 'text-text-base'}`}>
+      <div className={`flex min-w-0 flex-1 items-center gap-1 overflow-hidden rounded px-2 py-1 text-left text-sm ${selectedEnvironmentId === environment.id ? 'text-accent' : 'text-text-base'}`}>
         <span
-          className="inline-block max-w-full overflow-hidden text-ellipsis whitespace-nowrap align-top"
+          className="min-w-0 truncate"
           data-testid={`environment-name-${environment.id}`}
           onMouseEnter={(event) => showNameTooltip(environment.name, event.currentTarget)}
           onMouseLeave={() => setNameTooltip(null)}
@@ -126,9 +126,9 @@ export const EnvironmentsSidebar = memo(function EnvironmentsSidebar(props: Envi
         {shouldRenderGlobalMarker(environment) && (
           <span
             data-testid={`environment-global-marker-${environment.id}`}
-            className="ml-1 align-top text-[10px] leading-tight text-text-muted"
+            className="shrink-0 text-[10px] leading-none text-text-muted"
           >
-            (global)
+            (global space)
           </span>
         )}
       </div>

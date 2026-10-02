@@ -45,6 +45,71 @@ test.describe('Onboarding First-Run Flow', () => {
     return window
   }
 
+  test('wizard back button stays inside the window at the capped width', async () => {
+    const window = await launchApp()
+
+    const width = await window.evaluate(() => window.innerWidth)
+    expect(width).toBeLessThanOrEqual(760)
+
+    await window.getByText('Start import →').click()
+    const reviewBack = window.getByRole('button', { name: 'back' })
+    await expect(reviewBack).toBeVisible()
+
+    const reviewBox = await reviewBack.boundingBox()
+    expect(reviewBox).not.toBeNull()
+    expect(reviewBox!.x).toBeGreaterThanOrEqual(0)
+    expect(reviewBox!.x + reviewBox!.width).toBeLessThanOrEqual(width)
+  })
+
+  test('wizard header has clear titlebar clearance and compact text spacing', async () => {
+    const window = await launchApp()
+
+    await window.getByText('Start fresh →').click()
+    const heading = window.getByRole('heading', { name: 'Choose launch terminals' })
+    const subtitle = window.getByText('Pick favorites, set order, and use first item as default.')
+    const backButton = window.getByRole('button', { name: 'back' })
+    await expect(heading).toBeVisible()
+    await expect(subtitle).toBeVisible()
+    await expect(backButton).toBeVisible()
+
+    const [headingBox, subtitleBox, backBox] = await Promise.all([
+      heading.boundingBox(),
+      subtitle.boundingBox(),
+      backButton.boundingBox(),
+    ])
+    expect(headingBox).not.toBeNull()
+    expect(subtitleBox).not.toBeNull()
+    expect(backBox).not.toBeNull()
+    expect(headingBox!.y).toBeGreaterThanOrEqual(48)
+    expect(subtitleBox!.y - (headingBox!.y + headingBox!.height)).toBeLessThanOrEqual(16)
+    expect(Math.abs((backBox!.y + backBox!.height / 2) - (headingBox!.y + headingBox!.height / 2))).toBeLessThanOrEqual(8)
+    expect(headingBox!.x - (backBox!.x + backBox!.width)).toBeLessThanOrEqual(24)
+  })
+
+  test('wizard step header keeps title, subtitle, and back button compactly aligned', async () => {
+    const window = await launchApp()
+
+    await window.getByText('Start fresh →').click()
+    const heading = window.getByRole('heading', { name: 'Choose launch terminals' })
+    const subtitle = window.getByText('Pick favorites, set order, and use first item as default.')
+    const backButton = window.getByRole('button', { name: 'back' })
+    await expect(heading).toBeVisible()
+    await expect(subtitle).toBeVisible()
+
+    const [headingBox, subtitleBox, backBox] = await Promise.all([
+      heading.boundingBox(),
+      subtitle.boundingBox(),
+      backButton.boundingBox(),
+    ])
+    expect(headingBox).not.toBeNull()
+    expect(subtitleBox).not.toBeNull()
+    expect(backBox).not.toBeNull()
+    expect(headingBox!.y).toBeGreaterThanOrEqual(48)
+    expect(subtitleBox!.y - (headingBox!.y + headingBox!.height)).toBeLessThanOrEqual(16)
+    expect(Math.abs((backBox!.y + backBox!.height / 2) - (headingBox!.y + headingBox!.height / 2))).toBeLessThanOrEqual(8)
+    expect(headingBox!.x - (backBox!.x + backBox!.width)).toBeLessThanOrEqual(20)
+  })
+
   test('first run shows onboarding flow', async () => {
     const window = await launchApp()
 

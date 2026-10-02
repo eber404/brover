@@ -79,7 +79,8 @@ test.describe('Secrets Auth Flow', () => {
       })
     }, { targetId: target.id, secretName })
     expect(copyResult.ok).toBe(true)
-    expect(copyResult.value).toBe('secret-1')
+    const copiedValue = await electronApp.evaluate(async ({ clipboard }) => clipboard.readText())
+    expect(copiedValue).toBe('secret-1')
 
     const updateResult = await window.evaluate(async ({ envId, targetId, secretName }) => {
       const result = await window.brover.updateEnv({

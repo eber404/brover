@@ -338,6 +338,54 @@ export class BroverStore {
     }
   }
 
+  private createSharedEnvMetadata(
+    db: DBShape,
+    payload: { name: string; profile: string; description?: string },
+    environmentIds: string[],
+    now: string
+  ): void {
+    for (const environmentId of environmentIds) {
+      const existingEnv = db.envs.find((env) => env.name === payload.name && env.profile === environmentId)
+      if (existingEnv && environmentId !== payload.profile) continue
+      if (existingEnv) {
+        existingEnv.enabled = true
+        existingEnv.description = payload.description?.trim() || existingEnv.description
+        existingEnv.updatedAt = now
+        continue
+      }
+      db.envs.push({
+        id: randomUUID(),
+        name: payload.name,
+        profile: environmentId,
+        enabled: environmentId === payload.profile,
+        description: payload.description?.trim() || undefined,
+        updatedAt: now,
+      })
+    }
+  }
+
+  private createLocalEnvMetadata(
+    db: DBShape,
+    payload: { name: string; profile: string; description?: string },
+    now: string
+  ): void {
+    const existingEnv = db.envs.find((env) => env.name === payload.name && env.profile === payload.profile)
+    if (existingEnv) {
+      existingEnv.enabled = true
+      existingEnv.description = payload.description?.trim() || existingEnv.description
+      existingEnv.updatedAt = now
+      return
+    }
+    db.envs.push({
+      id: randomUUID(),
+      name: payload.name,
+      profile: payload.profile,
+      enabled: true,
+      description: payload.description?.trim() || undefined,
+      updatedAt: now,
+    })
+  }
+
   async getOnboardingStatus(): Promise<OnboardingStatus> {
     const db = await this.readDB()
     return { completedAt: db.onboardingCompletedAt }
@@ -360,35 +408,17 @@ export class BroverStore {
 
     const db = await this.readDB()
     const scope = this.getEnvironmentScope(db, payload.profile)
-    const alreadyExists = scope.shared
-      ? db.envs.some((env) => env.name === envName && scope.environmentIds.includes(env.profile))
-      : db.envs.some((env) => env.name === envName && env.profile === payload.profile)
-    if (alreadyExists) throw new Error('Secret already exists in this environment')
-
-    const now = new Date().toISOString()
-    if (scope.shared) {
-      for (const environmentId of scope.environmentIds) {
-        db.envs.push({
-          id: randomUUID(),
-          name: envName,
-          profile: environmentId,
-          enabled: environmentId === payload.profile,
-          description: payload.description?.trim() || undefined,
-          updatedAt: now,
-        })
-      }
-    } else {
-      db.envs.push({
-        id: randomUUID(),
-        name: envName,
-        profile: payload.profile,
-        enabled: true,
-        description: payload.description?.trim() || undefined,
-        updatedAt: now,
-      })
+    const secretKey = `${payload.profile}:${envName}`
+    if (await this.secrets.exists(secretKey)) {
+      throw new Error('Secret already exists in this environment')
     }
 
-    await this.secrets.save(`${payload.profile}:${envName}`, payload.value)
+    const now = new Date().toISOString()
+    const metadataPayload = { name: envName, profile: payload.profile, description: payload.description }
+    if (scope.shared) this.createSharedEnvMetadata(db, metadataPayload, scope.environmentIds, now)
+    if (!scope.shared) this.createLocalEnvMetadata(db, metadataPayload, now)
+
+    await this.secrets.save(secretKey, payload.value)
     await this.writeDB(db)
   }
 
@@ -421,17 +451,8 @@ export class BroverStore {
 
   async deleteEnv(payload: { id: string; profile: string; name: string }): Promise<void> {
     const db = await this.readDB()
-    const scope = this.getEnvironmentScope(db, payload.profile)
-
-    if (scope.shared) {
-      db.envs = db.envs.filter((env) => !(env.name === payload.name && scope.environmentIds.includes(env.profile)))
-      for (const environmentId of scope.environmentIds) {
-        await this.secrets.delete(`${environmentId}:${payload.name}`)
-      }
-    } else {
-      db.envs = db.envs.filter((env) => !(env.name === payload.name && env.profile === payload.profile))
-      await this.secrets.delete(`${payload.profile}:${payload.name}`)
-    }
+    db.envs = db.envs.filter((env) => !(env.name === payload.name && env.profile === payload.profile))
+    await this.secrets.delete(`${payload.profile}:${payload.name}`)
 
     await this.writeDB(db)
   }
@@ -484,12 +505,12 @@ export class BroverStore {
     }
     db.environments.push(createdEnvironment)
 
-    const environmentIds = db.environments.map((environment) => environment.id)
-    const templateEnvironment = db.environments.find((environment) => environment.id !== createdEnvironment.id)
-
-    if (db.sharedSecretNames && templateEnvironment) {
-      const templateEnvs = db.envs.filter((env) => env.profile === templateEnvironment.id && environmentIds.includes(env.profile))
-      for (const env of templateEnvs) {
+    if (db.sharedSecretNames) {
+      const copiedNames = new Set<string>()
+      const peerEnvs = db.envs.filter((env) => env.profile !== createdEnvironment.id)
+      for (const env of peerEnvs) {
+        if (copiedNames.has(env.name)) continue
+        copiedNames.add(env.name)
         db.envs.push({
           ...env,
           id: randomUUID(),

@@ -113,6 +113,7 @@ function AppShell() {
 
     const updated = await window.brover.createEnvironment({ name })
     setEnvironments(updated)
+    setEnvs(await window.brover.listEnvs())
     const created = updated.find((environment) => environment.name === name)
     if (!created) return
     setEditingEnvironmentId(created.id)
@@ -259,7 +260,7 @@ function AppShell() {
   ) : null
 
   return (
-    <div className="relative grid h-screen grid-cols-[84px_320px_1fr] grid-rows-[52px_1fr] gap-0 text-sm">
+    <div className="relative grid h-screen grid-cols-[72px_440px_1fr] grid-rows-[52px_1fr] gap-0 text-sm">
       <div data-testid="drag-bar" className="absolute inset-x-0 top-0 z-50 h-11 w-20" style={DRAG_REGION_STYLE} />
       <div data-testid="drag-bar" className="absolute inset-x-0 right-0 top-0 z-50 h-4 w-full" style={DRAG_REGION_STYLE} />
 

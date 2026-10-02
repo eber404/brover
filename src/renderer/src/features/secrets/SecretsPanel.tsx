@@ -208,13 +208,6 @@ export function useSecretsPanel(props: SecretsPanelProps) {
       )
       return
     }
-    const value = result.value ?? ''
-    try {
-      await navigator.clipboard.writeText(value)
-    } catch {
-      toast('Failed to copy secret', 'error')
-      return
-    }
     toast(t('common.secretCopied'))
   }, [selectedEnv, t, toast])
 

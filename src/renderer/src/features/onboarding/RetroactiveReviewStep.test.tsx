@@ -112,13 +112,26 @@ describe('RetroactiveReviewStep', () => {
     expect(checkboxes.length).toBe(0)
   })
 
+  it('keeps the back button inside the content column instead of a negative offset', async () => {
+    render(<RetroactiveReviewStep onContinue={vi.fn()} onBack={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'back' })).toBeTruthy()
+    })
+
+    const backButton = screen.getByRole('button', { name: 'back' })
+    expect(backButton.closest('[class*="absolute"]')).toBeNull()
+    expect(backButton.className).not.toContain('-left-')
+    expect(backButton.className).not.toContain('-ml-')
+  })
+
   it('shows back button inline with title', async () => {
     const onBack = vi.fn()
     render(<RetroactiveReviewStep onContinue={vi.fn()} onBack={onBack} />)
     await waitFor(() => {
-      expect(screen.getByTestId('arrow-left')).toBeTruthy()
+      expect(screen.getByRole('button', { name: 'back' })).toBeTruthy()
     })
-    fireEvent.click(screen.getByTestId('arrow-left'))
+    fireEvent.click(screen.getByRole('button', { name: 'back' }))
     expect(onBack).toHaveBeenCalled()
   })
 

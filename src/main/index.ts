@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, systemPreferences } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, systemPreferences } from 'electron'
 import { join } from 'node:path'
 import { watchFile, unwatchFile } from 'node:fs'
 import {
@@ -243,7 +243,8 @@ export async function bootstrap() {
         await authGate.authorize('copy', { isRevealed: payload.isRevealed, targetId: payload.profile })
       }
       const value = await store.revealEnv(payload.profile, payload.name)
-      return { ok: true, value: value ?? '' }
+      clipboard.writeText(value ?? '')
+      return { ok: true }
     } catch (error) {
       return failure(error)
     }

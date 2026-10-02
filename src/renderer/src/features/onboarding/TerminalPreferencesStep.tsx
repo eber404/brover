@@ -113,24 +113,22 @@ export default function TerminalPreferencesStep({
   }
 
   return (
-    <div className="flex min-h-screen bg-surface-base p-6">
+    <div className="flex min-h-screen bg-surface-base px-6 pb-6 pt-16">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-        <div className="relative flex items-start gap-1">
-          <div className="absolute -left-8 top-1">
-            <button
-              type="button"
-              onClick={onBack}
-              className="-ml-1.5 mt-0.5 flex cursor-pointer items-center text-text-muted transition-colors hover:text-text-base"
-              aria-label="back"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </div>
-          <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-bold text-text-base text-left">
+        <div className="flex items-start gap-2">
+          <button
+            type="button"
+            onClick={onBack}
+            className="mt-1.5 flex shrink-0 cursor-pointer items-center text-text-muted transition-colors hover:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            aria-label="back"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="flex min-w-0 flex-col gap-1">
+            <h1 className="text-2xl font-bold leading-tight text-text-base text-left">
               {t('onboarding.terminalPreferences.title')}
             </h1>
-            <p className="text-sm text-text-muted">
+            <p className="text-sm leading-relaxed text-text-muted">
               {t('onboarding.terminalPreferences.subtitle')}
             </p>
           </div>

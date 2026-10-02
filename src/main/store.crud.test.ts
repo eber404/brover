@@ -53,6 +53,46 @@ describe('BroverStore', () => {
       expect(stagingEnvs.find((env) => env.name === 'API_KEY')).toBeDefined()
     })
 
+    it('clones shared names from any peer when the global environment has none', async () => {
+      const globalEnvs = await store.createEnvironment({ name: 'global' })
+      const globalEnvironment = globalEnvs.find((environment) => environment.isGlobal)!
+      const peers = await store.createEnvironment({ name: 'peer' })
+      const peer = peers.find((environment) => environment.name === 'peer')!
+      await store.createEnv({ name: 'PEER_KEY', profile: peer.id, value: 'peer-value' })
+
+      await store.setSharedSecretNames(true)
+      const spaces = await store.createEnvironment({ name: 'new-space' })
+      const newSpace = spaces.find((environment) => environment.name === 'new-space')!
+
+      const envs = await store.listEnvs()
+      expect(envs.some((env) => env.profile === newSpace.id && env.name === 'PEER_KEY')).toBe(true)
+      expect(await store.secretExists(newSpace.id, 'PEER_KEY')).toBe(false)
+      expect(await store.secretExists(globalEnvironment.id, 'PEER_KEY')).toBe(false)
+    })
+
+    it('fills a cloned empty shared name with a value in the new environment', async () => {
+      await store.setSharedSecretNames(true)
+      const initialTargets = await store.createEnvironment({ name: 'default' })
+      const defaultTarget = initialTargets.find((target) => target.name === 'default')!
+      await store.createEnv({ name: 'API_KEY', profile: defaultTarget.id, value: 'default-secret' })
+
+      const stagingTargets = await store.createEnvironment({ name: 'staging' })
+      const stagingTarget = stagingTargets.find((target) => target.name === 'staging')!
+
+      await expect(store.createEnv({
+        name: 'API_KEY',
+        profile: stagingTarget.id,
+        value: 'staging-secret',
+      })).resolves.toBeUndefined()
+
+      const envs = await store.listEnvs()
+      const stagingApiKey = envs.find((env) => env.profile === stagingTarget.id && env.name === 'API_KEY')
+      expect(envs.filter((env) => env.profile === stagingTarget.id && env.name === 'API_KEY')).toHaveLength(1)
+      expect(stagingApiKey?.enabled).toBe(true)
+      await expect(store.revealEnv(stagingTarget.id, 'API_KEY')).resolves.toBe('staging-secret')
+      await expect(store.revealEnv(defaultTarget.id, 'API_KEY')).resolves.toBe('default-secret')
+    })
+
     it('createEnvironment does not clone envs when shared secret names is false', async () => {
       await store.setSharedSecretNames(false)
       const initialTargets = await store.createEnvironment({ name: 'default' })
@@ -81,6 +121,25 @@ describe('BroverStore', () => {
       expect(remaining.find((target) => target.id === stagingTarget.id)).toBeUndefined()
       expect(targets[0]?.id).not.toBe(stagingTarget.id)
       await expect(store.revealEnv(stagingTarget.id, 'SECRET')).resolves.toBeNull()
+    })
+
+    it('deletes a shared secret only from the selected environment', async () => {
+      await store.setSharedSecretNames(true)
+      const globalEnvs = await store.createEnvironment({ name: 'global' })
+      const globalEnvironment = globalEnvs.find((environment) => environment.isGlobal)!
+      const spaces = await store.createEnvironment({ name: 'dev' })
+      const dev = spaces.find((environment) => environment.name === 'dev')!
+      await store.createEnv({ name: 'API_KEY', profile: globalEnvironment.id, value: 'global-value' })
+      await store.createEnv({ name: 'API_KEY', profile: dev.id, value: 'dev-value' })
+
+      const devEnv = (await store.listEnvs()).find((env) => env.profile === dev.id && env.name === 'API_KEY')!
+      await store.deleteEnv({ id: devEnv.id, profile: dev.id, name: devEnv.name })
+
+      const remainingEnvs = await store.listEnvs()
+      expect(remainingEnvs.some((env) => env.profile === globalEnvironment.id && env.name === 'API_KEY')).toBe(true)
+      expect(remainingEnvs.some((env) => env.profile === dev.id && env.name === 'API_KEY')).toBe(false)
+      await expect(store.revealEnv(globalEnvironment.id, 'API_KEY')).resolves.toBe('global-value')
+      await expect(store.revealEnv(dev.id, 'API_KEY')).resolves.toBeNull()
     })
 
     it('deleteEnvironment promotes next environment if deleted was active', async () => {
@@ -248,21 +307,24 @@ describe('BroverStore', () => {
       expect(revealed).toBeNull()
     })
 
-    it('deleteEnv removes from all environments when shared secret names is true', async () => {
+    it('deleteEnv removes only the selected environment when shared secret names is true', async () => {
       await store.setSharedSecretNames(true)
       const targets = await store.createEnvironment({ name: 'default' })
       const defaultTarget = targets.find((target) => target.name === 'default')!
 
-      await store.createEnvironment({ name: 'staging' })
+      const stagingTargets = await store.createEnvironment({ name: 'staging' })
+      const stagingTarget = stagingTargets.find((target) => target.name === 'staging')!
       await store.createEnv({ name: 'SHARED', profile: defaultTarget.id, value: 'secret' })
 
       const envs = await store.listEnvs()
-      const env = envs.find((item) => item.name === 'SHARED')!
+      const env = envs.find((item) => item.name === 'SHARED' && item.profile === defaultTarget.id)!
 
       await store.deleteEnv({ id: env.id, profile: defaultTarget.id, name: 'SHARED' })
 
       const remaining = await store.listEnvs()
-      expect(remaining.find((item) => item.name === 'SHARED')).toBeUndefined()
+      expect(remaining.some((item) => item.name === 'SHARED' && item.profile === defaultTarget.id)).toBe(false)
+      expect(remaining.some((item) => item.name === 'SHARED' && item.profile === stagingTarget.id)).toBe(true)
+      await expect(store.revealEnv(defaultTarget.id, 'SHARED')).resolves.toBeNull()
     })
 
     it('toggleEnvEnabled flips enabled state by id', async () => {

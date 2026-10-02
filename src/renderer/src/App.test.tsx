@@ -9,6 +9,8 @@ const secretsPanelArgs: Array<any> = []
 let secretsPanelState: any = null
 let runConfirmedUpdate: () => Promise<void>
 let runConfirmedDelete: () => Promise<void>
+let renderActualSecretsPanel = false
+let renderActualEnvironmentsSidebar = false
 
 function createDeferred<T = void>() {
   let resolve!: (value: T) => void
@@ -25,6 +27,7 @@ vi.mock('./i18n', () => ({
 
 vi.mock('./components/ui/toaster', () => ({
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useToast: () => ({ toast: vi.fn() }),
 }))
 
 vi.mock('./components/HideSplash', () => ({
@@ -38,39 +41,41 @@ vi.mock('./features/onboarding/OnboardingFlow', () => ({
 }))
 
 vi.mock('./features/secrets/SecretsPanel', async () => {
+  const actual = await vi.importActual<typeof import('./features/secrets/SecretsPanel')>('./features/secrets/SecretsPanel')
   const { useState } = await vi.importActual<typeof import('react')>('react')
 
   return {
     useSecretsPanel: (args: any) => {
-    secretsPanelArgs.push(args)
-    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-    const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false)
-    const state = {
-      center: (
-        <button onClick={() => args.setSelectedEnvId('secret-1')}>Mock secret card</button>
-      ),
-      deleteConfirmOpen,
-      setDeleteConfirmOpen,
-      updateConfirmOpen,
-      setUpdateConfirmOpen,
-      closeUpdateConfirmation: setUpdateConfirmOpen,
-      selectedEnv: args.selectedEnvId ? { id: args.selectedEnvId, name: 'API_KEY' } : null,
-      hasValue: false,
-      revealEnv: async () => {
-        args.setRevealValue('secret-value')
-        return true
-      },
-      copyEnv: vi.fn(),
-      updateEnvValue: () => setUpdateConfirmOpen(true),
-      deleteEnv: () => setDeleteConfirmOpen(true),
-       deleteEnvConfirmed: async () => {
-         await runConfirmedDelete()
-         args.setSelectedEnvId('')
-         args.setRevealValue('')
-       },
-       updateEnvConfirmed: () => runConfirmedUpdate(),
-    }
-    return { ...state, ...secretsPanelState }
+      if (renderActualSecretsPanel) return actual.useSecretsPanel(args)
+      secretsPanelArgs.push(args)
+      const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+      const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false)
+      const state = {
+        center: (
+          <button onClick={() => args.setSelectedEnvId('secret-1')}>Mock secret card</button>
+        ),
+        deleteConfirmOpen,
+        setDeleteConfirmOpen,
+        updateConfirmOpen,
+        setUpdateConfirmOpen,
+        closeUpdateConfirmation: setUpdateConfirmOpen,
+        selectedEnv: args.selectedEnvId ? { id: args.selectedEnvId, name: 'API_KEY' } : null,
+        hasValue: false,
+        revealEnv: async () => {
+          args.setRevealValue('secret-value')
+          return true
+        },
+        copyEnv: vi.fn(),
+        updateEnvValue: () => setUpdateConfirmOpen(true),
+        deleteEnv: () => setDeleteConfirmOpen(true),
+        deleteEnvConfirmed: async () => {
+          await runConfirmedDelete()
+          args.setSelectedEnvId('')
+          args.setRevealValue('')
+        },
+        updateEnvConfirmed: () => runConfirmedUpdate(),
+      }
+      return { ...state, ...secretsPanelState }
     },
   }
 })
@@ -100,26 +105,33 @@ vi.mock('./features/terminals/TerminalSidebar', () => ({
   },
 }))
 
-vi.mock('./features/environments/EnvironmentsSidebar', () => ({
-  EnvironmentsSidebar: (props: any) => {
-    environmentsSidebarProps.push(props)
-    return (
-      <div>
-        <button onClick={() => void props.onAddEnvironment()}>Add environment</button>
-        <button onClick={() => void props.onSelectEnvironment('env-2')}>Select env-2</button>
-        <button onClick={() => void props.onDeleteEnvironment('env-1')}>Delete env-1</button>
-        <button onClick={() => props.onStartRenameEnvironment('env-1', 'prod')}>Start rename</button>
-        <button onClick={() => void props.onSaveRenameEnvironment('env-1')}>Save rename</button>
-        <button onClick={() => void props.onUpdateEnvironmentColor('env-1', '#123456')}>Color env-1</button>
-        <button onClick={() => void props.onReorderEnvironments(['env-2', 'env-1'])}>Reorder envs</button>
-        <button onClick={() => void props.onToggleSharedSecretNames()}>Toggle shared</button>
-        <button onClick={() => props.onEditNameChange(' renamed ') }>Edit rename</button>
-        <button onClick={() => props.onEditNameChange('   ')}>Blank rename</button>
-        <div>Selected:{props.selectedEnvironmentId ?? 'none'}</div>
-      </div>
-    )
-  },
-}))
+vi.mock('./features/environments/EnvironmentsSidebar', async () => {
+  const actual = await vi.importActual<typeof import('./features/environments/EnvironmentsSidebar')>('./features/environments/EnvironmentsSidebar')
+
+  return {
+    EnvironmentsSidebar: (props: any) => {
+      if (renderActualEnvironmentsSidebar) {
+        return <actual.EnvironmentsSidebar {...props} />
+      }
+      environmentsSidebarProps.push(props)
+      return (
+        <div>
+          <button onClick={() => void props.onAddEnvironment()}>Add environment</button>
+          <button onClick={() => void props.onSelectEnvironment('env-2')}>Select env-2</button>
+          <button onClick={() => void props.onDeleteEnvironment('env-1')}>Delete env-1</button>
+          <button onClick={() => props.onStartRenameEnvironment('env-1', 'prod')}>Start rename</button>
+          <button onClick={() => void props.onSaveRenameEnvironment('env-1')}>Save rename</button>
+          <button onClick={() => void props.onUpdateEnvironmentColor('env-1', '#123456')}>Color env-1</button>
+          <button onClick={() => void props.onReorderEnvironments(['env-2', 'env-1'])}>Reorder envs</button>
+          <button onClick={() => void props.onToggleSharedSecretNames()}>Toggle shared</button>
+          <button onClick={() => props.onEditNameChange(' renamed ') }>Edit rename</button>
+          <button onClick={() => props.onEditNameChange('   ')}>Blank rename</button>
+          <div>Selected:{props.selectedEnvironmentId ?? 'none'}</div>
+        </div>
+      )
+    },
+  }
+})
 
 describe('App', () => {
   beforeEach(() => {
@@ -130,6 +142,8 @@ describe('App', () => {
     secretsPanelState = null
     runConfirmedUpdate = async () => {}
     runConfirmedDelete = async () => {}
+    renderActualSecretsPanel = false
+    renderActualEnvironmentsSidebar = false
 
     window.brover = {
       onboarding: {
@@ -186,6 +200,14 @@ describe('App', () => {
     expect(screen.queryByText('OnboardingFlow')).toBeNull()
   })
 
+  it('uses a compact terminal rail and wider spaces panel', async () => {
+    render(<App />)
+
+    await screen.findByText('TerminalSidebar')
+    const appShell = screen.getAllByTestId('drag-bar')[0]?.parentElement
+    expect(appShell?.className).toContain('grid-cols-[72px_440px_1fr]')
+  })
+
   it('adds unique environment names env, env-1, env-2', async () => {
     brover().listEnvironments.mockResolvedValue([
       { id: 'env-1', name: 'env', color: '#111', isActive: true, updatedAt: '1' },
@@ -204,6 +226,41 @@ describe('App', () => {
     await waitFor(() => {
       expect(brover().createEnvironment).toHaveBeenCalledWith({ name: 'env-2' })
     })
+  })
+
+  it('shows cloned secret metadata after creating and selecting a space', async () => {
+    renderActualSecretsPanel = true
+    renderActualEnvironmentsSidebar = true
+    brover().getSharedSecretNames.mockResolvedValue(true)
+
+    const existingApiKey = { id: 'secret-1', name: 'API_KEY', profile: 'env-1', enabled: true }
+    const clonedApiKey = { id: 'secret-2', name: 'API_KEY', profile: 'env-3', enabled: false }
+    const updatedEnvironments = [
+      { id: 'env-1', name: 'prod', color: '#111', isActive: true, updatedAt: '1' },
+      { id: 'env-2', name: 'dev', color: '#222', isActive: false, updatedAt: '1' },
+      { id: 'env-3', name: 'env', color: '#333', isActive: false, updatedAt: '1' },
+    ]
+
+    brover().listEnvs
+      .mockResolvedValueOnce([existingApiKey])
+      .mockResolvedValueOnce([existingApiKey, clonedApiKey])
+    brover().createEnvironment.mockResolvedValue(updatedEnvironments)
+    brover().setActiveEnvironment.mockImplementation(async ({ environmentId }: { environmentId: string }) =>
+      updatedEnvironments.map((environment) => ({
+        ...environment,
+        isActive: environment.id === environmentId,
+      }))
+    )
+
+    render(<App />)
+    await screen.findByTestId('environment-row-env-1')
+
+    fireEvent.click(screen.getByTestId('environment-add'))
+    const createdEnvironment = await screen.findByTestId('environment-row-env-3')
+    fireEvent.click(createdEnvironment)
+
+    await screen.findByRole('heading', { name: 'env' })
+    expect(await screen.findByTestId('secret-row-API_KEY')).toBeTruthy()
   })
 
   it('deleting selected environment falls back to active environment', async () => {

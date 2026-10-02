@@ -68,9 +68,10 @@ describe('EnvironmentsSidebar', () => {
     render(<EnvironmentsSidebar {...defaultProps} environments={environments} />)
 
     const marker = screen.getByTestId('environment-global-marker-environment-1')
-    expect(marker.textContent).toBe('(global)')
+    expect(marker.textContent).toBe('(global space)')
     expect(marker.className).toContain('text-text-muted')
     expect(marker.className).toContain('text-[10px]')
+    expect(marker.parentElement?.className).toContain('items-center')
     expect(screen.getByTestId('environment-name-environment-1').textContent).toBe('my-space')
   })
 

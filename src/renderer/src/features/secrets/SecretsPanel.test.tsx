@@ -358,8 +358,8 @@ describe('SecretsPanel', () => {
     })
   })
 
-  it('copies revealed secret value to clipboard on success', async () => {
-    const copyEnv = vi.fn().mockResolvedValue({ ok: true, value: 'secret-copy' })
+  it('shows success after the main process copies the revealed secret', async () => {
+    const copyEnv = vi.fn().mockResolvedValue({ ok: true })
     const writeText = vi.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -383,8 +383,9 @@ describe('SecretsPanel', () => {
     fireEvent.click(screen.getByTestId('copy-btn'))
 
     await waitFor(() => {
-      expect(writeText).toHaveBeenCalledWith('secret-copy')
+      expect(screen.getByText('Secret copied')).toBeTruthy()
     })
+    expect(writeText).not.toHaveBeenCalled()
   })
 
   it('shows toast when updateEnv fails', async () => {
@@ -658,7 +659,7 @@ describe('SecretsPanel', () => {
   })
 
   it('copies a row secret without selecting the row', async () => {
-    const copyEnv = vi.fn().mockResolvedValue({ ok: true, value: 'secret-copy' })
+    const copyEnv = vi.fn().mockResolvedValue({ ok: true })
     const writeText = vi.fn().mockResolvedValue(undefined)
     const setSelectedEnvId = vi.fn()
     Object.defineProperty(navigator, 'clipboard', {
@@ -693,8 +694,9 @@ describe('SecretsPanel', () => {
         name: mockEnv.name,
         isRevealed: false,
       })
-      expect(writeText).toHaveBeenCalledWith('secret-copy')
+      expect(screen.getByText('Secret copied')).toBeTruthy()
     })
+    expect(writeText).not.toHaveBeenCalled()
     expect(setSelectedEnvId).not.toHaveBeenCalled()
   })
 
@@ -763,12 +765,13 @@ describe('SecretsPanel', () => {
     expect(copyEnv).not.toHaveBeenCalled()
   })
 
-  it('shows an error toast when row copy cannot write to the clipboard', async () => {
-    const copyEnv = vi.fn().mockResolvedValue({ ok: true, value: 'secret-copy' })
+  it('shows the main-process clipboard error without writing in the renderer', async () => {
+    const copyEnv = vi.fn().mockResolvedValue({ ok: false, error: 'Clipboard write failed' })
     const setSelectedEnvId = vi.fn()
+    const writeText = vi.fn()
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
-      value: { writeText: vi.fn().mockRejectedValue(new Error('Clipboard unavailable')) },
+      value: { writeText },
     })
     // @ts-expect-error mock
     window.brover = { copyEnv, secretExists: vi.fn().mockResolvedValue(true) }
@@ -788,8 +791,9 @@ describe('SecretsPanel', () => {
     fireEvent.click(screen.getByTestId('secret-copy-API_KEY'))
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to copy secret')).toBeTruthy()
+      expect(screen.getByText('Clipboard write failed')).toBeTruthy()
     })
+    expect(writeText).not.toHaveBeenCalled()
     expect(setSelectedEnvId).not.toHaveBeenCalled()
   })
 

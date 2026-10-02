@@ -1,4 +1,4 @@
-generatedAt: "2026-09-30T21:27:23.163Z"
+generatedAt: "2026-10-02T14:29:48.889Z"
 repoRoot: /Users/eber/dev/brover
 tsconfigPath: /Users/eber/dev/brover/tsconfig.json
 fileCount: 48
@@ -145,7 +145,7 @@ files[48]:
       - moduleSpecifier: electron
         defaultImport: null
         namespaceImport: null
-        namedImports[5]: app,BrowserWindow,dialog,ipcMain,systemPreferences
+        namedImports[6]: app,BrowserWindow,clipboard,dialog,ipcMain,systemPreferences
       - moduleSpecifier: "node:path"
         defaultImport: null
         namespaceImport: null
